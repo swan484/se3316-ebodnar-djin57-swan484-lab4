@@ -1,10 +1,11 @@
-const Joi = require("joi");
-const cors = require('cors');
-const express = require("express");
+const Joi = require("joi")
+const cors = require('cors')
+const express = require("express")
+const mongoose = require("mongoose")
 
+const port = process.env.PORT || 3000;
 const app = express();
 app.use(express.json());
-const port = process.env.PORT || 3000;
 app.use("/", express.static("static"));
 app.use(cors());
 
