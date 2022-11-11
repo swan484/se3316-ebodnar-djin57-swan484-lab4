@@ -3,12 +3,6 @@ const fs = require("fs");
 const { parse } = require("csv-parse");
 const cors = require('cors');
 
-const low = require("lowdb");
-const fileSync = require("lowdb/adapters/FileSync");
-
-const adapter = new fileSync("db.json");
-const db = low(adapter);
-
 const express = require("express");
 const app = express();
 app.use(express.json());
