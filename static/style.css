@@ -1,5 +1,6 @@
 html {
-    background-color: #F0F6FA;
+    background-color: #1F1F1F;
+    color: #F0F6FA;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
@@ -37,7 +38,6 @@ button:hover {
 
 h3 {
     font-size: 30px;
-    color: #F0F6FA;
     margin: 0 auto;
     padding-top: 10px;
     height: 100%;
@@ -78,7 +78,6 @@ li:nth-child(3n + 1) {
 
 .number {
     font-size: 50px;
-    color: #F6AE2D;
     display: inline-block;
     align-items: left;
     margin-left: 5px;
@@ -90,7 +89,6 @@ p {
     margin-top: 5px;
     text-align: left;
     margin-left: 5px;
-    color: #274C68;
 }
 
 .sm {
@@ -110,7 +108,6 @@ p {
 a {
     display: block;
     text-decoration: dotted;
-    color: #000;
 }
 
 .readmore {
@@ -149,26 +146,22 @@ a {
     border-radius: 15px;
     padding-top: 10px;
     padding-bottom: 10px;
-    color: #FAD389;
     text-align: center;
 }
 
 .info-block>a,
 .info-block>p {
-    color: white;
     font-size: 20px;
     text-align: center;
 }
 
 .city {
-    color: white;
     text-align: center;
     padding: 0 auto;
     margin: 0 auto;
 }
 
 .readmore:hover {
-    color: #F26419;
     cursor: pointer;
 }
 
@@ -201,7 +194,6 @@ input.num-limit {
     display: inline-block;
     background-color: white;
     width: 400px;
-    color: black;
     height: auto;
     text-align: center;
     align-items: center;
@@ -255,7 +247,6 @@ label {
 
 select>option {
     text-align: center;
-    color: red;
 }
 
 .custom-select select {
@@ -321,12 +312,7 @@ h4:first-child {
     padding-bottom: 15px;
 }
 
-.track-contents>p {
-    color: black;
-}
-
 .track-block>p {
-    color: black;
     font-size: 22.5px;
 }
 
@@ -335,16 +321,7 @@ h4:first-child {
     overflow-wrap: break-word;
 }
 
-.tracks-table h3 {
-    color: black;
-}
-
-.tracks-table h4 {
-    color: black;
-}
-
 .tracks-table p {
-    color: black;
     padding-top: 10px;
 }
 
@@ -420,7 +397,6 @@ td>h3 {
 th {
     height: 40px;
     background-color: #F26419;
-    color: #1C364A;
     padding-left: 30px;
 }
 
@@ -457,16 +433,10 @@ input:disabled {
 
 .artists-table th {
     background-color: #386C94;
-    color: white;
 }
 
 .artists-table tr {
     background-color: #94BFDB;
-}
-
-.artists-table p,
-.artists-table h3 {
-    color: black;
 }
 
 .artists-table td:nth-child(3n+1) {
@@ -499,7 +469,7 @@ input:disabled {
     width: auto;
     text-align: center;
     height: auto;
-    background-color: #F0F6FA;
+    background-color: #1F1F1F;
     display: inline-block;
 }
 
@@ -508,6 +478,7 @@ input:disabled {
     padding-bottom: 10px;
     padding-top: 10px;
     text-decoration: none;
+    color: #F0F6FA;
 }
 
 #navbar .active {
@@ -535,7 +506,6 @@ input:disabled {
 }
 
 .chunk h3 {
-    color: black;
     margin-bottom: 0px;
 }
 
@@ -575,7 +545,6 @@ input:disabled {
 }
 
 .callResults>h3 {
-    color: #224159;
     padding-bottom: 15px;
 }
 
@@ -583,7 +552,6 @@ input:disabled {
     font-size: 20px;
     text-align: center;
     padding: 0 auto;
-    color: black;
     overflow-wrap: break-word;
 }
 
@@ -593,7 +561,6 @@ input:disabled {
 }
 
 .clear-popup:hover {
-    color: #224159;
     cursor: pointer;
 }
 
@@ -602,12 +569,7 @@ input:disabled {
     padding: 0px;
     margin: 0px;
     text-align: center;
-    color: black;
     display: inline-block;
-}
-
-.playlist-button:hover>span {
-    color: white;
 }
 
 .small-error>img {
@@ -621,7 +583,6 @@ th:hover {
 }
 
 .ordered {
-    color: white;
     text-decoration: underline;
 }
 
@@ -656,7 +617,6 @@ th:hover {
     text-align: center;
     margin-left: 0;
     margin-right: 0;
-    color: white;
 }
 
 .track-list {
@@ -681,7 +641,6 @@ th:hover {
     font-style: italic;
     font-weight: 400;
     font-size: 20px;
-    color: black;
 }
 
 .loading-message {
@@ -693,7 +652,6 @@ th:hover {
     padding-top: 20px;
     padding-bottom: 20px;
     background-color: #779150;
-    color: white;
     text-align: center;
     display: inline-block;
 }
@@ -705,6 +663,5 @@ th:hover {
 
 .loading-message p {
     text-align: center;
-    color: white;
     font-style: italic;
 }
