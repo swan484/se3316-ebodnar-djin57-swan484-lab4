@@ -1,9 +1,7 @@
 const Joi = require("joi");
-const fs = require("fs");
-const { parse } = require("csv-parse");
 const cors = require('cors');
-
 const express = require("express");
+
 const app = express();
 app.use(express.json());
 const port = process.env.PORT || 3000;
