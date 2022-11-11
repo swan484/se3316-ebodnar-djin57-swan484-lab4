@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>SE 3316 Lab 1</title>
+    <meta name="description" content="SE3316 Lab 3 - REST API" />
+    <meta name="author" content="ebodnar" />
+    <link rel="stylesheet" href="./style.css" />
+    <script type="text/javascript" src="./timetable.js"></script>
+  </head>
+  <body>
+    <ul class="navbar" id="navbar">
+      <li class="active">
+        <a href="#view" name="aView">View All Music</a>
+      </li>
+      <li>
+        <a href="#manage" name="aManage">Manage My Playlists</a>
+      </li>
+      <li>
+        <a href="#playlists" name="aPlaylists">View My Playlists</a>
+      </li>
+    </ul>
+    <h1 class="align-items">SE 3316 Lab 3 - ebodnar</h1>
+    <div id="view" class="tab-pane active">
+      <div class="align-items">
+        <button id="getGenres" class="get-genres">Get All Genres</button>
+        <hr />
+        <form>
+          <div class="custom-select">
+            <label>Searching by </label>
+            <select class="align-items" id="func">
+              <option value="artist">Artist</option>
+              <option value="track">Track</option>
+            </select>
+          </div>
+          <br />
+          <input
+            class="search-artist"
+            name="artist"
+            id="search_id"
+            placeholder="Search by Artist ID"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button
+            class="artist-button"
+            name="artist_search"
+            id="submit_search"
+            type="button"
+          >
+            Search
+          </button>
+          <br />
+          <input
+            class="search-artist"
+            name="str-search"
+            id="str-search"
+            placeholder="Search Artists"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <input
+            class="num-limit"
+            name="num-limit"
+            id="num-limit"
+            placeholder="Results Limit"
+            autocomplete="off"
+            disabled
+            spellcheck="false"
+          />
+          <button
+            class="str-button"
+            name="artist-str"
+            id="submit-str"
+            type="button"
+          >
+            Search
+          </button>
+        </form>
+        <ul id="contents"></ul>
+        <div id="searchResults" class="align-items"></div>
+      </div>
+    </div>
+    <div id="manage" class="tab-pane">
+      <div class="align-items" id="call-results"></div>
+      <div class="chunk">
+        <h3>Edit Playlists</h3>
+        <input
+          autocomplete="off"
+          id="playlist-title"
+          class="search-artist resize"
+          placeholder="Enter your playlist title"
+          spellcheck="false"
+          maxlength="20"
+        />
+        <h5>Enter a comma separated list of Track IDs</h5>
+        <textarea
+          id="playlist"
+          class="playlist"
+          rows="10"
+          cols="120"
+          autocomplete="off"
+        ></textarea>
+        <br />
+        <button
+          class="playlist-button"
+          name="create-playlist"
+          id="create-playlist"
+          type="button"
+        >
+          Create Playlist
+          <span>Title must be unique</span>
+        </button>
+        <button
+          class="playlist-button"
+          name="modify-playlist"
+          id="modify-playlist"
+          type="button"
+        >
+          Modify Playlist
+          <span>Title must already exist</span>
+        </button>
+      </div>
+    </div>
+    <div id="playlists" class="tab-pane">
+      <div class="chunk">
+        <h3>View Playlists</h3>
+        <input
+          autocomplete="off"
+          id="playlist-title-2"
+          class="search-artist resize"
+          placeholder="Enter your playlist title"
+          spellcheck="false"
+          maxlength="20"
+        />
+        <br />
+        <button
+          class="playlist-button resize-height"
+          name="modify-playlist"
+          id="view-playlist"
+          type="button"
+        >
+          View Playlist
+        </button>
+        <button
+          class="playlist-button resize-height"
+          name="delete-playlist"
+          id="delete-playlist"
+          type="button"
+        >
+          Delete Playlist
+        </button>
+        <br />
+        <br />
+        <hr />
+        <div class="align-items" id="view-tracks"></div>
+        <button
+          class="playlist-button resize-height"
+          name="get-playlists"
+          id="get-playlists"
+          type="button"
+        >
+          Get All Playlists
+        </button>
+      </div>
+      <div class="align-items" id="view-results"></div>
+    </div>
+  </body>
+</html>

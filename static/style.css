@@ -1,0 +1,710 @@
+html {
+    background-color: #F0F6FA;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+form,
+label,
+select,
+option,
+input,
+button,
+textarea {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.align-items {
+    text-align: center;
+}
+
+button {
+    width: 200px;
+    height: 35px;
+    border: 1px solid #F26419;
+    border-radius: 10px;
+    background-color: #F6AE28;
+    font-size: medium;
+}
+
+button:hover {
+    background-color: #F26419;
+    color: white;
+}
+
+.get-genres {
+    margin-bottom: 25px;
+}
+
+h3 {
+    font-size: 30px;
+    color: #F0F6FA;
+    margin: 0 auto;
+    padding-top: 10px;
+    height: 100%;
+    width: 100%;
+}
+
+li {
+    background-color: #F6AE2D;
+    display: inline-block;
+    width: 440px;
+    height: 100px;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+li:nth-child(3n) {
+    margin-right: 0;
+}
+
+li:nth-child(3n + 1) {
+    margin-left: 0;
+}
+
+.genre-head {
+    background-color: #33658A;
+    text-align: left;
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    padding-top: 5px;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+}
+
+.number {
+    font-size: 50px;
+    color: #F6AE2D;
+    display: inline-block;
+    align-items: left;
+    margin-left: 5px;
+    margin-right: 10px;
+}
+
+p {
+    font-size: large;
+    margin-top: 5px;
+    text-align: left;
+    margin-left: 5px;
+    color: #274C68;
+}
+
+.sm {
+    font-size: small;
+    margin-top: -1px;
+}
+
+.artist {
+    height: auto;
+    padding-bottom: 10px;
+    width: 500px;
+    margin: 0 auto;
+    position: relative;
+    border-radius: 20px;
+}
+
+a {
+    display: block;
+    text-decoration: dotted;
+    color: #000;
+}
+
+.readmore {
+    width: 100%;
+    font-size: 20px;
+    margin: 0 auto;
+    margin-top: 5px;
+    text-align: center;
+    font-style: italic;
+    text-decoration: underline;
+}
+
+.artist-number {
+    font-size: 30px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.artist-name {
+    font-size: 40px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.artist>img {
+    margin-top: 20px;
+    width: 300px;
+    height: 300px;
+    border-radius: 10px;
+    border: 5px dotted #F6AE2D;
+    margin-bottom: 15px;
+}
+
+.info-block {
+    background-color: #33658A;
+    border-radius: 15px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    color: #FAD389;
+    text-align: center;
+}
+
+.info-block>a,
+.info-block>p {
+    color: white;
+    font-size: 20px;
+    text-align: center;
+}
+
+.city {
+    color: white;
+    text-align: center;
+    padding: 0 auto;
+    margin: 0 auto;
+}
+
+.readmore:hover {
+    color: #F26419;
+    cursor: pointer;
+}
+
+input {
+    border: none;
+    border-bottom: 2px solid #779150;
+    background-color: #F0F6FA;
+    width: 200px;
+    height: 40px;
+    font-size: 18px;
+    justify-content: baseline;
+}
+
+input.num-limit {
+    width: 100px;
+    margin-top: 15px;
+}
+
+.artist-button {
+    width: 80px;
+    margin-left: 20px
+}
+
+.str-button {
+    width: 120px;
+    margin-left: 20px;
+}
+
+.error-signal {
+    display: inline-block;
+    background-color: white;
+    width: 400px;
+    color: black;
+    height: auto;
+    text-align: center;
+    align-items: center;
+    border-radius: 15px;
+    padding-top: 30px;
+    border: 2px solid red;
+    margin-top: 20px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.error-signal>p {
+    font-size: 20px;
+    text-align: center;
+    font-style: italic;
+    margin-bottom: 5px;
+}
+
+.error-signal>h1 {
+    font-size: 35px;
+    text-align: center;
+    margin: 0 auto;
+}
+
+.unavailable {
+    text-align: center;
+    margin: 0 auto;
+}
+
+.error-signal>img {
+    width: 200px;
+    height: auto;
+}
+
+select {
+    text-indent: 1px;
+    text-overflow: '';
+    width: 50px;
+    text-align: center;
+    height: 30px;
+    border: none;
+    border-radius: 0;
+    background-color: #F0F6FA;
+    font-size: 20px;
+    border-bottom: 2px solid #F6AE2D;
+}
+
+label {
+    font-size: 20px;
+}
+
+select>option {
+    text-align: center;
+    color: red;
+}
+
+.custom-select select {
+    appearance: none;
+}
+
+.album {
+    border: 1px solid #F6AE2D;
+    width: 500px;
+    background-color: white;
+    text-align: center;
+    border-radius: 10px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-top: 20px;
+    position: relative;
+    align-items: center;
+    display: inline-block;
+}
+
+.album p {
+    text-align: center;
+    margin: 0 auto;
+}
+
+.genre p {
+    font-size: 20px;
+    margin: 0 auto;
+}
+
+.track-block>h1 {
+    margin: 0 auto;
+}
+
+.track-contents {
+    background-color: #F6AE2D;
+    display: inline-block;
+    width: 200px;
+    margin: 10px;
+    vertical-align: top;
+    border-radius: 25px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+h4:first-child {
+    margin-top: 10px;
+    font-size: 25px;
+    margin-bottom: 10px;
+}
+
+.track-contents a,
+.track-contents>p {
+    text-align: left;
+    font-size: 18px;
+}
+
+.track-contents a {
+    padding-bottom: 15px;
+}
+
+.track-contents p:last-child {
+    padding-bottom: 15px;
+}
+
+.track-contents>p {
+    color: black;
+}
+
+.track-block>p {
+    color: black;
+    font-size: 22.5px;
+}
+
+.tracks-table {
+    width: 90%;
+    overflow-wrap: break-word;
+}
+
+.tracks-table h3 {
+    color: black;
+}
+
+.tracks-table h4 {
+    color: black;
+}
+
+.tracks-table p {
+    color: black;
+    padding-top: 10px;
+}
+
+table {
+    border-collapse: separate;
+    border-spacing: 0px 10px;
+    position: relative;
+    align-items: center;
+    display: inline-block;
+    width: 1400px;
+}
+
+tr {
+    background-color: #F6AE2D;
+    text-align: left;
+    padding-bottom: 5px;
+    vertical-align: middle;
+}
+
+.tracks-table td:nth-child(1) {
+    width: 500px;
+}
+
+.tracks-table td:nth-child(2) {
+    width: 400px;
+}
+
+.tracks-table td:nth-child(3) {
+    width: 300px;
+}
+
+.tracks-table td:nth-child(4) {
+    width: 200px;
+}
+
+td:nth-child(4n+1) {
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+
+td:nth-child(4n+4) {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+td {
+    padding-bottom: 5px;
+    vertical-align: middle;
+
+}
+
+td>p,
+td>h3,
+td>h4 {
+    padding-left: 10px;
+    padding-right: 20px;
+}
+
+td>h3,
+td>h4 {
+    margin: 0 auto;
+    margin-bottom: 10px;
+}
+
+td>h4 {
+    margin-bottom: 20px;
+}
+
+td>h3 {
+    font-size: 25px;
+}
+
+th {
+    height: 40px;
+    background-color: #F26419;
+    color: #1C364A;
+    padding-left: 30px;
+}
+
+th:first-child {
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+
+th:last-child {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    padding-right: 20px;
+}
+
+hr {
+    width: 65%;
+    background-color: #94BFDB;
+}
+
+input:disabled {
+    border-color: rgb(211, 211, 211);
+}
+
+.artists-table {
+    width: 900px;
+    position: relative;
+    display: inline-block;
+    text-align: center;
+}
+
+.artists-table td {
+    overflow: hidden;
+}
+
+.artists-table th {
+    background-color: #386C94;
+    color: white;
+}
+
+.artists-table tr {
+    background-color: #94BFDB;
+}
+
+.artists-table p,
+.artists-table h3 {
+    color: black;
+}
+
+.artists-table td:nth-child(3n+1) {
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    width: 200px;
+}
+
+.artists-table td:nth-child(3n+2) {
+    width: 400px;
+}
+
+.artists-table td:nth-child(3n+3) {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    width: 300px;
+    max-width: 300px;
+}
+
+.navbar {
+    width: auto;
+    height: 40px;
+    display: inline-block;
+    margin-left: 20px;
+    padding: 0px;
+    vertical-align: top;
+}
+
+#navbar li {
+    width: auto;
+    text-align: center;
+    height: auto;
+    background-color: #F0F6FA;
+    display: inline-block;
+}
+
+#navbar a {
+    padding: 20px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    text-decoration: none;
+}
+
+#navbar .active {
+    border-bottom: 2px solid #F26419;
+    border-radius: 0px;
+}
+
+#navbar ul {
+    font-size: 0;
+    display: inline-block;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.chunk {
+    display: inline-block;
+    text-align: center;
+    width: 100%;
+}
+
+.chunk h3 {
+    color: black;
+    margin-bottom: 0px;
+}
+
+.chunk h5 {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.chunk textarea {
+    padding: 5px;
+    resize: none;
+    border: 1px solid #386C94;
+    font-size: 15px;
+}
+
+*:focus {
+    outline: none;
+}
+
+.playlist-button {
+    width: 200px;
+    margin-top: 10px;
+    height: auto;
+}
+
+.resize {
+    width: calc(auto + 1px);
+}
+
+.callResults {
+    background-color: #F6AE28;
+    display: inline-block;
+    width: 500px;
+    text-align: center;
+    border-radius: 20px;
+    border: 2px solid #94BFDB;
+}
+
+.callResults>h3 {
+    color: #224159;
+    padding-bottom: 15px;
+}
+
+.callResults>p {
+    font-size: 20px;
+    text-align: center;
+    padding: 0 auto;
+    color: black;
+    overflow-wrap: break-word;
+}
+
+.clear-popup {
+    text-decoration: underline;
+    text-align: center;
+}
+
+.clear-popup:hover {
+    color: #224159;
+    cursor: pointer;
+}
+
+.playlist-button>span {
+    font-size: 11px;
+    padding: 0px;
+    margin: 0px;
+    text-align: center;
+    color: black;
+    display: inline-block;
+}
+
+.playlist-button:hover>span {
+    color: white;
+}
+
+.small-error>img {
+    width: 60px;
+    height: auto;
+    margin-top: 0px;
+}
+
+th:hover {
+    cursor: pointer;
+}
+
+.ordered {
+    color: white;
+    text-decoration: underline;
+}
+
+.tracks-table>h3,
+.artists-table>h3 {
+    font-size: 20px;
+    font-style: italic;
+    font-weight: 400;
+}
+
+.resize-height {
+    height: 40px;
+    margin-left: 15px;
+    padding-top: 3px;
+    margin-top: 20px;
+}
+
+.playlist-track {
+    height: 40px;
+    width: auto;
+    border: 1px solid #1C364A;
+    border-radius: 3px;
+    background-color: #779150;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.playlist-track>p {
+    width: auto;
+    height: auto;
+    vertical-align: middle;
+    text-align: center;
+    margin-left: 0;
+    margin-right: 0;
+    color: white;
+}
+
+.track-list {
+    width: 90%;
+    text-align: center;
+    display: inline-block;
+    padding: 0;
+    margin-top: 10px;
+}
+
+.track-list>li {
+    margin-left: 10px;
+}
+
+.tracks-title {
+    font-weight: 500;
+    font-size: 25px;
+    margin-bottom: 10px;
+}
+
+.info-title {
+    font-style: italic;
+    font-weight: 400;
+    font-size: 20px;
+    color: black;
+}
+
+.loading-message {
+    margin-top: 30px;
+    border: 1px solid #F26419;
+    border-radius: 40px;
+    width: 500px;
+    height: auto;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    background-color: #779150;
+    color: white;
+    text-align: center;
+    display: inline-block;
+}
+
+.loading-message h3 {
+    margin-bottom: 10px;
+    height: auto;
+}
+
+.loading-message p {
+    text-align: center;
+    color: white;
+    font-style: italic;
+}
