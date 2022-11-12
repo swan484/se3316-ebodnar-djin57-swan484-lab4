@@ -1,6 +1,8 @@
 import React, {useEffect, useState} from "react";
 import './styles/login.css'
 
+const PASSWORD_MISMATCH = "Passwords do not match!"
+
 const FormRow = ({updateInput, inputType, inputTitle}) => {
     const [value, setValue] = useState('');
 
@@ -20,23 +22,63 @@ const FormRow = ({updateInput, inputType, inputTitle}) => {
     )
 }
 
-const LoginForm = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-
-    const updateEmail = (email) => {
-        setEmail(email)
+const ErrorBar = ({errorMessage}) => {
+    if(errorMessage.length === 0){
+        return (
+            <>
+            </>
+        )
     }
-    const updatePassword = (password) => {
-        setPassword(password)
+    return (
+        <div className="error">
+            {errorMessage}
+        </div>
+    )
+}
+
+const LoginForm = () => {
+    const [state, setState] = useState({
+        email : '',
+        password: '',
+        buttonEnabled: false
+    })
+
+    useEffect(() => {
+        updateButtonEnabled()
+    }, [state.email, state.password])
+    const updateEmail = (e) => {
+        setState({
+            ...state,
+            email: e
+        })
+    }
+    const updatePassword = (p) => {
+        setState({
+            ...state,
+            password: p
+        })
+    }
+    const updateButtonEnabled = () => {
+        if(state.email.length === 0 || state.password.length === 0){
+                setState({
+                    ...state,
+                    buttonEnabled: false
+                })
+            }
+        else{
+            setState({
+                ...state,
+                buttonEnabled: true
+            })
+        }
     }
 
     return (
         <div className="form">
             <FormRow updateInput={updateEmail} inputType='email' inputTitle={'Email'} />
             <FormRow updateInput={updatePassword} inputType='password' inputTitle={'Password'} />
-            <button onClick={function() {
-                console.log(`${email} & ${password}`)
+            <button disabled={!state.buttonEnabled} onClick={function() {
+                console.log(`${state.email} & ${state.password}`)
             }}>
                 Submit
             </button>
@@ -45,22 +87,73 @@ const LoginForm = () => {
 }
 
 const CreateForm = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmedPassword, setConfirmedPassword] = useState('');
-    const [fullName, setFullName] = useState('');
-
-    const updateEmail = (email) => {
-        setEmail(email)
-    }
-    const updatePassword = (password) => {
-        setPassword(password)
-    }
-    const updateConfirmedPassword = (confirmedPassword => {
-        setConfirmedPassword(confirmedPassword)
+    const [state, setState] = useState({
+        email : '',
+        password: '',
+        confirmedPassword: '',
+        fullName: '',
+        error: '',
+        buttonEnabled: false
     })
-    const updateFullName = (fullName) => {
-        setFullName(fullName)
+
+    useEffect(() => {
+        updateButtonEnabled()
+    }, [state.email, state.password, state.confirmedPassword, state.fullName, state.error])
+    useEffect(() => {
+        updateError()
+    }, [state.password, state.confirmedPassword])
+    const updateEmail = (e) => {
+        setState({
+            ...state,
+            email: e
+        })
+    }
+    const updatePassword = (p) => {
+        setState({
+            ...state,
+            password: p
+        })
+    }
+    const updateConfirmedPassword = (p) => {
+        setState({
+            ...state,
+            confirmedPassword: p
+        })
+    }
+    const updateFullName = (f) => {
+        setState({
+            ...state,
+            fullName: f
+        })
+    }
+    const updateError = () => {
+        if(state.password.length > 0 && state.confirmedPassword.length > 0 && state.password !== state.confirmedPassword) {
+            setState({
+                ...state,
+                error: PASSWORD_MISMATCH
+            })
+        }
+        else if(state.password === state.confirmedPassword || state.confirmedPassword.length == 0) {
+            setState({
+                ...state,
+                error: ''
+            })
+        }
+    }
+    const updateButtonEnabled = () => {
+        if(state.email.length === 0 || state.password.length === 0 || state.confirmedPassword.length === 0 
+            || state.confirmedPassword.length === 0 || state.fullName.length === 0 || state.error.length > 0){
+                setState({
+                    ...state,
+                    buttonEnabled: false
+                })
+            }
+        else{
+            setState({
+                ...state,
+                buttonEnabled: true
+            })
+        }
     }
     
     return (
@@ -69,8 +162,9 @@ const CreateForm = () => {
             <FormRow updateInput={updateEmail} inputType='email' inputTitle={'Email'} />
             <FormRow updateInput={updatePassword} inputType='password' inputTitle={'Password'} />
             <FormRow updateInput={updateConfirmedPassword} inputType='password' inputTitle={'Confirm Password'} />
-            <button onClick={function() {
-                console.log(`${email} & ${password}, ${confirmedPassword} & ${fullName}`)
+            <ErrorBar errorMessage={state.error} />
+            <button disabled={!state.buttonEnabled} onClick={function() {
+                console.log(`${state.email} & ${state.password}, ${state.confirmedPassword} & ${state.fullName}`)
             }}>
                 Submit
             </button>
@@ -79,26 +173,81 @@ const CreateForm = () => {
 }
 
 const ForgotForm = () => {
-    const [email, setEmail] = useState('');
-    const [existingPassword, setExistingPassword] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmedPassword, setConfirmedPassword] = useState('');
-    const [fullName, setFullName] = useState('');
-
-    const updateEmail = (email) => {
-        setEmail(email)
-    }
-    const updateExistingPassword = (existingPassword) => {
-        setExistingPassword(existingPassword)
-    }
-    const updatePassword = (password) => {
-        setPassword(password)
-    }
-    const updateConfirmedPassword = (password => {
-        setConfirmedPassword(password)
+    const [state, setState] = useState({
+        email : '',
+        existingPassword: '',
+        password: '',
+        confirmedPassword: '',
+        fullName: '',
+        error: '',
+        buttonEnabled: false
     })
-    const updateFullName = (fullName) => {
-        setFullName(fullName)
+
+    useEffect(() => {
+        updateButtonEnabled()
+    }, [state.email, state.existingPassword, state.password, state.confirmedPassword, state.fullName, state.error])
+    useEffect(() => {
+        updateError()
+    }, [state.password, state.confirmedPassword])
+    const updateEmail = (e) => {
+        setState({
+            ...state,
+            email: e
+        })
+    }
+    const updateExistingPassword = (e) => {
+        setState({
+            ...state,
+            existingPassword: e
+        })
+    }
+    const updatePassword = (p) => {
+        setState({
+            ...state,
+            password: p
+        })
+    }
+    const updateConfirmedPassword = (p) => {
+        setState({
+            ...state,
+            confirmedPassword: p
+        })
+    }
+    const updateFullName = (f) => {
+        setState({
+            ...state,
+            fullName: f
+        })
+    }
+    const updateError = () => {
+        if(state.password.length > 0 && state.confirmedPassword.length > 0 && state.password !== state.confirmedPassword) {
+            setState({
+                ...state,
+                error: PASSWORD_MISMATCH
+            })
+        }
+        else if(state.password === state.confirmedPassword || state.confirmedPassword.length == 0) {
+            setState({
+                ...state,
+                error: ''
+            })
+        }
+    }
+    const updateButtonEnabled = () => {
+        if(state.email.length === 0 || state.existingPassword.length === 0 || state.password.length === 0
+            || state.confirmedPassword.length === 0 || state.confirmedPassword.length === 0 || state.fullName.length === 0 
+            || state.error.length > 0){
+                setState({
+                    ...state,
+                    buttonEnabled: false
+                })
+            }
+        else{
+            setState({
+                ...state,
+                buttonEnabled: true
+            })
+        }
     }
     
     return (
@@ -108,8 +257,9 @@ const ForgotForm = () => {
             <FormRow updateInput={updateEmail} inputType='email' inputTitle={'Email'} />
             <FormRow updateInput={updatePassword} inputType='password' inputTitle={'Password'} />
             <FormRow updateInput={updateConfirmedPassword} inputType='password' inputTitle={'Confirm Password'} />
-            <button onClick={function() {
-                console.log(`${email} & ${password}, ${confirmedPassword} & ${fullName}, ${existingPassword}`)
+            <ErrorBar errorMessage={state.error} />
+            <button disabled={!state.buttonEnabled} onClick={function() {
+                console.log(`${state.email} & ${state.password}, ${state.confirmedPassword} & ${state.fullName}, ${state.existingPassword}`)
             }}>
                 Submit
             </button>

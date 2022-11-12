@@ -58,7 +58,12 @@ button {
     margin-top: 10px;
 }
 
-button:hover {
+button:disabled {
+    color: #bbbbbb;
+    border-color: #bbbbbb;
+}
+
+button:enabled:hover {
     background-color: #efa8ea;
     color: #1F1F1F;
     border-color: #1F1F1F;
@@ -86,4 +91,10 @@ button:hover {
     padding-top: 10px;
     width: 500px;
     justify-content: center;
+}
+
+.error {
+    color: #b74343;
+    padding-top: 10px;
+    font-weight: 600;
 }
