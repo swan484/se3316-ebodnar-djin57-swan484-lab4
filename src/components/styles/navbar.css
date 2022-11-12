@@ -3,8 +3,8 @@ ul {
     text-align: left;
     padding: 0px;
     margin: 0px;
-    padding-top: 10px;
-    padding-bottom: 10px;
+    padding-top: 12px;
+    padding-bottom: 15px;
 }
 
 li {
@@ -12,7 +12,7 @@ li {
     list-style: none;
     height: 40px;
     width: 150px;
-    font-size: 20px;
+    font-size: 22.5px;
     padding-top: 10px;
     text-align: center;
 }
@@ -21,4 +21,10 @@ li {
     text-decoration: none;
     color: #F0F6FA;
     vertical-align: middle;
+    font-weight: 400;
+}
+
+.active {
+    color: #1F1F1F;
+    font-weight: 700;
 }

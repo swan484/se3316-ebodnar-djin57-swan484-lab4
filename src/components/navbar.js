@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Route, Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import './styles/navbar.css';
 
 const Navbar = () => {
@@ -7,18 +7,14 @@ const Navbar = () => {
         <nav>
             <ul>
                 <li>
-                    <Link to='/' class='link'>Home</Link>
+                    <NavLink to='/' className={({ isActive }) => "link" + (isActive ? " active" : "")}>Home</NavLink>
                 </li>
                 <li>
-                    <Link to='/login' class='link'>Login</Link>
+                    <NavLink to='/login' className={({ isActive }) => "link" + (isActive ? " active" : "")}>Log In</NavLink>
                 </li>
             </ul>
         </nav>
     )
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("HI");
-})
 
 export default Navbar;

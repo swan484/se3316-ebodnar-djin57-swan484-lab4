@@ -1,0 +1,89 @@
+.login > p {
+    margin: 0px;
+    margin-bottom: 5px;
+}
+
+.login > h1 {
+    margin-bottom: 15px;
+}
+
+.form {
+    font-size: 20px;
+    justify-content: center;
+}
+
+.form div {
+    display: block;
+    width: 300px;
+    margin: 0 auto;
+}
+
+.form p {
+    font-size: inherit;
+    display: inline-block;
+    justify-content: left;
+    padding-bottom: 0px;
+}
+
+.form label {
+    display: block;
+    width: 100%;
+    text-align: left;
+    font-size: 15px;
+    padding-bottom: 5px;
+}
+
+.form input {
+    width: 100%;
+    font-size: inherit;
+    background-color: #1f1f1f;
+    color: #F0F6FA;
+    border: none;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #b100a5;
+}
+
+*:focus {
+    outline: none;
+}
+
+button {
+    height: 40px;
+    width: 100px;
+    border-radius: 15px;
+    border: 1px solid #b100a5;
+    background-color: #1F1F1F;
+    color: #F0F6FA;
+    font-size: inherit;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #efa8ea;
+    color: #1F1F1F;
+    border-color: #1F1F1F;
+}
+
+.changeState:hover {
+    cursor: pointer;
+}
+
+.login-link {
+    font-style: italic;
+    font-size: 15px;
+}
+
+.login-link:hover {
+    cursor: pointer;
+}
+
+.head {
+    padding-top: 30px;
+}
+
+.pad-top {
+    padding: 0px;
+    padding-top: 10px;
+    width: 500px;
+    justify-content: center;
+}
