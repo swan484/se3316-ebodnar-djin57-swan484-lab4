@@ -43,6 +43,10 @@
     border-bottom: 1px solid #b100a5;
 }
 
+.form input:focus {
+    border-color: #efa8ea;
+}
+
 *:focus {
     outline: none;
 }

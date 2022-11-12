@@ -2,6 +2,8 @@ import React, {useEffect, useState} from "react";
 import './styles/login.css'
 
 const PASSWORD_MISMATCH = "Passwords do not match!"
+const EMAIL_REGEX = /[a-zA-Z0-9.-_]{1,}@[a-zA-Z0-9.-]{1,}[.]{1}[a-zA-Z0-9]{1,}/
+const EMAIL_FORMAT = "Email is not valid"
 
 const FormRow = ({updateInput, inputType, inputTitle}) => {
     const [value, setValue] = useState('');
@@ -36,16 +38,20 @@ const ErrorBar = ({errorMessage}) => {
     )
 }
 
-const LoginForm = () => {
+const LoginForm = ({updateUserLoggedIn}) => {
     const [state, setState] = useState({
         email : '',
         password: '',
-        buttonEnabled: false
+        buttonEnabled: false,
+        error: ''
     })
 
     useEffect(() => {
         updateButtonEnabled()
     }, [state.email, state.password])
+    useEffect(() => {
+        updateError()
+    }, [state.email])
     const updateEmail = (e) => {
         setState({
             ...state,
@@ -58,8 +64,22 @@ const LoginForm = () => {
             password: p
         })
     }
+    const updateError = () => {
+        if(state.email.length === 0 || EMAIL_REGEX.test(state.email)) {
+            setState({
+                ...state,
+                error: ''
+            })
+        }
+        else if(!EMAIL_REGEX.test(state.email)){
+            setState({
+                ...state,
+                error: EMAIL_FORMAT
+            })
+        }
+    }
     const updateButtonEnabled = () => {
-        if(state.email.length === 0 || state.password.length === 0){
+        if(state.email.length === 0 || state.password.length === 0 || state.error.length > 0){
                 setState({
                     ...state,
                     buttonEnabled: false
@@ -77,6 +97,7 @@ const LoginForm = () => {
         <div className="form">
             <FormRow updateInput={updateEmail} inputType='email' inputTitle={'Email'} />
             <FormRow updateInput={updatePassword} inputType='password' inputTitle={'Password'} />
+            <ErrorBar errorMessage={state.error} />
             <button disabled={!state.buttonEnabled} onClick={function() {
                 console.log(`${state.email} & ${state.password}`)
             }}>
@@ -101,7 +122,7 @@ const CreateForm = () => {
     }, [state.email, state.password, state.confirmedPassword, state.fullName, state.error])
     useEffect(() => {
         updateError()
-    }, [state.password, state.confirmedPassword])
+    }, [state.password, state.confirmedPassword, state.email])
     const updateEmail = (e) => {
         setState({
             ...state,
@@ -133,10 +154,16 @@ const CreateForm = () => {
                 error: PASSWORD_MISMATCH
             })
         }
-        else if(state.password === state.confirmedPassword || state.confirmedPassword.length == 0) {
+        else if((state.password === state.confirmedPassword || state.confirmedPassword.length == 0) && (EMAIL_REGEX.test(state.email) || state.email.length === 0)) {
             setState({
                 ...state,
                 error: ''
+            })
+        }
+        else if(!EMAIL_REGEX.test(state.email)){
+            setState({
+                ...state,
+                error: EMAIL_FORMAT
             })
         }
     }
@@ -188,7 +215,7 @@ const ForgotForm = () => {
     }, [state.email, state.existingPassword, state.password, state.confirmedPassword, state.fullName, state.error])
     useEffect(() => {
         updateError()
-    }, [state.password, state.confirmedPassword])
+    }, [state.password, state.confirmedPassword, state.email])
     const updateEmail = (e) => {
         setState({
             ...state,
@@ -226,10 +253,16 @@ const ForgotForm = () => {
                 error: PASSWORD_MISMATCH
             })
         }
-        else if(state.password === state.confirmedPassword || state.confirmedPassword.length == 0) {
+        else if((state.password === state.confirmedPassword || state.confirmedPassword.length == 0) && (state.email.length === 0 || EMAIL_REGEX.test(state.email))) {
             setState({
                 ...state,
                 error: ''
+            })
+        }
+        else if(!EMAIL_REGEX.test(state.email)){
+            setState({
+                ...state,
+                error: EMAIL_FORMAT
             })
         }
     }
@@ -267,7 +300,7 @@ const ForgotForm = () => {
     )
 }
 
-const Login = () => {
+const Login = ({userLoggedIn}) => {
     let [authMode, setAuthMode] = useState(0)
 
     const changeAuthMode = (newMode) => {
