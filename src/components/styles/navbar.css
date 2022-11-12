@@ -1,0 +1,24 @@
+ul {
+    background-color: #b100a5;
+    text-align: left;
+    padding: 0px;
+    margin: 0px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+li {
+    display: inline-block;
+    list-style: none;
+    height: 40px;
+    width: 150px;
+    font-size: 20px;
+    padding-top: 10px;
+    text-align: center;
+}
+
+.link {
+    text-decoration: none;
+    color: #F0F6FA;
+    vertical-align: middle;
+}
