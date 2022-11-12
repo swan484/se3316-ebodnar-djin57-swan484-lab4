@@ -1,14 +1,21 @@
 import React from "react";
+import Login from "./login";
+import "./styles/home.css"
 
 const Home = () => {
     return (
-        <div>
+        <div className='home-block'>
             <h1>
-                Home
+                Welcome to APP NAME
             </h1>
             <p>
-                Welcome to the home page...
+                Features of this app include:
             </p>
+            <ul className='about'>
+                <li>Feature 1...</li>
+                <li>Feature 2...</li>
+            </ul>
+            <Login />
         </div>
     )
 }

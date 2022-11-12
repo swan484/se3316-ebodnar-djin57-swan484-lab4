@@ -9,9 +9,11 @@ const Navbar = () => {
                 <li>
                     <NavLink to='/' className={({ isActive }) => "link" + (isActive ? " active" : "")}>Home</NavLink>
                 </li>
+                {/*
                 <li>
-                    <NavLink to='/login' className={({ isActive }) => "link" + (isActive ? " active" : "")}>Log In</NavLink>
+                    <NavLink to='/' className={({ isActive }) => "link" + (isActive ? " active" : "")}>Log In</NavLink>
                 </li>
+                */}
             </ul>
         </nav>
     )

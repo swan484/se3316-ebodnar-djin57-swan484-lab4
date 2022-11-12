@@ -80,11 +80,11 @@ const LoginForm = ({updateUserLoggedIn}) => {
     }
     const updateButtonEnabled = () => {
         if(state.email.length === 0 || state.password.length === 0 || state.error.length > 0){
-                setState({
-                    ...state,
-                    buttonEnabled: false
-                })
-            }
+            setState({
+                ...state,
+                buttonEnabled: false
+            })
+        }
         else{
             setState({
                 ...state,
