@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from "react";
 import './styles/login.css'
+import { useNavigate } from "react-router-dom";
 
 const PASSWORD_MISMATCH = "Passwords do not match!"
 const EMAIL_REGEX = /[a-zA-Z0-9.-_]{1,}@[a-zA-Z0-9.-]{1,}[.]{1}[a-zA-Z0-9]{1,}/
@@ -162,6 +163,7 @@ const Login = ({updateParentLoginStatus}) => {
         authMode: 0,
         userLoginStatus: 0
     })
+    const navigate = useNavigate();
 
     useEffect(() => {
         updateParentLoginStatus(state.userLoginStatus)
@@ -259,6 +261,9 @@ const Login = ({updateParentLoginStatus}) => {
             })
             .then((a) => {
                 toggleButtonEnabled(true)
+                if(a.deactivated){
+                    navigate("/deactivated")
+                }
                 if(!(a.email === state.email && a.password === state.password)){
                     updateError(INVALID_LOGIN)
                 }
