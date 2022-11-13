@@ -11,7 +11,7 @@ const uri = "mongodb+srv://root:root@cluster0.dklnv6c.mongodb.net/?retryWrites=t
 const client = new MongoClient(uri)
 
 app.get("/api/user/:email", (req, res) => {
-    console.log(`Called into GET artist (id) with ${req.params.email}`);
+    console.log(`Called into GET user (email) with ${req.params.email}`);
     getUser(req.params.email)
     .then((data) => res.send(data))
     .catch((err) => res.status(404).send(err));

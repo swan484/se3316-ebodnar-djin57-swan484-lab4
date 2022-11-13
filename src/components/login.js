@@ -150,7 +150,7 @@ const ErrorBar = ({errorMessage}) => {
     )
 }
 
-const Login = () => {
+const Login = ({updateParentLoginStatus}) => {
     const [state, setState] = useState({
         email : '',
         existingPassword: '',
@@ -159,8 +159,13 @@ const Login = () => {
         fullName: '',
         error: '',
         buttonEnabled: true,
-        authMode: 0
+        authMode: 0,
+        userLoginStatus: 0
     })
+
+    useEffect(() => {
+        updateParentLoginStatus(state.userLoginStatus)
+    }, [state.userLoginStatus])
 
     const updateEmail = (e) => {
         setState({
@@ -233,15 +238,38 @@ const Login = () => {
             clearError()
         }
     }
-    const toggleButtonEnabled = () => {
+    const toggleButtonEnabled = (val) => {
         setState({
             ...state,
-            buttonEnabled: !state.buttonEnabled
+            buttonEnabled: val
+        })
+    }
+    const updateLoggedInStatus = (val) => {
+        setState({
+            ...state,
+            userLoginStatus: val
         })
     }
     const submitSearch = () => {
         if(state.error.length > 0) return;
-        console.log(`${state.email} & ${state.password}, ${state.confirmedPassword} & ${state.fullName}, ${state.existingPassword}`)
+        toggleButtonEnabled(false)
+        fetch(`http://localhost:3001/api/user/${state.email}`)
+            .then((a) => {
+                return a.json()
+            })
+            .then((a) => {
+                toggleButtonEnabled(true)
+                if(!(a.email === state.email && a.password === state.password)){
+                    updateError(INVALID_LOGIN)
+                }
+                else{
+                    updateLoggedInStatus(1)
+                }
+            })
+            .catch(() => {
+                toggleButtonEnabled(true)
+                updateError(INVALID_LOGIN)
+            })
     }
     
     if(state.authMode === 1){

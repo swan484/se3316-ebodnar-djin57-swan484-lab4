@@ -1,8 +1,24 @@
-import React from "react";
+import React, {useEffect, useState} from "react";
 import Login from "./login";
 import "./styles/home.css"
 
-const Home = () => {
+const Home = ({updateUserLoginStatus}) => {
+    const [state, setState] = useState({
+        userLoginStatus: 0
+    })
+
+    useEffect(() => {
+        console.log(`User is logged in: ${state.userLoginStatus}`)
+        updateUserLoginStatus(state.userLoginStatus)
+    }, [state.userLoginStatus])
+
+    const updateLoginStatus = (val) => {
+        setState({
+            ...state,
+            userLoginStatus: val
+        })
+    }
+
     return (
         <div className='home-block'>
             <h1>
@@ -16,7 +32,7 @@ const Home = () => {
                 <li>Feature 2...</li>
             </ul>
             <hr/>
-            <Login />
+            <Login updateParentLoginStatus={updateLoginStatus}/>
         </div>
     )
 }
