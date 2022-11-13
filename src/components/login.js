@@ -4,6 +4,8 @@ import './styles/login.css'
 const PASSWORD_MISMATCH = "Passwords do not match!"
 const EMAIL_REGEX = /[a-zA-Z0-9.-_]{1,}@[a-zA-Z0-9.-]{1,}[.]{1}[a-zA-Z0-9]{1,}/
 const EMAIL_FORMAT = "Email is not valid"
+const INVALID_LOGIN = "Incorrect username or password"
+const CLEAR_PASSWORD_TIME = 2000
 
 const FormRow = ({updateInput, inputType, inputTitle}) => {
     const [value, setValue] = useState('');
@@ -12,14 +14,124 @@ const FormRow = ({updateInput, inputType, inputTitle}) => {
         updateInput(value)
     }, [value]);
 
-    const updateValue = (e) => {
-        setValue(e.target.value)
+    const updateValue = (val) => {
+        setValue(val.target.value)
     }
     
     return (
         <div className="pad-top">
             <label>{inputTitle}</label>
             <input type={inputType} onChange={(e) => updateValue(e)} />
+        </div>
+    )
+}
+
+const LoginForm = ({updateParentEmail, updateParentPassword}) => {
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+
+    useEffect(() => {
+        updateParentEmail(email)
+    }, [email])
+    useEffect(() => {
+        updateParentPassword(password)
+    }, [password])
+
+    const updateEmail = (e) => {
+        setEmail(e)
+    }
+    const updatePassword = (p) => {
+        setPassword(p)
+    }
+
+    return (
+        <div className="form">
+            <FormRow updateInput={updateEmail} inputType='email' inputTitle={'Email'} />
+            <FormRow updateInput={updatePassword} inputType='password' inputTitle={'Password'} />
+        </div>
+    )
+}
+
+const CreateForm = ({updateParentEmail, updateParentPassword, updateParentFullName, updateParentConfirmedPassword}) => {
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [fullName, setFullName] = useState('')
+    const [confirmedPassword, setConfirmedPassword] = useState('')
+
+    useEffect(() => {
+        updateParentEmail(email)
+    }, [email])
+    useEffect(() => {
+        updateParentPassword(password)
+    }, [password])
+    useEffect(() => {
+        updateParentFullName(fullName)
+    }, [fullName])
+    useEffect(() => {
+        updateParentConfirmedPassword(confirmedPassword)
+    }, [confirmedPassword])
+
+    const updateEmail = (e) => {
+        setEmail(e)
+    }
+    const updatePassword = (p) => {
+        setPassword(p)
+    }
+    const updateFullName = (f) => {
+        setFullName(f)
+    }
+    const updateConfirmedPassword = (p) => {
+        setConfirmedPassword(p)
+    }
+    
+    return (
+        <div className="form">
+            <FormRow updateInput={updateFullName} inputType='text' inputTitle={'Full Name'} />
+            <FormRow updateInput={updateEmail} inputType='email' inputTitle={'Email'} />
+            <FormRow updateInput={updatePassword} inputType='password' inputTitle={'Password'} />
+            <FormRow updateInput={updateConfirmedPassword} inputType='password' inputTitle={'Confirm Password'} />
+        </div>
+    )
+}
+
+const ForgotForm = ({updateParentEmail, updateParentPassword, updateParentConfirmedPassword, updateParentExistingPassword}) => {
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
+    const [confirmedPassword, setConfirmedPassword] = useState('')
+    const [existingPassword, setExistingPassword] = useState('')
+
+    useEffect(() => {
+        updateParentEmail(email)
+    }, [email])
+    useEffect(() => {
+        updateParentPassword(password)
+    }, [password])
+    useEffect(() => {
+        updateParentConfirmedPassword(confirmedPassword)
+    }, [confirmedPassword])
+    useEffect(() => {
+        updateParentExistingPassword(existingPassword)
+    }, [existingPassword])
+
+    const updateEmail = (e) => {
+        setEmail(e)
+    }
+    const updatePassword = (p) => {
+        setPassword(p)
+    }
+    const updateConfirmedPassword = (p) => {
+        setConfirmedPassword(p)
+    }
+    const updateExistingPassword = (p) => {
+        setExistingPassword(p)
+    }
+    
+    return (
+        <div className="form">
+            <FormRow updateInput={updateEmail} inputType='email' inputTitle={'Email'} />
+            <FormRow updateInput={updateExistingPassword} inputType='password' inputTitle={'Current Password'} />
+            <FormRow updateInput={updatePassword} inputType='password' inputTitle={'New Password'} />
+            <FormRow updateInput={updateConfirmedPassword} inputType='password' inputTitle={'Confirm New Password'} />
         </div>
     )
 }
@@ -38,168 +150,7 @@ const ErrorBar = ({errorMessage}) => {
     )
 }
 
-const LoginForm = ({updateUserLoggedIn}) => {
-    const [state, setState] = useState({
-        email : '',
-        password: '',
-        buttonEnabled: false,
-        error: ''
-    })
-
-    useEffect(() => {
-        updateButtonEnabled()
-    }, [state.email, state.password])
-    useEffect(() => {
-        updateError()
-    }, [state.email])
-    const updateEmail = (e) => {
-        setState({
-            ...state,
-            email: e
-        })
-    }
-    const updatePassword = (p) => {
-        setState({
-            ...state,
-            password: p
-        })
-    }
-    const updateError = () => {
-        if(state.email.length === 0 || EMAIL_REGEX.test(state.email)) {
-            setState({
-                ...state,
-                error: ''
-            })
-        }
-        else if(!EMAIL_REGEX.test(state.email)){
-            setState({
-                ...state,
-                error: EMAIL_FORMAT
-            })
-        }
-    }
-    const updateButtonEnabled = () => {
-        if(state.email.length === 0 || state.password.length === 0 || state.error.length > 0){
-            setState({
-                ...state,
-                buttonEnabled: false
-            })
-        }
-        else{
-            setState({
-                ...state,
-                buttonEnabled: true
-            })
-        }
-    }
-
-    return (
-        <div className="form">
-            <FormRow updateInput={updateEmail} inputType='email' inputTitle={'Email'} />
-            <FormRow updateInput={updatePassword} inputType='password' inputTitle={'Password'} />
-            <ErrorBar errorMessage={state.error} />
-            <button disabled={!state.buttonEnabled} onClick={function() {
-                console.log(`${state.email} & ${state.password}`)
-            }}>
-                Submit
-            </button>
-        </div>
-    )
-}
-
-const CreateForm = () => {
-    const [state, setState] = useState({
-        email : '',
-        password: '',
-        confirmedPassword: '',
-        fullName: '',
-        error: '',
-        buttonEnabled: false
-    })
-
-    useEffect(() => {
-        updateButtonEnabled()
-    }, [state.email, state.password, state.confirmedPassword, state.fullName, state.error])
-    useEffect(() => {
-        updateError()
-    }, [state.password, state.confirmedPassword, state.email])
-    const updateEmail = (e) => {
-        setState({
-            ...state,
-            email: e
-        })
-    }
-    const updatePassword = (p) => {
-        setState({
-            ...state,
-            password: p
-        })
-    }
-    const updateConfirmedPassword = (p) => {
-        setState({
-            ...state,
-            confirmedPassword: p
-        })
-    }
-    const updateFullName = (f) => {
-        setState({
-            ...state,
-            fullName: f
-        })
-    }
-    const updateError = () => {
-        if(state.password.length > 0 && state.confirmedPassword.length > 0 && state.password !== state.confirmedPassword) {
-            setState({
-                ...state,
-                error: PASSWORD_MISMATCH
-            })
-        }
-        else if((state.password === state.confirmedPassword || state.confirmedPassword.length == 0) && (EMAIL_REGEX.test(state.email) || state.email.length === 0)) {
-            setState({
-                ...state,
-                error: ''
-            })
-        }
-        else if(!EMAIL_REGEX.test(state.email)){
-            setState({
-                ...state,
-                error: EMAIL_FORMAT
-            })
-        }
-    }
-    const updateButtonEnabled = () => {
-        if(state.email.length === 0 || state.password.length === 0 || state.confirmedPassword.length === 0 
-            || state.confirmedPassword.length === 0 || state.fullName.length === 0 || state.error.length > 0){
-                setState({
-                    ...state,
-                    buttonEnabled: false
-                })
-            }
-        else{
-            setState({
-                ...state,
-                buttonEnabled: true
-            })
-        }
-    }
-    
-    return (
-        <div className="form">
-            <FormRow updateInput={updateFullName} inputType='text' inputTitle={'Full Name'} />
-            <FormRow updateInput={updateEmail} inputType='email' inputTitle={'Email'} />
-            <FormRow updateInput={updatePassword} inputType='password' inputTitle={'Password'} />
-            <FormRow updateInput={updateConfirmedPassword} inputType='password' inputTitle={'Confirm Password'} />
-            <ErrorBar errorMessage={state.error} />
-            <button disabled={!state.buttonEnabled} onClick={function() {
-                console.log(`${state.email} & ${state.password}, ${state.confirmedPassword} & ${state.fullName}`)
-            }}>
-                Submit
-            </button>
-        </div>
-    )
-}
-
-const ForgotForm = () => {
+const Login = () => {
     const [state, setState] = useState({
         email : '',
         existingPassword: '',
@@ -207,31 +158,26 @@ const ForgotForm = () => {
         confirmedPassword: '',
         fullName: '',
         error: '',
-        buttonEnabled: false
+        buttonEnabled: true,
+        authMode: 0
     })
 
-    useEffect(() => {
-        updateButtonEnabled()
-    }, [state.email, state.existingPassword, state.password, state.confirmedPassword, state.fullName, state.error])
-    useEffect(() => {
-        updateError()
-    }, [state.password, state.confirmedPassword, state.email])
     const updateEmail = (e) => {
         setState({
             ...state,
             email: e
         })
     }
-    const updateExistingPassword = (e) => {
-        setState({
-            ...state,
-            existingPassword: e
-        })
-    }
     const updatePassword = (p) => {
         setState({
             ...state,
             password: p
+        })
+    }
+    const updateExistingPassword = (p) => {
+        setState({
+            ...state,
+            existingPassword: p
         })
     }
     const updateConfirmedPassword = (p) => {
@@ -246,93 +192,98 @@ const ForgotForm = () => {
             fullName: f
         })
     }
-    const updateError = () => {
-        if(state.password.length > 0 && state.confirmedPassword.length > 0 && state.password !== state.confirmedPassword) {
-            setState({
-                ...state,
-                error: PASSWORD_MISMATCH
-            })
+    const updateAuthMode = (m) => {
+        setState({
+            ...state,
+            authMode: m
+        })
+    }
+
+    useEffect(() => {
+        updateError()
+    }, [state.password, state.email, state.confirmedPassword])
+
+    const clearError = () => {
+        setState({
+            ...state,
+            error: ''
+        })
+    }
+    const writeErroMessage = (e) => {
+        setState({
+            ...state,
+            error: e
+        })
+    }
+
+    const updateError = (err) => {
+        if(err){
+            writeErroMessage(err)
         }
-        else if((state.password === state.confirmedPassword || state.confirmedPassword.length == 0) && (state.email.length === 0 || EMAIL_REGEX.test(state.email))) {
-            setState({
-                ...state,
-                error: ''
-            })
+        else if(state.authMode != 0 && state.password.length > 0 && state.confirmedPassword.length > 0 && (state.password != state.confirmedPassword)){
+            writeErroMessage(PASSWORD_MISMATCH)
+        }
+        else if(state.email.length === 0 || EMAIL_REGEX.test(state.email)) {
+            clearError()
         }
         else if(!EMAIL_REGEX.test(state.email)){
-            setState({
-                ...state,
-                error: EMAIL_FORMAT
-            })
+            writeErroMessage(EMAIL_FORMAT)
+        }
+        else{
+            clearError()
         }
     }
-    const updateButtonEnabled = () => {
-        if(state.email.length === 0 || state.existingPassword.length === 0 || state.password.length === 0
-            || state.confirmedPassword.length === 0 || state.confirmedPassword.length === 0 || state.fullName.length === 0 
-            || state.error.length > 0){
-                setState({
-                    ...state,
-                    buttonEnabled: false
-                })
-            }
-        else{
-            setState({
-                ...state,
-                buttonEnabled: true
-            })
-        }
+    const toggleButtonEnabled = () => {
+        setState({
+            ...state,
+            buttonEnabled: !state.buttonEnabled
+        })
+    }
+    const submitSearch = () => {
+        if(state.error.length > 0) return;
+        console.log(`${state.email} & ${state.password}, ${state.confirmedPassword} & ${state.fullName}, ${state.existingPassword}`)
     }
     
-    return (
-        <div className="form">
-            <FormRow updateInput={updateFullName} inputType='text' inputTitle={'Full Name'} />
-            <FormRow updateInput={updateExistingPassword} inputType='password' inputTitle={'Current Password'} />
-            <FormRow updateInput={updateEmail} inputType='email' inputTitle={'Email'} />
-            <FormRow updateInput={updatePassword} inputType='password' inputTitle={'Password'} />
-            <FormRow updateInput={updateConfirmedPassword} inputType='password' inputTitle={'Confirm Password'} />
-            <ErrorBar errorMessage={state.error} />
-            <button disabled={!state.buttonEnabled} onClick={function() {
-                console.log(`${state.email} & ${state.password}, ${state.confirmedPassword} & ${state.fullName}, ${state.existingPassword}`)
-            }}>
-                Submit
-            </button>
-        </div>
-    )
-}
-
-const Login = ({userLoggedIn}) => {
-    let [authMode, setAuthMode] = useState(0)
-
-    const changeAuthMode = (newMode) => {
-        setAuthMode(authMode = newMode)
-    }
-
-    if(authMode === 1){
+    if(state.authMode === 1){
         return (
             <div className="login">
                 <h1>Sign Up</h1>
-                <p onClick={() => changeAuthMode(0)} className='login-link'>Log in</p>
-                <p onClick={() => changeAuthMode(2)} className='login-link'>Change password</p>
-                <CreateForm />
+                <p onClick={() => updateAuthMode(0)} className='login-link'>Log in</p>
+                <p onClick={() => updateAuthMode(2)} className='login-link'>Change password</p>
+                <CreateForm updateParentEmail={updateEmail} updateParentPassword={updatePassword}
+                    updateParentConfirmedPassword={updateConfirmedPassword} updateParentFullName={updateFullName}/>
+                <ErrorBar errorMessage={state.error} />
+                <button disabled={!state.buttonEnabled} onClick={() => submitSearch()}>
+                    Submit
+                </button>
             </div>
         )
     }
-    else if(authMode === 2){
+    else if(state.authMode === 2){
         return (
             <div className="login">
                 <h1>Change Password</h1>
-                <p onClick={() => changeAuthMode(0)} className='login-link'>Log in</p>
-                <p onClick={() => changeAuthMode(1)} className='login-link'>Sign Up</p>
-                <ForgotForm />
+                <p onClick={() => updateAuthMode(0)} className='login-link'>Log in</p>
+                <p onClick={() => updateAuthMode(1)} className='login-link'>Sign Up</p>
+                <ForgotForm updateParentEmail={updateEmail} updateParentPassword={updatePassword}
+                    updateParentConfirmedPassword={updateConfirmedPassword} updateParentExistingPassword={updateExistingPassword}/>
+                <ErrorBar errorMessage={state.error} />
+                <button disabled={!state.buttonEnabled} onClick={() => submitSearch()}>
+                    Submit
+                </button>
             </div>
         )
     }
     return (
         <div className="login">
             <h1>Log In</h1>
-            <p onClick={() => changeAuthMode(1)} className='login-link'>Sign Up</p>
-            <p onClick={() => changeAuthMode(2)} className='login-link'>Change password</p>
-            <LoginForm />
+            <p onClick={() => updateAuthMode(1)} className='login-link'>Sign Up</p>
+            <p onClick={() => updateAuthMode(2)} className='login-link'>Change password</p>
+            <LoginForm updateParentEmail={updateEmail} updateParentPassword={updatePassword} />
+            <ErrorBar errorMessage={state.error} />
+            <button disabled={!state.buttonEnabled} onClick={() => submitSearch()}>
+                Submit
+            </button>
         </div>
     )
 }

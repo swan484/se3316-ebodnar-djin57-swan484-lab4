@@ -2,6 +2,7 @@ import './App.css';
 import {BrowserRouter, Routes, Route} from "react-router-dom";
 import Layout from './components/layout';
 import Home from './components/home';
+import Search from './components/search';
 
 function App() {
   return (
@@ -10,7 +11,7 @@ function App() {
         <Routes>
           <Route path='/' element={<Layout />}>
             <Route index element={<Home />}></Route>
-            {/* <Route path='login' element={<Login />}></Route> */}
+            <Route path='search' element={<Search />}></Route>
           </Route>
         </Routes>
       </BrowserRouter>

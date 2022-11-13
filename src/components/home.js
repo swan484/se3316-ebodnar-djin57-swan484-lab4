@@ -15,6 +15,7 @@ const Home = () => {
                 <li>Feature 1...</li>
                 <li>Feature 2...</li>
             </ul>
+            <hr/>
             <Login />
         </div>
     )
