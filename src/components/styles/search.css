@@ -1,0 +1,91 @@
+.narrow {
+    display: block;
+    margin: 0 auto;
+    width: fit-content;
+}
+
+.form > label {
+    font-size: 22px;
+    margin: 0px;
+    padding-bottom: 0px;
+}
+
+.form > input {
+    font-size: 22px;
+    width: 97.5%;
+}
+
+.form > .sub {
+    font-size: 15px;
+    padding-bottom: 10px;
+    font-style: italic;
+}
+
+.table-row {
+    width: 90%;
+    margin: 0 auto;
+    border: 0.5px solid #494949;
+    border-left-width: 0px;
+    border-right-width: 0px;
+}
+
+.heading-row {
+    width: 90%;
+    margin: 0 auto;
+    border: none;
+    background-color: #1f1f1f;
+    color: #d4d4d4
+}
+
+.table-row:first-child {
+    border-top-width: 1px;
+}
+
+.table-row:last-child {
+    border-bottom-width: 0px;
+}
+
+.search-table {
+    background-color: #1f1f1f;
+}
+
+.table-row > li {
+    text-align: left;
+    width: 100%;
+    height: auto;
+}
+
+.table-row p {
+    font-size: 18px;
+    padding-bottom: 10px;
+    margin: 0px;
+    display: inline-block;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    padding-left: 5px;
+}
+
+.table-row h1 {
+    font-size: 28px;
+    padding-bottom: 0px;
+    margin: 0px;
+    text-align: left;
+    overflow: hidden;
+}
+
+.title {
+    width: 28.5%;
+}
+
+.artist {
+    width: 19.5%;
+}
+
+.album {
+    width: 44.5%;
+}
+
+.duration {
+    width: 4.5%;
+}
