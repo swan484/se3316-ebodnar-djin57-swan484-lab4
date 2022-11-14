@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import './styles/search.css'
 
 const UNKNOWN = "Unknown"
-const YOUTUBE_URL = "https://www.youtube.com/results?search_query=/"
+const YOUTUBE_URL = "https://www.youtube.com/results?search_query="
 
 const SearchBar = ({setQuery}) => {
     const [search, setSearch] = useState('');
@@ -18,7 +18,8 @@ const SearchBar = ({setQuery}) => {
     return (
         <div className='form narrow'>
             <label>Search any combination of artist, genre, and track title</label>
-            <label className="sub">Separate searches by commas</label>
+            <label className="sub">Note that tracks must match ALL searches</label>
+            <label className="sub sub-bottom">Separate searches by commas</label>
             <input autoCorrect="false" type='text' onChange={updateSearch}/>
         </div>
     )
@@ -28,7 +29,8 @@ const Search = () => {
     const [state, setState] = useState({
         query: '',
         buttonEnabled: true,
-        searchResults: []
+        searchResults: [],
+        invokedPreviously: false
     }) 
 
     const searchData = () => {
@@ -45,7 +47,8 @@ const Search = () => {
             .then((a) => {
                 setState({
                     ...state,
-                    searchResults: a
+                    searchResults: a,
+                    invokedPreviously: true
                 })
                 console.log("Finished search")
             })
@@ -78,7 +81,7 @@ const Search = () => {
     const getYoutubeLink = (title, artist) => {
         const mappedTitle = title.replace(" ", "+") || ""
         const mappedArtist = artist.replace(" ", "+") || ""
-        return `${YOUTUBE_URL}${mappedTitle}+${mappedArtist}`
+        return `${YOUTUBE_URL}${mappedTitle}+by+${mappedArtist}`
     }
 
     return(
@@ -87,6 +90,9 @@ const Search = () => {
             <SearchBar setQuery={updateQuery}/>
             <button onClick={() => searchData()} disabled={!state.buttonEnabled} className='pad-bottom'>Search</button>
             <ul className="search-table" >
+                {state.searchResults.length === 0 && state.invokedPreviously && !state.buttonEnabled &&
+                    <h1 className="no-results-container">No Results Found</h1>
+                }
                 {state.searchResults.length > 0 && 
                     <div className="heading-row table-row">
                         <li>

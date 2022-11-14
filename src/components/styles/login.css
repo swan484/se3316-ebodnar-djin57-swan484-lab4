@@ -105,4 +105,12 @@ button:enabled:hover {
     color: #b74343;
     padding-top: 10px;
     font-weight: 600;
+    font-size: 18px;
+}
+
+.login-success {
+    color: #6ab743;
+    padding-top: 10px;
+    font-weight: 600;
+    font-size: 18px;
 }

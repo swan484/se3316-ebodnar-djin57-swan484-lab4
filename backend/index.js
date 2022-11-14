@@ -36,35 +36,26 @@ app.get('/api/search/:query', async (req, res) => {
     const queries = req.params.query.split(",")
 
     var results = []
-    var trackMap = {}
+    const queriesList = []
     for(var q of queries){
         q = q.trim().toLowerCase()
-        console.log(q)
-        const compiledQuery = {
+        queriesList.push({
             $or: [
                 {artist_name: {$regex: q, $options: "i"}},
                 {track_title: {$regex: q, $options: "i"}},
                 {track_genres: {$elemMatch: {genre_title: {$regex: q, $options: "i"}}}}
             ]
-        }
-        await getAllFrom(DB_NAME, TRACKS_COLLECTION, compiledQuery)
-        .then((data) => {
-            data.forEach(d => {
-                if(!(d.track_id in trackMap)){
-                    trackMap[d.track_id] = 0
-                }
-                trackMap[d.track_id]++;
-                d.count = trackMap[d.track_id];
-                if(trackMap[d.track_id] > 1){
-                    updateCount(results, d.track_id, trackMap[d.track_id])
-                }
-                results.push(d)
-            })
         })
-        .catch((err) => console.log(`Error: ${err}`))
     }
-    console.log("Got all results")
-    results.sort((a, b) => parseInt(b.count) - parseInt(a.count))
+    const compiledQuery = {$and: queriesList}
+    await getAllFrom(DB_NAME, TRACKS_COLLECTION, compiledQuery)
+    .then((data) => {
+        data.forEach(d => {
+            results.push(d)
+        })
+    })
+    .catch((err) => console.log(`Error: ${err}`))
+    console.log("Got results")
     res.send(results)
 })
 

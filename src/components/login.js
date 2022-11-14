@@ -6,7 +6,14 @@ const PASSWORD_MISMATCH = "Passwords do not match!"
 const EMAIL_REGEX = /[a-zA-Z0-9.-_]{1,}@[a-zA-Z0-9.-]{1,}[.]{1}[a-zA-Z0-9]{1,}/
 const EMAIL_FORMAT = "Email is not valid"
 const INVALID_LOGIN = "Incorrect username or password"
-const CLEAR_PASSWORD_TIME = 2000
+const ERROR_CLASS = "error"
+const SUCCESS_CLASS = "login-success"
+const SUCCESS_MESSAGE = "Successfully logged in"
+const ENTER_EMAIL = "Please enter an email"
+const ENTER_PASSWORD = "Please enter a password"
+const ENTER_EXISTING_PASSWORD = "Please enter your existing password"
+const ENTER_CONFIRM_PASSWORD = "Please confirm your password"
+const ENTER_FULL_NAME = "Please enter your full name"
 
 const FormRow = ({updateInput, inputType, inputTitle}) => {
     const [value, setValue] = useState('');
@@ -27,10 +34,15 @@ const FormRow = ({updateInput, inputType, inputTitle}) => {
     )
 }
 
-const LoginForm = ({updateParentEmail, updateParentPassword}) => {
+const LoginForm = ({updateParentEmail, updateParentPassword, clearParentMessage}) => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [error, setError] = useState('')
 
+    useEffect(() => {
+        updateError()
+        clearParentMessage()
+    }, [email, password])
     useEffect(() => {
         updateParentEmail(email)
     }, [email])
@@ -44,20 +56,42 @@ const LoginForm = ({updateParentEmail, updateParentPassword}) => {
     const updatePassword = (p) => {
         setPassword(p)
     }
+    const updateError = (e) => {
+        if(e){
+            setError(e)
+        }
+        else if(email.length === 0){
+            setError(ENTER_EMAIL)
+        }
+        else if(!EMAIL_REGEX.test(email)){
+            setError(EMAIL_FORMAT)
+        }
+        else if(password.length === 0){
+            setError(ENTER_PASSWORD)
+        }
+        else{
+            clearError()
+        }
+    }
+    const clearError = () => {
+        setError('')
+    }
 
     return (
         <div className="form">
             <FormRow updateInput={updateEmail} inputType='email' inputTitle={'Email'} />
             <FormRow updateInput={updatePassword} inputType='password' inputTitle={'Password'} />
+            <MessageBar message={error} cName={ERROR_CLASS} />
         </div>
     )
 }
 
-const CreateForm = ({updateParentEmail, updateParentPassword, updateParentFullName, updateParentConfirmedPassword}) => {
+const CreateForm = ({updateParentEmail, updateParentPassword, updateParentFullName, updateParentConfirmedPassword, clearParentMessage}) => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [fullName, setFullName] = useState('')
     const [confirmedPassword, setConfirmedPassword] = useState('')
+    const [error, setError] = useState('')
 
     useEffect(() => {
         updateParentEmail(email)
@@ -71,6 +105,10 @@ const CreateForm = ({updateParentEmail, updateParentPassword, updateParentFullNa
     useEffect(() => {
         updateParentConfirmedPassword(confirmedPassword)
     }, [confirmedPassword])
+    useEffect(() => {
+        updateError()
+        clearParentMessage()
+    }, [email, password, fullName, confirmedPassword])
 
     const updateEmail = (e) => {
         setEmail(e)
@@ -84,6 +122,35 @@ const CreateForm = ({updateParentEmail, updateParentPassword, updateParentFullNa
     const updateConfirmedPassword = (p) => {
         setConfirmedPassword(p)
     }
+    const updateError = (e) => {
+        if(e){
+            setError(e)
+        }
+        else if(fullName.length === 0){
+            setError(ENTER_FULL_NAME)
+        }
+        else if(email.length === 0){
+            setError(ENTER_EMAIL)
+        }
+        else if(!EMAIL_REGEX.test(email)){
+            setError(EMAIL_FORMAT)
+        }
+        else if(password.length === 0){
+            setError(ENTER_PASSWORD)
+        }
+        else if(confirmedPassword.length === 0){
+            setError(ENTER_CONFIRM_PASSWORD)
+        }
+        else if(password !== confirmedPassword){
+            setError(PASSWORD_MISMATCH)
+        }
+        else{
+            clearError()
+        }
+    }
+    const clearError = () => {
+        setError('')
+    }
     
     return (
         <div className="form">
@@ -91,15 +158,17 @@ const CreateForm = ({updateParentEmail, updateParentPassword, updateParentFullNa
             <FormRow updateInput={updateEmail} inputType='email' inputTitle={'Email'} />
             <FormRow updateInput={updatePassword} inputType='password' inputTitle={'Password'} />
             <FormRow updateInput={updateConfirmedPassword} inputType='password' inputTitle={'Confirm Password'} />
+            <MessageBar message={error} cName={ERROR_CLASS} />
         </div>
     )
 }
 
-const ForgotForm = ({updateParentEmail, updateParentPassword, updateParentConfirmedPassword, updateParentExistingPassword}) => {
+const ForgotForm = ({updateParentEmail, updateParentPassword, updateParentConfirmedPassword, updateParentExistingPassword, clearParentMessage}) => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [confirmedPassword, setConfirmedPassword] = useState('')
     const [existingPassword, setExistingPassword] = useState('')
+    const [error, setError] = useState('')
 
     useEffect(() => {
         updateParentEmail(email)
@@ -113,6 +182,10 @@ const ForgotForm = ({updateParentEmail, updateParentPassword, updateParentConfir
     useEffect(() => {
         updateParentExistingPassword(existingPassword)
     }, [existingPassword])
+    useEffect(() => {
+        updateError()
+        clearParentMessage()
+    }, [email, password, confirmedPassword, existingPassword])
 
     const updateEmail = (e) => {
         setEmail(e)
@@ -126,6 +199,36 @@ const ForgotForm = ({updateParentEmail, updateParentPassword, updateParentConfir
     const updateExistingPassword = (p) => {
         setExistingPassword(p)
     }
+    const updateError = (e) => {
+        console.log(password === existingPassword)
+        if(e){
+            setError(e)
+        }
+        else if(email.length === 0){
+            setError(ENTER_EMAIL)
+        }
+        else if(!EMAIL_REGEX.test(email)){
+            setError(EMAIL_FORMAT)
+        }
+        else if(existingPassword.length === 0){
+            setError(ENTER_EXISTING_PASSWORD)
+        }
+        else if(password.length === 0){
+            setError(ENTER_PASSWORD)
+        }
+        else if(confirmedPassword.length === 0){
+            setError(ENTER_CONFIRM_PASSWORD)
+        }
+        else if(password !== confirmedPassword){
+            setError(PASSWORD_MISMATCH)
+        }
+        else{
+            clearError()
+        }
+    }
+    const clearError = () => {
+        setError('')
+    }
     
     return (
         <div className="form">
@@ -133,20 +236,21 @@ const ForgotForm = ({updateParentEmail, updateParentPassword, updateParentConfir
             <FormRow updateInput={updateExistingPassword} inputType='password' inputTitle={'Current Password'} />
             <FormRow updateInput={updatePassword} inputType='password' inputTitle={'New Password'} />
             <FormRow updateInput={updateConfirmedPassword} inputType='password' inputTitle={'Confirm New Password'} />
+            <MessageBar message={error} cName={ERROR_CLASS} />
         </div>
     )
 }
 
-const ErrorBar = ({errorMessage}) => {
-    if(errorMessage.length === 0){
+const MessageBar = ({message, cName}) => {
+    if(message.length === 0){
         return (
             <>
             </>
         )
     }
     return (
-        <div className="error">
-            {errorMessage}
+        <div className={cName}>
+            {message}
         </div>
     )
 }
@@ -161,10 +265,14 @@ const Login = ({updateParentLoginStatus}) => {
         error: '',
         buttonEnabled: true,
         authMode: 0,
-        userLoginStatus: 0
+        userLoginStatus: 0,
+        successMessage: ''
     })
     const navigate = useNavigate();
 
+    useEffect(() => {
+        updateSuccessMessage(SUCCESS_MESSAGE);
+    }, [state.userLoginStatus])
     useEffect(() => {
         updateParentLoginStatus(state.userLoginStatus)
     }, [state.userLoginStatus])
@@ -205,11 +313,23 @@ const Login = ({updateParentLoginStatus}) => {
             authMode: m
         })
     }
+    const updateSuccessMessage = (m) => {
+        setState({
+            ...state,
+            successMessage: m
+        })
+    }
 
     useEffect(() => {
         updateError()
-    }, [state.password, state.email, state.confirmedPassword])
+    }, [state.password, state.email, state.confirmedPassword, state.authMode])
 
+    const clearSuccess = () => {
+        setState({
+            ...state,
+            successMessage: ''
+        })
+    }
     const clearError = () => {
         setState({
             ...state,
@@ -226,15 +346,6 @@ const Login = ({updateParentLoginStatus}) => {
     const updateError = (err) => {
         if(err){
             writeErroMessage(err)
-        }
-        else if(state.authMode != 0 && state.password.length > 0 && state.confirmedPassword.length > 0 && (state.password != state.confirmedPassword)){
-            writeErroMessage(PASSWORD_MISMATCH)
-        }
-        else if(state.email.length === 0 || EMAIL_REGEX.test(state.email)) {
-            clearError()
-        }
-        else if(!EMAIL_REGEX.test(state.email)){
-            writeErroMessage(EMAIL_FORMAT)
         }
         else{
             clearError()
@@ -284,8 +395,9 @@ const Login = ({updateParentLoginStatus}) => {
                 <p onClick={() => updateAuthMode(0)} className='login-link'>Log in</p>
                 <p onClick={() => updateAuthMode(2)} className='login-link'>Change password</p>
                 <CreateForm updateParentEmail={updateEmail} updateParentPassword={updatePassword}
-                    updateParentConfirmedPassword={updateConfirmedPassword} updateParentFullName={updateFullName}/>
-                <ErrorBar errorMessage={state.error} />
+                    updateParentConfirmedPassword={updateConfirmedPassword} updateParentFullName={updateFullName}
+                    clearParentMessage={clearSuccess}/>
+                <MessageBar message={state.successMessage} cName={SUCCESS_CLASS} />
                 <button disabled={!state.buttonEnabled} onClick={() => submitSearch()}>
                     Submit
                 </button>
@@ -299,8 +411,9 @@ const Login = ({updateParentLoginStatus}) => {
                 <p onClick={() => updateAuthMode(0)} className='login-link'>Log in</p>
                 <p onClick={() => updateAuthMode(1)} className='login-link'>Sign Up</p>
                 <ForgotForm updateParentEmail={updateEmail} updateParentPassword={updatePassword}
-                    updateParentConfirmedPassword={updateConfirmedPassword} updateParentExistingPassword={updateExistingPassword}/>
-                <ErrorBar errorMessage={state.error} />
+                    updateParentConfirmedPassword={updateConfirmedPassword} updateParentExistingPassword={updateExistingPassword}
+                    clearParentMessage={clearSuccess}/>
+                <MessageBar message={state.successMessage} cName={SUCCESS_CLASS} />
                 <button disabled={!state.buttonEnabled} onClick={() => submitSearch()}>
                     Submit
                 </button>
@@ -312,8 +425,8 @@ const Login = ({updateParentLoginStatus}) => {
             <h1>Log In</h1>
             <p onClick={() => updateAuthMode(1)} className='login-link'>Sign Up</p>
             <p onClick={() => updateAuthMode(2)} className='login-link'>Change password</p>
-            <LoginForm updateParentEmail={updateEmail} updateParentPassword={updatePassword} />
-            <ErrorBar errorMessage={state.error} />
+            <LoginForm updateParentEmail={updateEmail} updateParentPassword={updatePassword} clearParentMessage={clearSuccess} />
+            <MessageBar message={state.successMessage} cName={SUCCESS_CLASS} />
             <button disabled={!state.buttonEnabled} onClick={() => submitSearch()}>
                 Submit
             </button>

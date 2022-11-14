@@ -21,8 +21,11 @@
 
 .form > .sub {
     font-size: 15px;
-    padding-bottom: 10px;
     font-style: italic;
+}
+
+.form > .sub-bottom {
+    padding-bottom: 10px;
 }
 
 .table-row {
@@ -117,4 +120,13 @@
 .track-details a, .track-details a:visited {
     color: #DCDCDC;
     font-size: inherit;
+}
+
+.no-results-container {
+    display: block;
+    margin: 0 auto;
+    width: 300px;
+    text-align: center;
+    font-size: 29px;
+    font-weight: 500;
 }
