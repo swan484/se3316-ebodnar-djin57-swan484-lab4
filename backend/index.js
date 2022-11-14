@@ -38,13 +38,13 @@ app.get('/api/search/:query', async (req, res) => {
     var results = []
     var trackMap = {}
     for(var q of queries){
-        q = q.trim()
+        q = q.trim().toLowerCase()
         console.log(q)
         const compiledQuery = {
             $or: [
-                {artist_name: {$regex: q}},
-                {track_title: {$regex: q}},
-                {track_genres: {$elemMatch: {genre_title: {$regex: q}}}}
+                {artist_name: {$regex: q, $options: "i"}},
+                {track_title: {$regex: q, $options: "i"}},
+                {track_genres: {$elemMatch: {genre_title: {$regex: q, $options: "i"}}}}
             ]
         }
         await getAllFrom(DB_NAME, TRACKS_COLLECTION, compiledQuery)
