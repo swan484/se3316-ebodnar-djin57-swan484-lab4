@@ -108,11 +108,15 @@ const Search = () => {
                         {item.additional_information && 
                             <li className="track-details">
                                 <p><a href={getYoutubeLink(item.track_title, item.artist_name)} target='_blank'>Play on YouTube</a></p>
+                                <p>Title: {item.track_title || UNKNOWN}</p>
+                                <p>Artist: {item.artist_name || UNKNOWN}</p>
+                                <p>Album: {item.album_title || UNKNOWN}</p>
+                                <p>Duration: {item.track_duration || UNKNOWN}</p>
                                 <p>Date Created: {item.track_date_created || UNKNOWN}</p>
                                 <p>Date Recorded: {item.track_date_recorded || UNKNOWN}</p>
                                 <p>Listens: {item.track_listens || UNKNOWN}</p>
-                                <p>Genres: </p>
-                                    {item.track_genres.map(g => (
+                                {item.track_genres.length > 0 && <p>Genres: </p>}
+                                    {item.track_genres.length > 0 && item.track_genres.map(g => (
                                         <div className="track-genre" key={g.genre_title}>
                                             <p>- {g.genre_title}</p>
                                         </div>
