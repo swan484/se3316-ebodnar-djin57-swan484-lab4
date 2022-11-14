@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import './styles/search.css'
 
+const UNKNOWN = "Unknown"
+
 const SearchBar = ({setQuery}) => {
     const [search, setSearch] = useState('');
 
@@ -18,12 +20,6 @@ const SearchBar = ({setQuery}) => {
             <label className="sub">Separate searches by commas</label>
             <input autoCorrect="false" type='text' onChange={updateSearch}/>
         </div>
-    )
-}
-
-const ResultsRow = ({track}) => {
-    return (
-        <div></div>
     )
 }
 
@@ -66,15 +62,21 @@ const Search = () => {
         })
     }
 
-    const expandResults = (track) => {
+    const expandResults = (e, track) => {
+        console.log(e)
         console.log(track)
+        track.additional_information = !track.additional_information
+        setState({
+            ...state,
+            searchResults: state.searchResults
+        })
     }
 
     return(
         <div>
             <h1>Search</h1>
             <SearchBar setQuery={updateQuery}/>
-            <button onClick={() => searchData()} disabled={!state.buttonEnabled}>Search</button>
+            <button onClick={() => searchData()} disabled={!state.buttonEnabled} className='pad-bottom'>Search</button>
             <ul className="search-table" >
                 {state.searchResults.length > 0 && 
                     <div className="heading-row table-row">
@@ -87,13 +89,26 @@ const Search = () => {
                     </div>
                 }
                 {state.searchResults.map(item => (
-                    <div className="table-row" key={item.track_id} value={item.track_id} onClick={() => expandResults(item)} >
+                    <div className="table-row" key={item.track_id} value={item.track_id} onClick={(e) => expandResults(e, item)} >
                         <li>
                             <p className="title">{item.track_title}</p>
                             <p className="artist">{item.artist_name}</p>
                             <p className="album">{item.album_title}</p>
                             <p className="duration">{item.track_duration}</p>
                         </li>
+                        {item.additional_information && 
+                            <li className="track-details">
+                                <p>Date Created: {item.track_date_created || UNKNOWN}</p>
+                                <p>Date Recorded: {item.track_date_recorded || UNKNOWN}</p>
+                                <p>Listens: {item.track_listens || UNKNOWN}</p>
+                                <p>Genres: </p>
+                                {item.track_genres.map(g => (
+                                    <div className="track-genre">
+                                        <p key={g.genre_title}>- {g.genre_title}</p>
+                                    </div>
+                                ))}
+                            </li>
+                        }
                     </div>
                 ))}
             </ul>

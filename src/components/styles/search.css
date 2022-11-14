@@ -4,6 +4,10 @@
     width: fit-content;
 }
 
+.pad-bottom {
+    margin-bottom: 10px;
+}
+
 .form > label {
     font-size: 22px;
     margin: 0px;
@@ -88,4 +92,17 @@
 
 .duration {
     width: 4.5%;
+}
+
+.track-details {
+    margin-left: 10px;
+}
+
+.track-details > p {
+    display: block;
+}
+
+.track-genre {
+    margin-left: 20px;
+    display: block;
 }
