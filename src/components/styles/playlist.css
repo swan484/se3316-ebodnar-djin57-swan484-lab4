@@ -1,0 +1,46 @@
+.list-title {
+    width: 29%;
+}
+
+.date-modified {
+    width: 15%;
+}
+
+.username {
+    width: 29%;
+}
+
+.playtime {
+    width: 15%;
+}
+
+.rating {
+    width: 10%;
+}
+
+.table-row-2 {
+    border-color: #ffe9e9;
+}
+
+.table-row-2:hover {
+    color: #f397ff;
+    background-color: #1f1f1f;
+}
+
+.table-header-2 {
+    color: #ffe9e9;
+    border-color: #ffe9e9;
+}
+
+.top-pad {
+    margin-top: 7.5px;
+}
+
+.sub-table {
+    margin-top: 0px;
+    padding-bottom: 15px;
+}
+
+.no-pad {
+    margin-bottom: 0px;
+}

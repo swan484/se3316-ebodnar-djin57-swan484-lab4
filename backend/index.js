@@ -16,6 +16,7 @@ const GENRES_COLLECTION = "genres"
 const ALBUMS_COLLECTION = "albums"
 const ARTISTS_COLLECTION = "artists"
 const TRACKS_COLLECTION = "tracks"
+const PLAYLISTS_COLLECTION = "playlists"
 
 app.get("/api/upload", (req, res) => {
     UploadData(DB_NAME, TRACKS_COLLECTION)
@@ -28,9 +29,6 @@ app.get("/api/user/:email", (req, res) => {
     .catch((err) => res.status(404).send(err));
 });
 
-/*
-    artist_name, track_genres > genre_title, track_title
-*/
 app.get('/api/search/:query', async (req, res) => {
     console.log(`Called into GET search (query) with ${req.params.query}`)
     const queries = req.params.query.split(",")
@@ -59,12 +57,32 @@ app.get('/api/search/:query', async (req, res) => {
     res.send(results)
 })
 
-async function getOneFrom(dbName, collectionName, query){
+app.get('/api/playlists', async (req, res) => {
+    console.log(`Called into GET playlists`);
+    const options = {
+        tracks: 1,
+        date_modified: 1,
+        limit: 10,
+        sort: {
+            date_modified: -1
+        }
+    }
+    var result = []
+    await getAllFrom(DB_NAME, PLAYLISTS_COLLECTION, {}, options)
+    .then((data) => {
+        data.forEach(d => {
+            result.push(d)
+        })
+    })
+    res.send(result)
+})
+
+async function getOneFrom(dbName, collectionName, query, options={}){
     await client.connect()
     try {
         const database = client.db(dbName);
         const collection = database.collection(collectionName);
-        const result = await collection.findOne(query, {});
+        const result = await collection.findOne(query, options);
         // since this method returns the matched document, not a cursor, print it directly
         console.log(`Result: ${result}`);
         return result;
@@ -74,25 +92,13 @@ async function getOneFrom(dbName, collectionName, query){
     }
 }
 
-const updateCount = (list, id, count) => {
-    index = 0;
-    for(var e of list){
-        if(e.track_id === id){
-            e.count = count;
-            list.splice(index, 1)
-            return e;
-        }
-        index++;
-    }
-}
-
-async function getAllFrom(dbName, collectionName, query){
+async function getAllFrom(dbName, collectionName, query, options={}){
     await client.connect()
     const database = client.db(dbName);
     const collection = database.collection(collectionName);
 
     const list = []
-    const result = await collection.find(query);
+    const result = await collection.find(query, options);
     await result.forEach((entry) => {
         list.push(entry)
     }).then(async () => {

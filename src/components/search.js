@@ -46,24 +46,24 @@ const Search = () => {
             buttonEnabled: false
         })
         fetch(`http://localhost:3001/api/search/${state.query}`)
-            .then((a) => {
-                return a.json()
+        .then((a) => {
+            return a.json()
+        })
+        .then((a) => {
+            setState({
+                ...state,
+                searchResults: a,
+                invokedPreviously: true,
+                buttonEnabled: true
             })
-            .then((a) => {
-                setState({
-                    ...state,
-                    searchResults: a,
-                    invokedPreviously: true,
-                    buttonEnabled: true
-                })
-                console.log("Finished search")
+            console.log("Finished search")
+        })
+        .catch(() => {
+            setState({
+                ...state,
+                buttonEnabled: true
             })
-            .catch(() => {
-                setState({
-                    ...state,
-                    buttonEnabled: true
-                })
-            })
+        })
     }
 
     const updateQuery = (q) => {
@@ -92,7 +92,7 @@ const Search = () => {
             <h1>Search</h1>
             <SearchBar setQuery={updateQuery}/>
             <button onClick={() => searchData()} disabled={!state.buttonEnabled} className='pad-bottom'>Search</button>
-            <SongList searchResults={state.searchResults} expandResults={expandResults}/>
+            <SongList searchResults={state.searchResults} expandResults={expandResults} cName={"narrow-width"}/>
             {state.searchResults.length === 0 && state.invokedPreviously && state.buttonEnabled &&
                 <h1 className="no-results-container">No Results Found</h1>
             }
