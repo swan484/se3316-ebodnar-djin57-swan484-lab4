@@ -1,0 +1,93 @@
+.table-row {
+    width: 90%;
+    margin: 0 auto;
+    border: 0.5px solid #494949;
+    border-left-width: 0px;
+    border-right-width: 0px;
+}
+
+.heading-row {
+    width: 90%;
+    margin: 0 auto;
+    border: none;
+    border-bottom: 0.5px solid #494949;
+    background-color: #1f1f1f;
+    color: #d4d4d4
+}
+
+.table-row:last-child {
+    border-bottom-width: 0px;
+}
+
+.search-table {
+    background-color: #1f1f1f;
+}
+
+.table-row > li {
+    text-align: left;
+    width: 100%;
+    height: auto;
+}
+
+.table-row p {
+    font-size: 18px;
+    padding-bottom: 10px;
+    margin: 0px;
+    display: inline-block;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    padding-left: 5px;
+}
+
+.table-row h1 {
+    font-size: 28px;
+    padding-bottom: 0px;
+    margin: 0px;
+    text-align: left;
+    overflow: hidden;
+}
+
+.table-row:hover {
+    background-color: #2f2f2f;
+    cursor:default;
+}
+
+.heading-row:hover {
+    background-color: #1f1f1f;
+}
+
+.title {
+    width: 28.5%;
+}
+
+.artist {
+    width: 19.5%;
+}
+
+.album {
+    width: 44.5%;
+}
+
+.duration {
+    width: 4.5%;
+}
+
+.track-details {
+    margin-left: 10px;
+    color: #DCDCDC;
+}
+
+.track-details > p {
+    display: block;
+}
+
+.track-genre {
+    margin-left: 20px;
+    display: block;
+}
+
+.track-details a, .track-details a:visited {
+    color: #DCDCDC;
+    font-size: inherit;
+}
