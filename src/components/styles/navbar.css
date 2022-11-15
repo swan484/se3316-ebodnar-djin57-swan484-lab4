@@ -25,6 +25,7 @@ li {
 }
 
 .active {
-    color: #1F1F1F;
-    font-weight: 700;
+    color: #fbbeff;
+    border-bottom: 1px solid #fbbeff;
+    padding: 5px;
 }

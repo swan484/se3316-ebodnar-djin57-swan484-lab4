@@ -9,19 +9,11 @@ h1 {
     margin-bottom: 10px;
 }
 
-.home-block > p {
+.pad-bottom-container > p {
     margin: 0 auto;
-    font-size: 20px;
-    margin-bottom: 0px;
-}
-
-.about > li {
-    font-size: 20px;
-    display: block;
-    margin: 0 auto;
-    padding-top: 5px;
-    padding-bottom: 5px;
-    height: auto;
+    font-size: 22px;
+    margin-bottom: 20px;
+    display: inline;
 }
 
 hr {
@@ -29,4 +21,21 @@ hr {
     width: 90%;
     height: 0.5px;
     border: none;
+}
+
+.about {
+    display: block;
+    font-size: 20px;
+    width: 800px;
+}
+
+.toggle:hover {
+    cursor: pointer;
+    color: #efa8ea
+}
+
+.pad-bottom-container {
+    margin: 0 auto;
+    padding-bottom: 10px;
+    width: 800px;
 }
