@@ -8,6 +8,10 @@
     margin-bottom: 10px;
 }
 
+.heavy-bottom-pad {
+    margin-bottom: 30px;
+}
+
 .form > label {
     font-size: 22px;
     margin: 0px;

@@ -2,8 +2,7 @@ import React, { useEffect, useState } from "react";
 import SongList from "./songlist";
 import './styles/search.css'
 
-const UNKNOWN = "Unknown"
-const YOUTUBE_URL = "https://www.youtube.com/results?search_query="
+const TABLE_STYLE = "narrow-width heavy-bottom-pad"
 
 const SearchBar = ({setQuery}) => {
     const [search, setSearch] = useState('');
@@ -72,12 +71,6 @@ const Search = () => {
             query: q
         })
     }
-    const toggleButtonEnabled = (val) => {
-        setState({
-            ...state,
-            buttonEnabled: val
-        })
-    }
 
     const expandResults = (e, track) => {
         track.additional_information = !track.additional_information
@@ -92,7 +85,7 @@ const Search = () => {
             <h1>Search</h1>
             <SearchBar setQuery={updateQuery}/>
             <button onClick={() => searchData()} disabled={!state.buttonEnabled} className='pad-bottom'>Search</button>
-            <SongList searchResults={state.searchResults} expandResults={expandResults} cName={"narrow-width"}/>
+            <SongList searchResults={state.searchResults} expandResults={expandResults} cName={TABLE_STYLE}/>
             {state.searchResults.length === 0 && state.invokedPreviously && state.buttonEnabled &&
                 <h1 className="no-results-container">No Results Found</h1>
             }

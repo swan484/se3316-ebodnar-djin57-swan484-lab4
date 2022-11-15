@@ -29,34 +29,6 @@ app.get("/api/user/:email", (req, res) => {
     .catch((err) => res.status(404).send(err));
 });
 
-app.get('/api/search/:query', async (req, res) => {
-    console.log(`Called into GET search (query) with ${req.params.query}`)
-    const queries = req.params.query.split(",")
-
-    var results = []
-    const queriesList = []
-    for(var q of queries){
-        q = q.trim().toLowerCase()
-        queriesList.push({
-            $or: [
-                {artist_name: {$regex: q, $options: "i"}},
-                {track_title: {$regex: q, $options: "i"}},
-                {track_genres: {$elemMatch: {genre_title: {$regex: q, $options: "i"}}}}
-            ]
-        })
-    }
-    const compiledQuery = {$and: queriesList}
-    await getAllFrom(DB_NAME, TRACKS_COLLECTION, compiledQuery)
-    .then((data) => {
-        data.forEach(d => {
-            results.push(d)
-        })
-    })
-    .catch((err) => console.log(`Error: ${err}`))
-    console.log("Got results")
-    res.send(results)
-})
-
 app.get('/api/playlists', async (req, res) => {
     console.log(`Called into GET playlists`);
     const options = {
@@ -75,6 +47,48 @@ app.get('/api/playlists', async (req, res) => {
         })
     })
     res.send(result)
+})
+
+app.get('/api/search/:query', async (req, res) => {
+    console.log("Called into test " + req.params.query)
+    const queries = req.params.query.split(",")
+
+    var results = []
+    const queriesList = []
+    for(var q of queries){
+        q = q.trim().toLowerCase()
+        queriesList.push(
+            {
+                text: {
+                    query: q,
+                    path: ['artist_name', 'track_title', 'track_genres.genre_title'],
+                    fuzzy: {}
+                }
+            }
+        )
+    }
+
+    const agg = [
+        {
+            $search: {
+                index: 'custom',
+                compound: {
+                    must: queriesList
+                }
+            }
+        }
+    ]
+    console.log(agg)
+
+    await getAggregate(DB_NAME, TRACKS_COLLECTION, agg)
+    .then((data) => {
+        data.forEach(d => {
+            results.push(d)
+        })
+    })
+    .catch((err) => console.log(`Error: ${err}`))
+    console.log("Got results")
+    res.send(results)
 })
 
 async function getOneFrom(dbName, collectionName, query, options={}){
@@ -107,6 +121,21 @@ async function getAllFrom(dbName, collectionName, query, options={}){
     return list;
 }
 
+async function getAggregate(dbName, collectionName, query, options={}){
+    await client.connect()
+    const database = client.db(dbName);
+    const collection = database.collection(collectionName);
+
+    const list = []
+    const result = await collection.aggregate(query, options);
+    await result.forEach((entry) => {
+        list.push(entry)
+    }).then(async () => {
+        await client.close();
+    })
+    return list;
+}
+
 const UploadData = async (dbName, collectionName) => {
     await client.connect()
     var count = 0
@@ -124,5 +153,36 @@ const UploadData = async (dbName, collectionName) => {
    
     console.log("Finished");
 }
+
+/*
+Old version of search:
+app.get('/api/search/:query', async (req, res) => {
+    console.log(`Called into GET search (query) with ${req.params.query}`)
+    const queries = req.params.query.split(",")
+
+    var results = []
+    const queriesList = []
+    for(var q of queries){
+        q = q.trim().toLowerCase()
+        queriesList.push({
+            $or: [
+                {artist_name: {$regex: q, $options: "i"}},
+                {track_title: {$regex: q, $options: "i"}},
+                {track_genres: {$elemMatch: {genre_title: {$regex: q, $options: "i"}}}}
+            ]
+        })
+    }
+    const compiledQuery = {$and: queriesList}
+    await getAllFrom(DB_NAME, TRACKS_COLLECTION, compiledQuery)
+    .then((data) => {
+        data.forEach(d => {
+            results.push(d)
+        })
+    })
+    .catch((err) => console.log(`Error: ${err}`))
+    console.log("Got results")
+    res.send(results)
+})
+*/
 
 app.listen(port, () => console.log(`Listening on port ${port}...`));
