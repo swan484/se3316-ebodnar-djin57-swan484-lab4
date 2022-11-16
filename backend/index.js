@@ -18,16 +18,74 @@ const ARTISTS_COLLECTION = "artists"
 const TRACKS_COLLECTION = "tracks"
 const PLAYLISTS_COLLECTION = "playlists"
 
+const INCORRECT_PASSWORD = "Incorrect Password"
+const INVALID_EMAIL = "Invalid Email"
+const CANNOT_UPDATE = "Cannot update password, try again later"
+
 app.get("/api/upload", (req, res) => {
     UploadData(DB_NAME, TRACKS_COLLECTION)
 })
 
 app.get("/api/user/:email", (req, res) => {
     console.log(`Called into GET user (email) with ${req.params.email}`);
-    getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.params.email})
+    const query = {
+        email: req.params.email
+    }
+
+    getOneFrom(DB_NAME, USERS_COLLECTION, query)
     .then((data) => res.send(data))
     .catch((err) => res.status(404).send(err));
 });
+
+/*
+    body: 
+    {email, password, newPassword}
+*/
+//TODO: fix error messages
+app.put("/api/user", async (req, res) => {
+    const body = req.body;
+    console.log(body)
+    const search = {
+        email: body.email
+    }
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, search)
+    .then((foundUser) => {
+        console.log(foundUser)
+        if(!foundUser){
+            res.statusMessage = INVALID_EMAIL
+            return res.status(404).send(); 
+        }
+        if(body.password != foundUser.password){
+            res.statusMessage = INCORRECT_PASSWORD
+            return res.status(404).send()
+        }
+    })
+    .then(() => {
+        const key = {
+            email: body.email
+        }
+        const query = { 
+            $set: {
+                password: body.newPassword 
+            } 
+        }
+
+        updateOneFrom(DB_NAME, USERS_COLLECTION, key, query)
+        .then((result) => {
+            if (!result) {
+                return res.status(400).send();
+            }
+    
+            console.log("Success In Change")
+        })
+    })
+    .catch(() => {
+        res.statusMessage = CANNOT_UPDATE
+        res.status(404).send()
+    });
+    res.status(200).send();
+})
 
 app.get('/api/playlists', async (req, res) => {
     console.log(`Called into GET playlists`);
@@ -98,7 +156,7 @@ async function getOneFrom(dbName, collectionName, query, options={}){
         const collection = database.collection(collectionName);
         const result = await collection.findOne(query, options);
         // since this method returns the matched document, not a cursor, print it directly
-        console.log(`Result: ${result}`);
+        console.log(result)
         return result;
     } 
     finally {
@@ -134,6 +192,18 @@ async function getAggregate(dbName, collectionName, query, options={}){
         await client.close();
     })
     return list;
+}
+
+const updateOneFrom = async (dbName, collectionName, key, query) => {
+    await client.connect()
+    const database = client.db(dbName);
+    const collection = database.collection(collectionName);
+    
+    await collection.updateOne(key, query)
+    .then(() => console.log("Success In Update"))
+    .catch((e) => console.log(`Encountered error ${e}`))
+
+    return true;
 }
 
 const UploadData = async (dbName, collectionName) => {

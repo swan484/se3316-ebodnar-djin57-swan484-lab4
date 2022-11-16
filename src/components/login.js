@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useState, useCallback} from "react";
 import './styles/login.css'
 import { useNavigate } from "react-router-dom";
 
@@ -14,6 +14,7 @@ const ENTER_PASSWORD = "Please enter a password"
 const ENTER_EXISTING_PASSWORD = "Please enter your existing password"
 const ENTER_CONFIRM_PASSWORD = "Please confirm your password"
 const ENTER_FULL_NAME = "Please enter your full name"
+const INVALID_PASSWORD_CHANGE = "Sorry, your password could not be changed"
 
 const FormRow = ({updateInput, inputType, inputTitle}) => {
     const [value, setValue] = useState('');
@@ -40,8 +41,11 @@ const LoginForm = ({updateParentEmail, updateParentPassword, clearParentMessage}
     const [error, setError] = useState('')
 
     useEffect(() => {
-        updateError()
         clearParentMessage()
+        console.log("Clearing from LoginForm")
+    }, [])
+    useEffect(() => {
+        updateError()
     }, [email, password])
     useEffect(() => {
         updateParentEmail(email)
@@ -94,6 +98,13 @@ const CreateForm = ({updateParentEmail, updateParentPassword, updateParentFullNa
     const [error, setError] = useState('')
 
     useEffect(() => {
+        clearParentMessage()
+        console.log("Clearing from CreateForm")
+    }, [])
+    useEffect(() => {
+        updateError()
+    }, [email, password, fullName, confirmedPassword])
+    useEffect(() => {
         updateParentEmail(email)
     }, [email])
     useEffect(() => {
@@ -105,10 +116,6 @@ const CreateForm = ({updateParentEmail, updateParentPassword, updateParentFullNa
     useEffect(() => {
         updateParentConfirmedPassword(confirmedPassword)
     }, [confirmedPassword])
-    useEffect(() => {
-        updateError()
-        clearParentMessage()
-    }, [email, password, fullName, confirmedPassword])
 
     const updateEmail = (e) => {
         setEmail(e)
@@ -171,6 +178,13 @@ const ForgotForm = ({updateParentEmail, updateParentPassword, updateParentConfir
     const [error, setError] = useState('')
 
     useEffect(() => {
+        clearParentMessage()
+        console.log("Clearing from ForgotForm")
+    }, [])
+    useEffect(() => {
+        updateError()
+    }, [email, password, confirmedPassword, existingPassword])
+    useEffect(() => {
         updateParentEmail(email)
     }, [email])
     useEffect(() => {
@@ -182,10 +196,6 @@ const ForgotForm = ({updateParentEmail, updateParentPassword, updateParentConfir
     useEffect(() => {
         updateParentExistingPassword(existingPassword)
     }, [existingPassword])
-    useEffect(() => {
-        updateError()
-        clearParentMessage()
-    }, [email, password, confirmedPassword, existingPassword])
 
     const updateEmail = (e) => {
         setEmail(e)
@@ -200,7 +210,6 @@ const ForgotForm = ({updateParentEmail, updateParentPassword, updateParentConfir
         setExistingPassword(p)
     }
     const updateError = (e) => {
-        console.log(password === existingPassword)
         if(e){
             setError(e)
         }
@@ -271,12 +280,19 @@ const Login = ({updateParentLoginStatus}) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        updateSuccessMessage(SUCCESS_MESSAGE);
-    }, [state.userLoginStatus])
+        updateError()
+    }, [state.password, state.email, state.confirmedPassword])
     useEffect(() => {
-        updateParentLoginStatus(state.userLoginStatus)
+        updateParentLoginStatus(state.userLoginStatus);
     }, [state.userLoginStatus])
 
+    const clearSuccess = () => {
+        console.log("Clearing success in parent")
+        setState({
+            ...state,
+            successMessage: ''
+        })
+    }
     const updateEmail = (e) => {
         setState({
             ...state,
@@ -307,12 +323,6 @@ const Login = ({updateParentLoginStatus}) => {
             fullName: f
         })
     }
-    const updateAuthMode = (m) => {
-        setState({
-            ...state,
-            authMode: m
-        })
-    }
     const updateSuccessMessage = (m) => {
         setState({
             ...state,
@@ -320,16 +330,6 @@ const Login = ({updateParentLoginStatus}) => {
         })
     }
 
-    useEffect(() => {
-        updateError()
-    }, [state.password, state.email, state.confirmedPassword, state.authMode])
-
-    const clearSuccess = () => {
-        setState({
-            ...state,
-            successMessage: ''
-        })
-    }
     const clearError = () => {
         setState({
             ...state,
@@ -363,42 +363,81 @@ const Login = ({updateParentLoginStatus}) => {
             userLoginStatus: val
         })
     }
-    const submitSearch = () => {
+    const updatePageStatus = (val) => {
+        setState({
+            ...state,
+            authMode: val,
+            successMessage: '',
+            error: ''
+        })
+    }
+    const submitLogin = () => {
         if(state.error.length > 0) return;
+        console.log(state)
         toggleButtonEnabled(false)
         fetch(`http://localhost:3001/api/user/${state.email}`)
-            .then((a) => {
-                return a.json()
-            })
-            .then((a) => {
-                toggleButtonEnabled(true)
-                if(a.deactivated){
-                    navigate("/deactivated")
-                }
-                if(!(a.email === state.email && a.password === state.password)){
-                    updateError(INVALID_LOGIN)
-                }
-                else{
-                    updateLoggedInStatus(1)
-                }
-            })
-            .catch(() => {
-                toggleButtonEnabled(true)
+        .then((a) => {
+            return a.json()
+        })
+        .then((a) => {
+            toggleButtonEnabled(true)
+            if(a.deactivated){
+                navigate("/deactivated")
+            }
+            if(!(a.email === state.email && a.password === state.password)){
                 updateError(INVALID_LOGIN)
-            })
+            }
+            else{
+                updateLoggedInStatus(1)
+                updateSuccessMessage(SUCCESS_MESSAGE)
+            }
+        })
+        .catch(() => {
+            toggleButtonEnabled(true)
+            updateError(INVALID_LOGIN)
+        })
+    }
+    const submitChange = () => {
+        if(state.error.length > 0) return;
+        console.log(state)
+        toggleButtonEnabled(false)
+        const payload = {
+            email: state.email,
+            password: state.password,
+            newPassword: state.newPassword
+        }
+        fetch(`http://localhost:3001/api/user`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+        .then((a) => {
+            if(a.status !== 200){
+                throw new Error(a.statusText)
+            }
+            return a.json()
+        })
+        .then(() => {
+            toggleButtonEnabled(true)
+            console.log("Success!")
+        })
+        .catch((a) => {
+            toggleButtonEnabled(true)
+            updateError(a.message)
+        })
     }
     
     if(state.authMode === 1){
         return (
             <div className="login">
                 <h1>Sign Up</h1>
-                <p onClick={() => updateAuthMode(0)} className='login-link'>Log in</p>
-                <p onClick={() => updateAuthMode(2)} className='login-link'>Change password</p>
-                <CreateForm updateParentEmail={updateEmail} updateParentPassword={updatePassword}
-                    updateParentConfirmedPassword={updateConfirmedPassword} updateParentFullName={updateFullName}
-                    clearParentMessage={clearSuccess}/>
-                <MessageBar message={state.successMessage} cName={SUCCESS_CLASS} />
-                <button disabled={!state.buttonEnabled} onClick={() => submitSearch()}>
+                <p onClick={() => updatePageStatus(0)} className='login-link'>Log in</p>
+                <p onClick={() => updatePageStatus(2)} className='login-link'>Change password</p>
+                <CreateForm updateParentEmail={updateEmail} updateParentPassword={updatePassword} clearParentMessage={clearSuccess}
+                    updateParentConfirmedPassword={updateConfirmedPassword} updateParentFullName={updateFullName} />
+                {state.successMessage.length > 0 && <MessageBar message={state.successMessage} cName={SUCCESS_CLASS} />}
+                {state.error.length > 0 && <MessageBar message={state.error} cName={ERROR_CLASS} />}
+                <button disabled={!state.buttonEnabled} onClick={() => submitLogin()}>
                     Submit
                 </button>
             </div>
@@ -408,13 +447,13 @@ const Login = ({updateParentLoginStatus}) => {
         return (
             <div className="login">
                 <h1>Change Password</h1>
-                <p onClick={() => updateAuthMode(0)} className='login-link'>Log in</p>
-                <p onClick={() => updateAuthMode(1)} className='login-link'>Sign Up</p>
-                <ForgotForm updateParentEmail={updateEmail} updateParentPassword={updatePassword}
-                    updateParentConfirmedPassword={updateConfirmedPassword} updateParentExistingPassword={updateExistingPassword}
-                    clearParentMessage={clearSuccess}/>
-                <MessageBar message={state.successMessage} cName={SUCCESS_CLASS} />
-                <button disabled={!state.buttonEnabled} onClick={() => submitSearch()}>
+                <p onClick={() => updatePageStatus(0)} className='login-link'>Log in</p>
+                <p onClick={() => updatePageStatus(1)} className='login-link'>Sign Up</p>
+                <ForgotForm updateParentEmail={updateEmail} updateParentPassword={updatePassword} clearParentMessage={clearSuccess}
+                    updateParentConfirmedPassword={updateConfirmedPassword} updateParentExistingPassword={updateExistingPassword} />
+                {state.successMessage.length > 0 && <MessageBar message={state.successMessage} cName={SUCCESS_CLASS} />}
+                {state.error.length > 0 && <MessageBar message={state.error} cName={ERROR_CLASS} />}
+                <button disabled={!state.buttonEnabled} onClick={() => submitChange()}>
                     Submit
                 </button>
             </div>
@@ -423,11 +462,12 @@ const Login = ({updateParentLoginStatus}) => {
     return (
         <div className="login">
             <h1>Log In</h1>
-            <p onClick={() => updateAuthMode(1)} className='login-link'>Sign Up</p>
-            <p onClick={() => updateAuthMode(2)} className='login-link'>Change password</p>
+            <p onClick={() => updatePageStatus(1)} className='login-link'>Sign Up</p>
+            <p onClick={() => updatePageStatus(2)} className='login-link'>Change password</p>
             <LoginForm updateParentEmail={updateEmail} updateParentPassword={updatePassword} clearParentMessage={clearSuccess} />
-            <MessageBar message={state.successMessage} cName={SUCCESS_CLASS} />
-            <button disabled={!state.buttonEnabled} onClick={() => submitSearch()}>
+            {state.successMessage.length > 0 && <MessageBar message={state.successMessage} cName={SUCCESS_CLASS} />}
+            {state.error.length > 0 && <MessageBar message={state.error} cName={ERROR_CLASS} />}
+            <button disabled={!state.buttonEnabled} onClick={() => submitLogin()}>
                 Submit
             </button>
         </div>
