@@ -6,6 +6,7 @@ import Search from './components/search';
 import {useState} from 'react'
 import Deactivated from './components/deactivated';
 import Playlist from './components/playlist';
+import CreatePlaylist from './components/createPlaylist';
 
 function App() {
   const [state, setState] = useState({
@@ -13,7 +14,6 @@ function App() {
   })
 
   const updateLoginStatus = (val) => {
-    console.log(`Updating global login status to ${val}`)
     setState({
         ...state,
         userLoginLevel: val
@@ -24,11 +24,12 @@ function App() {
     <div className="App">
       <BrowserRouter>
         <Routes>
-          <Route path='/' element={<Layout />}>
+          <Route path='/' element={<Layout userLoggedInStatus={state.userLoginLevel}/>}>
             <Route index element={<Home updateUserLoginStatus={updateLoginStatus}/>}></Route>
             <Route path='search' element={<Search />}></Route>
             <Route path='playlists' element={<Playlist />}></Route>
             <Route path='deactivated' element={<Deactivated />}></Route>
+            <Route path='create' element={<CreatePlaylist userLoggedInStatus={state.userLoginLevel}/>}></Route>
           </Route>
         </Routes>
       </BrowserRouter>

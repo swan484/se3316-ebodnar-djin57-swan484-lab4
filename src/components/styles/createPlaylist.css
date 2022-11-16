@@ -1,0 +1,10 @@
+.unauthorized > div{
+    margin: 20px auto;
+    width: fit-content;
+    font-size: 24px;
+    margin-top: 5px;
+}
+
+.unauthorized > h1 {
+    margin-bottom: 0px;
+}

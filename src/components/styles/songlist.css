@@ -34,6 +34,10 @@
     text-align: left;
     width: 100%;
     height: auto;
+    display: inline-block;
+    list-style: none;
+    padding-top: 12px;
+    padding-bottom: 2px;
 }
 
 .table-row p {
@@ -45,6 +49,7 @@
     overflow: hidden;
     white-space: nowrap;
     padding-left: 5px;
+    text-align: left;
 }
 
 .table-row h1 {

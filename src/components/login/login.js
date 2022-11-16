@@ -29,18 +29,12 @@ const Login = ({updateParentLoginStatus}) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        console.log(`Success: ${state.successMessage}`)
-    }, [state.successMessage])
-    useEffect(() => {
         setState({
             ...state,
             successMessage: '',
             error: ''
         })
     }, [state.password, state.email, state.confirmedPassword, state.existingPassword, state.fullName])
-    useEffect(() => {
-        updateParentLoginStatus(state.userLoginStatus);
-    }, [state.userLoginStatus])
 
     const clearSuccess = () => {
         setState({
@@ -113,10 +107,7 @@ const Login = ({updateParentLoginStatus}) => {
         })
     }
     const updateLoggedInStatus = (val) => {
-        setState({
-            ...state,
-            userLoginStatus: val
-        })
+        updateParentLoginStatus(val)
     }
     const updatePageStatus = (val) => {
         setState({
@@ -126,7 +117,7 @@ const Login = ({updateParentLoginStatus}) => {
             error: ''
         })
     }
-    const submitLogin = (state) => {
+    const submitLogin = () => {
         console.log(state)
         toggleButtonEnabled(false)
         clearSuccess()
@@ -190,7 +181,8 @@ const Login = ({updateParentLoginStatus}) => {
         const payload = {
             email: state.email,
             password: state.existingPassword,
-            fullName: state.fullName
+            fullName: state.fullName,
+            verified: false
         }
         fetch(`http://localhost:3001/api/user`, {
             method: "POST",

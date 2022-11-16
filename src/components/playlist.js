@@ -11,6 +11,11 @@ const Playlist = () => {
         buttonEnabled: true
     })
 
+    useEffect(() => {
+        console.log("Searching data for playlists")
+        searchData()
+    }, [])
+
     const searchData = () => {
         console.log("Searching data")
         setState({
@@ -20,6 +25,7 @@ const Playlist = () => {
         })
         fetch(`http://localhost:3001/api/playlists`)
         .then((a) => {
+            console.log(a)
             return a.json()
         })
         .then((a) => {

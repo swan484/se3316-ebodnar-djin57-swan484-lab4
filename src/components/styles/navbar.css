@@ -1,20 +1,20 @@
-ul {
+.navbar {
     background-color: #b100a5;
     text-align: left;
     padding: 0px;
     margin: 0px;
-    padding-top: 12px;
-    padding-bottom: 15px;
+    padding-top: 8px;
+    padding-bottom: 4px;
 }
 
-li {
+.navbar > li {
     display: inline-block;
     list-style: none;
-    height: 40px;
-    width: 150px;
+    height: 60px;
     font-size: 22.5px;
-    padding-top: 10px;
+    padding-top: 20px;
     text-align: center;
+    padding-left: 40px;
 }
 
 .link {
@@ -25,7 +25,5 @@ li {
 }
 
 .active {
-    color: #fbbeff;
-    border-bottom: 1px solid #fbbeff;
-    padding: 5px;
+    color: #f6a5fc;
 }
