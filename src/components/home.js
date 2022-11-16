@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import Login from "./login/login";
+import Login from "./login/Login";
 import "./styles/home.css"
 
 const Home = ({updateUserLoginStatus}) => {
