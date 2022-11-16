@@ -1,5 +1,5 @@
 import React, {useEffect, useState, useCallback} from "react";
-import './styles/login.css'
+import '../styles/login.css'
 import { useNavigate } from "react-router-dom";
 
 const PASSWORD_MISMATCH = "Passwords do not match!"
@@ -14,8 +14,8 @@ const ENTER_PASSWORD = "Please enter a password"
 const ENTER_EXISTING_PASSWORD = "Please enter your existing password"
 const ENTER_CONFIRM_PASSWORD = "Please confirm your password"
 const ENTER_FULL_NAME = "Please enter your full name"
-const INVALID_PASSWORD_CHANGE = "Sorry, your password could not be changed"
 const PASSWORD_CHANGE_SUCCESS = "Password changed successfully"
+const CREATE_ACCOUNT_SUCCESS = "Account created successfully"
 
 const FormRow = ({updateInput, inputType, inputTitle}) => {
     const [value, setValue] = useState('');
@@ -420,6 +420,34 @@ const Login = ({updateParentLoginStatus}) => {
         })
         toggleButtonEnabled(true)
     }
+    const createAccount = () => {
+        if(state.password !== state.confirmedPassword){
+            return;
+        }
+        console.log(state)
+        toggleButtonEnabled(false)
+        clearSuccess()
+        const payload = {
+            email: state.email,
+            password: state.existingPassword,
+            fullName: state.fullName
+        }
+        fetch(`http://localhost:3001/api/user`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          })
+        .then((a) => {
+            if(a.status !== 200){
+                throw new Error(a.statusText)
+            }
+            updateSuccessMessage(CREATE_ACCOUNT_SUCCESS)
+        })
+        .catch((a) => {
+            updateError(a.message)
+        })
+        toggleButtonEnabled(true)
+    }
     
     if(state.authMode === 1){
         return (
@@ -431,7 +459,7 @@ const Login = ({updateParentLoginStatus}) => {
                     updateParentConfirmedPassword={updateConfirmedPassword} updateParentFullName={updateFullName} />
                 {state.successMessage.length > 0 && state.error.length === 0 && <MessageBar message={state.successMessage} cName={SUCCESS_CLASS} />}
                 {state.error.length > 0 && <MessageBar message={state.error} cName={ERROR_CLASS} />}
-                <button disabled={!state.buttonEnabled} onClick={() => submitLogin()}>
+                <button disabled={!state.buttonEnabled} onClick={() => createAccount()}>
                     Submit
                 </button>
             </div>

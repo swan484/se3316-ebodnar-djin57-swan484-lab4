@@ -21,6 +21,8 @@ const PLAYLISTS_COLLECTION = "playlists"
 const INCORRECT_PASSWORD = "Incorrect password"
 const INVALID_EMAIL = "Email not recognized"
 const CANNOT_UPDATE = "Cannot update password, try again later"
+const EMAIL_EXISTS = "An account with this email already exists"
+const CANNOT_INSERT = "Cannot create account, try again later"
 
 app.get("/api/upload", (req, res) => {
     UploadData(DB_NAME, TRACKS_COLLECTION)
@@ -51,7 +53,6 @@ app.put("/api/user", async (req, res) => {
 
     await getOneFrom(DB_NAME, USERS_COLLECTION, search)
     .then((foundUser) => {
-        console.log(foundUser)
         if(!foundUser){
             res.statusMessage = INVALID_EMAIL
             return res.status(404).send(); 
@@ -82,6 +83,44 @@ app.put("/api/user", async (req, res) => {
     })
     .catch(() => {
         res.statusMessage = CANNOT_UPDATE
+        res.status(404).send()
+    });
+    res.status(200).send();
+})
+
+app.post("/api/user", async (req, res) => {
+    const body = req.body;
+    console.log(body)
+    const search = {
+        email: body.email
+    }
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, search)
+    .then((foundUser) => {
+        if(foundUser){
+            res.statusMessage = EMAIL_EXISTS
+            return res.status(404).send(); 
+        }
+    })
+    .then(() => {
+        const doc = {
+            email: body.email,
+            password: body.password,
+            fullName: body.fullName,
+            deactivated: false
+        }
+
+        insertOne(DB_NAME, USERS_COLLECTION, doc)
+        .then((result) => {
+            if (!result) {
+                return res.status(400).send();
+            }
+    
+            console.log("Successfully Inserted")
+        })
+    })
+    .catch(() => {
+        res.statusMessage = CANNOT_INSERT
         res.status(404).send()
     });
     res.status(200).send();
@@ -149,7 +188,7 @@ app.get('/api/search/:query', async (req, res) => {
     res.send(results)
 })
 
-async function getOneFrom(dbName, collectionName, query, options={}){
+const getOneFrom = async (dbName, collectionName, query, options={}) => {
     await client.connect()
     try {
         const database = client.db(dbName);
@@ -164,7 +203,7 @@ async function getOneFrom(dbName, collectionName, query, options={}){
     }
 }
 
-async function getAllFrom(dbName, collectionName, query, options={}){
+const getAllFrom = async (dbName, collectionName, query, options={}) => {
     await client.connect()
     const database = client.db(dbName);
     const collection = database.collection(collectionName);
@@ -179,7 +218,7 @@ async function getAllFrom(dbName, collectionName, query, options={}){
     return list;
 }
 
-async function getAggregate(dbName, collectionName, query, options={}){
+const getAggregate = async (dbName, collectionName, query, options={}) => {
     await client.connect()
     const database = client.db(dbName);
     const collection = database.collection(collectionName);
@@ -201,6 +240,18 @@ const updateOneFrom = async (dbName, collectionName, key, query) => {
     
     await collection.updateOne(key, query)
     .then(() => console.log("Success In Update"))
+    .catch((e) => console.log(`Encountered error ${e}`))
+
+    return true;
+}
+
+const insertOne = async (dbName, collectionName, doc) => {
+    await client.connect()
+    const database = client.db(dbName);
+    const collection = database.collection(collectionName);
+    
+    await collection.insertOne(doc)
+    .then(() => console.log("Successfully Inserted"))
     .catch((e) => console.log(`Encountered error ${e}`))
 
     return true;
