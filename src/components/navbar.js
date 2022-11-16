@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import './styles/navbar.css';
 
@@ -15,7 +15,7 @@ const Navbar = ({userLoggedInStatus}) => {
                 <li>
                     <NavLink to='/playlists' className={({ isActive }) => "link" + (isActive ? " active" : "")}>View Playlists</NavLink>
                 </li>
-                {userLoggedInStatus > 0 && <li>
+                {userLoggedInStatus && Object.keys(userLoggedInStatus).length > 0 && <li>
                     <NavLink to='/create' className={({ isActive }) => "link" + (isActive ? " active" : "")}>My Playlists</NavLink>
                 </li>}
             </ul>

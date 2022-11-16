@@ -74,7 +74,7 @@ const Playlist = () => {
                     <div className="table-row table-row-2" key={item.list_title} value={item.track_id} >
                         <li onClick={(e) => expandResults(e, item)}>
                             <p className="list-title">{item.list_title || UNKNOWN}</p>
-                            <p className="username">{item.username || UNKNOWN}</p>
+                            <p className="username">{item.user_name || UNKNOWN}</p>
                             <p className="date-modified">{item.date_modified || UNKNOWN}</p>
                             <p className="playtime">{item.playtime || UNKNOWN}</p>
                             <p className="rating">{item.rating || UNKNOWN}</p>

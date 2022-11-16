@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import './styles/createPlaylist.css'
 
 const CreatePlaylist = ({userLoggedInStatus}) => {
-    if(userLoggedInStatus === 0){
+    if(!userLoggedInStatus){
         return (
             <div className="unauthorized">
                 <h1>Unavailable</h1>

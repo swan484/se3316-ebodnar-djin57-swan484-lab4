@@ -134,7 +134,7 @@ const Login = ({updateParentLoginStatus}) => {
                 updateError(INVALID_LOGIN)
             }
             else{
-                updateLoggedInStatus(1)
+                updateLoggedInStatus(a)
                 updateSuccessMessage(SUCCESS_MESSAGE)
             }
         })

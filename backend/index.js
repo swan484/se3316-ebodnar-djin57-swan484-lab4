@@ -126,8 +126,38 @@ app.post("/api/user", async (req, res) => {
     res.status(200).send();
 })
 
+/*
+Display tracks to users and allow them to filter/click to select?
+
+request:
+{
+    userInfo: {
+        email, password, fullname
+    },
+    tracks: {
+        ...tracks
+    }
+    title,
+    visibility,
+    description
+    ADD date now
+}
+
+Join on Users and see if passwords match -> this is the authentication
+    If no match then return an unauthorization error
+Check if the playlist with this title and email already exists
+    If so, return an error saying so
+Then add the playlist data to the database
+*/
+app.put('/api/authenticated/playlists:query', (res, req) => {
+    const userInfo = res.userInfo
+})
+
 app.get('/api/playlists', async (req, res) => {
     console.log(`Called into GET playlists`);
+    const query = {
+        visibility: "public"
+    }
     const options = {
         tracks: 1,
         date_modified: 1,
@@ -137,7 +167,7 @@ app.get('/api/playlists', async (req, res) => {
         }
     }
     var result = []
-    await getAllFrom(DB_NAME, PLAYLISTS_COLLECTION, {}, options)
+    await getAllFrom(DB_NAME, PLAYLISTS_COLLECTION, query, options)
     .then((data) => {
         data.forEach(d => {
             result.push(d)

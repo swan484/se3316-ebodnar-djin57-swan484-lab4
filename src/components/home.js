@@ -4,14 +4,9 @@ import "./styles/home.css"
 
 const Home = ({updateUserLoginStatus}) => {
     const [state, setState] = useState({
-        userLoginStatus: 0,
+        userLoginStatus: {},
         featureMode: {}
     })
-
-    useEffect(() => {
-        console.log(`User is logged in: ${state.userLoginStatus}`)
-        updateUserLoginStatus(state.userLoginStatus)
-    }, [state.userLoginStatus])
 
     const updateLoginStatus = (val) => {
         setState({
