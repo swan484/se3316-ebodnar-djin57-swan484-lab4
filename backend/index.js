@@ -18,8 +18,8 @@ const ARTISTS_COLLECTION = "artists"
 const TRACKS_COLLECTION = "tracks"
 const PLAYLISTS_COLLECTION = "playlists"
 
-const INCORRECT_PASSWORD = "Incorrect Password"
-const INVALID_EMAIL = "Invalid Email"
+const INCORRECT_PASSWORD = "Incorrect password"
+const INVALID_EMAIL = "Email not recognized"
 const CANNOT_UPDATE = "Cannot update password, try again later"
 
 app.get("/api/upload", (req, res) => {
