@@ -8,6 +8,10 @@ const Home = ({updateUserLoginStatus}) => {
         featureMode: {}
     })
 
+    useEffect(() => {
+        updateUserLoginStatus(state.userLoginStatus)
+    }, [state.userLoginStatus])
+
     const updateLoginStatus = (val) => {
         setState({
             ...state,
@@ -33,7 +37,7 @@ const Home = ({updateUserLoginStatus}) => {
     }
 
     return (
-        <div className='home-block'>
+        <div className='home-block parent-div'>
             <h1>
                 Welcome to APP NAME
             </h1>

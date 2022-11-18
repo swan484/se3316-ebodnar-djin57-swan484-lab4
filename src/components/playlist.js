@@ -46,6 +46,12 @@ const Playlist = () => {
     }
 
     const expandResults = (e, track) => {
+        console.log(track)
+        if("tracks" in track){
+            for(const tr of track.tracks){
+                tr.additional_information = false
+            }
+        }
         track.additional_information = !track.additional_information
         setState({
             ...state,
@@ -69,7 +75,6 @@ const Playlist = () => {
                         </li>
                     </div>
                 }
-                {/* fix styling, change colour of outer table, etc. */}
                 {state.searchResults.map(item => (
                     <div className="table-row table-row-2" key={item.list_title} value={item.track_id} >
                         <li onClick={(e) => expandResults(e, item)}>
@@ -81,8 +86,8 @@ const Playlist = () => {
                         </li>
                         {item.additional_information && <div className="track-details no-pad top-pad">
                             <p>TITLE: {item.list_title}</p>
-                            <p>DESCRIPTION: {item.desciption || NO_DESCRIPTION}</p>
-                            <SongList searchResults={item.tracks} expandResults={expandResults} cName={"sub-table"}/>
+                            <p>DESCRIPTION: {item.description || NO_DESCRIPTION}</p>
+                            <SongList searchResults={item.tracks} expandResults={expandResults} cName={"sub-table"} disableExpanding={false}/>
                         </div>}
                     </div>
                     /* */
@@ -93,23 +98,3 @@ const Playlist = () => {
 }
 
 export default Playlist;
-
-/*
-                        {item.additional_information && 
-                            <li className="track-details">
-                                <p>Title: {item.track_title || UNKNOWN}</p>
-                                <p>Artist: {item.artist_name || UNKNOWN}</p>
-                                <p>Album: {item.album_title || UNKNOWN}</p>
-                                <p>Duration: {item.track_duration || UNKNOWN}</p>
-                                <p>Date Created: {item.track_date_created || UNKNOWN}</p>
-                                <p>Date Recorded: {item.track_date_recorded || UNKNOWN}</p>
-                                <p>Listens: {item.track_listens || UNKNOWN}</p>
-                                {item.track_genres.length > 0 && <p>Genres: </p>}
-                                    {item.track_genres.length > 0 && item.track_genres.map(g => (
-                                        <div className="track-genre" key={g.genre_title}>
-                                            <p>- {g.genre_title}</p>
-                                        </div>
-                                    ))}
-                            </li>
-                        }
-*/

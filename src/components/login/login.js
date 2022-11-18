@@ -180,7 +180,7 @@ const Login = ({updateParentLoginStatus}) => {
         clearSuccess()
         const payload = {
             email: state.email,
-            password: state.existingPassword,
+            password: state.password,
             fullName: state.fullName,
             verified: false
         }

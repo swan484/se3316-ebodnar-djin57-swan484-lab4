@@ -1,4 +1,4 @@
-const {MongoClient} = require('mongodb')
+const {MongoClient, Db} = require('mongodb')
 const cors = require('cors');
 const express = require("express");
 const app = express();
@@ -23,6 +23,7 @@ const INVALID_EMAIL = "Email not recognized"
 const CANNOT_UPDATE = "Cannot update password, try again later"
 const EMAIL_EXISTS = "An account with this email already exists"
 const CANNOT_INSERT = "Cannot create account, try again later"
+const CANNOT_INSERT_PLAYLIST = "Cannot insert playlist, try again later"
 
 app.get("/api/upload", (req, res) => {
     UploadData(DB_NAME, TRACKS_COLLECTION)
@@ -149,8 +150,82 @@ Check if the playlist with this title and email already exists
     If so, return an error saying so
 Then add the playlist data to the database
 */
-app.put('/api/authenticated/playlists:query', (res, req) => {
-    const userInfo = res.userInfo
+app.put('/api/authenticated/playlists', async (req, res) => {
+    const userInfo = req.body.userInfo
+    const tracks = req.body.tracks
+    const date = new Date(Date.now()).toLocaleDateString()
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: userInfo.email})
+    .then((data) => {
+        if(!data){
+            res.statusMessage = "You need to be logged in to access this"
+            return res.status(404).send()
+        }
+        if(data.password !== userInfo.password){
+            res.statusMessage = "You do not have access to this"
+            return res.status(1).send()
+        }
+    }).catch((err) => {
+        console.log(`Error: ${err}`)
+    })
+
+    await getOneFrom(DB_NAME, PLAYLISTS_COLLECTION, {
+        list_title: req.body.list_title,
+        email: userInfo.email
+    }).then((data) => {
+        if(data){
+            res.statusMessage = "You already have a playlist with this title"
+            return res.status(404).send()
+        }
+    }).catch((err) => {
+        console.log(`Error: ${err}`)
+    })
+
+    const postData = {
+        email: userInfo.email,
+        list_title: req.body.list_title,
+        visibility: req.body.visibility,
+        tracks: tracks,
+        description: req.body.description,
+        date_modified: date,
+        user_name: userInfo.fullName,
+    }
+    insertOne(DB_NAME, PLAYLISTS_COLLECTION, postData)
+    .then((result) => {
+        if (!result) {
+            return res.status(400).send();
+        }
+
+        console.log("Successfully Inserted")
+    })
+    .catch(() => {
+        res.statusMessage = CANNOT_INSERT_PLAYLIST
+        return res.status(404).send()
+    });
+    res.status(200).send();
+})
+
+app.post('/api/tracks', async (req, res) => {
+    console.log(`Called into GET tracks`);
+    var result = []
+    const query = {
+        track_id: {
+            $in: req.body.ids
+        }
+    }
+    await getAllFrom(DB_NAME, TRACKS_COLLECTION, query, {})
+    .then((data) => {
+        console.log("Got data")
+        data.forEach(d => {
+            result.push(d)
+        })
+    })
+    .catch((err) => {
+        console.log(err.message)
+        res.statusMessage = err.message
+        return res.status(404).send()
+    })
+    res.status(200).send(result)
 })
 
 app.get('/api/playlists', async (req, res) => {
@@ -173,49 +248,56 @@ app.get('/api/playlists', async (req, res) => {
             result.push(d)
         })
     })
-    res.send(result)
+    return res.status(200).send(result)
 })
 
 app.get('/api/search/:query', async (req, res) => {
     console.log("Called into test " + req.params.query)
     const queries = req.params.query.split(",")
 
-    var results = []
-    const queriesList = []
+    var results = {}
+    var it = 0;
     for(var q of queries){
+        const queriesList = []
         q = q.trim().toLowerCase()
-        queriesList.push(
-            {
-                text: {
-                    query: q,
-                    path: ['artist_name', 'track_title', 'track_genres.genre_title'],
-                    fuzzy: {}
+        for(var component of q.split(' ')){
+            queriesList.push(
+                {
+                    text: {
+                        query: component,
+                        path: ['artist_name', 'track_title', 'track_genres.genre_title'],
+                        fuzzy: {}
+                    }
                 }
-            }
-        )
-    }
-
-    const agg = [
-        {
-            $search: {
-                index: 'custom',
-                compound: {
-                    must: queriesList
-                }
-            }
+            )
         }
-    ]
-    console.log(agg)
 
-    await getAggregate(DB_NAME, TRACKS_COLLECTION, agg)
-    .then((data) => {
-        data.forEach(d => {
-            results.push(d)
+        const agg = [
+            {
+                $search: {
+                    index: 'custom',
+                    compound: {
+                        must: queriesList
+                    }
+                }
+            }
+        ]
+
+        await getAggregate(DB_NAME, TRACKS_COLLECTION, agg)
+        .then((data) => {
+            data.forEach(d => {
+                console.log(`Iteration ${it} and ID ${d.track_id}`)
+                if(it === 0 && !(d.track_id in results)) {
+                    results[d.track_id] = d
+                    results[d.track_id].count = 0;
+                }
+                if(d.track_id in results) results[d.track_id].count++;
+            })
         })
-    })
-    .catch((err) => console.log(`Error: ${err}`))
-    console.log("Got results")
-    res.send(results)
+        .catch((err) => console.log(`Error: ${err}`))
+        it++;
+    }
+    res.send(Object.values(results).filter((item) => {return item.count === queries.length}))
 })
 
 const getOneFrom = async (dbName, collectionName, query, options={}) => {

@@ -4,7 +4,7 @@ import './styles/songlist.css'
 const UNKNOWN = "Unknown"
 const YOUTUBE_URL = "https://www.youtube.com/results?search_query="
 
-const SongList = ({searchResults, expandResults, cName}) => {
+const SongList = ({searchResults, expandResults, cName, disableExpanding, gotSearchResults}) => {
     const getYoutubeLink = (title, artist) => {
         var mappedTitle = title || ""
         if(title.toString().includes(" ")) mappedTitle = title.replace(" ", "+")
@@ -27,13 +27,13 @@ const SongList = ({searchResults, expandResults, cName}) => {
             }
             {searchResults.map(item => (
                 <div className="table-row" key={item.track_id} value={item.track_id} >
-                    <li onClick={(e) => expandResults(e, item)}>
+                    <li onClick={(e) => expandResults(e, item, false)} className={item.selected && disableExpanding ? "selected-track" : ""}>
                         <p className="title">{item.track_title || UNKNOWN}</p>
                         <p className="artist">{item.artist_name || UNKNOWN}</p>
                         <p className="album">{item.album_title || UNKNOWN}</p>
                         <p className="duration">{item.track_duration || 'N/A'}</p>
                     </li>
-                    {item.additional_information && 
+                    {item.additional_information && !disableExpanding && 
                         <li className="track-details">
                             <p><a href={getYoutubeLink(item.track_title, item.artist_name)} target='_blank'>Play on YouTube</a></p>
                             <p>Title: {item.track_title || UNKNOWN}</p>
@@ -48,7 +48,8 @@ const SongList = ({searchResults, expandResults, cName}) => {
                                     <div className="track-genre" key={g.genre_title}>
                                         <p>- {g.genre_title}</p>
                                     </div>
-                                ))}
+                                ))
+                            }
                         </li>
                     }
                 </div>

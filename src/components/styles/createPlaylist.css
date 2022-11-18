@@ -8,3 +8,82 @@
 .unauthorized > h1 {
     margin-bottom: 0px;
 }
+
+/*.test {
+    border: 1px solid red;
+}*/
+
+.selected-track {
+    background-color: #784f76;
+}
+
+.selected-track:hover {
+    background-color: #926490;
+}
+
+select {
+    display: block;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 200px;
+    height: 40px;
+    background: transparent;
+    border: 1px solid #b100a5;
+    border-radius: 10px;
+    color: #F0F6FA;
+    text-align: center;
+    font-size: 17.5px;
+    padding-left: 10px;
+    margin: 0 auto;
+    margin-bottom: 20px;
+}
+
+.func-label {
+    display: inline-block;
+    width: 190px;
+    text-align: left;
+    margin-bottom: 5px;
+    font-style: italic;
+}
+
+.mod-playlist {
+    width: 500px;
+    margin: 0 auto;
+}
+
+.mod-playlist > label {
+    margin-bottom: 5px;
+    margin-top: 10px;
+    padding-left: 5px;
+}
+
+.form > textarea {
+    width: calc(100% - 10px);
+    height: 120px;
+    border: 1px solid #b100a5;
+    border-radius: 15px;
+    background: transparent;
+    color: inherit;
+    font-size: inherit;
+    padding: 10px 5px 10px 5px;
+    display: inline-block;
+    resize: vertical;
+    margin-bottom: 10px;
+}
+
+.inline {
+    display: inline;
+}
+
+.form > textarea:focus {
+    border-color: #efa8ea;
+}
+
+.create-playlist {
+    margin: 0px;
+    width: fit-content;
+}
+
+.parent-div {
+    margin-bottom: 30px;
+}

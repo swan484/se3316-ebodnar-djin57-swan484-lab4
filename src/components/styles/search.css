@@ -1,7 +1,12 @@
 .narrow {
     display: block;
     margin: 0 auto;
-    width: fit-content;
+    width: 500px;
+}
+
+.wide {
+    width: 100%;
+    border: 1px solid red;
 }
 
 .pad-bottom {
@@ -39,4 +44,9 @@
     text-align: center;
     font-size: 29px;
     font-weight: 500;
+}
+
+.no-margin { 
+    margin-left: 10px;
+    width: fit-content;
 }

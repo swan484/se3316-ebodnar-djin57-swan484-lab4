@@ -26,7 +26,7 @@ function App() {
         <Routes>
           <Route path='/' element={<Layout userLoggedInStatus={state.loggedUser}/>}>
             <Route index element={<Home updateUserLoginStatus={updateLoginStatus}/>}></Route>
-            <Route path='search' element={<Search />}></Route>
+            <Route path='search' element={<Search enableLabel={true} heading={true}/>}></Route>
             <Route path='playlists' element={<Playlist />}></Route>
             <Route path='deactivated' element={<Deactivated />}></Route>
             <Route path='create' element={<CreatePlaylist userLoggedInStatus={state.loggedUser}/>}></Route>

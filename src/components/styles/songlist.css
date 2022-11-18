@@ -103,3 +103,15 @@
     color: #DCDCDC;
     font-size: inherit;
 }
+
+.underline {
+    text-decoration: underline;
+}
+
+li > p {
+    pointer-events: none;
+}
+
+.track-details > * {
+    pointer-events: all;
+}
