@@ -18,12 +18,20 @@ const ARTISTS_COLLECTION = "artists"
 const TRACKS_COLLECTION = "tracks"
 const PLAYLISTS_COLLECTION = "playlists"
 
+const MAX_NUM_PLAYLISTS = 20
+
 const INCORRECT_PASSWORD = "Incorrect password"
 const INVALID_EMAIL = "Email not recognized"
 const CANNOT_UPDATE = "Cannot update password, try again later"
 const EMAIL_EXISTS = "An account with this email already exists"
 const CANNOT_INSERT = "Cannot create account, try again later"
 const CANNOT_INSERT_PLAYLIST = "Cannot insert playlist, try again later"
+const PLAYLIST_EXISTS_ERROR = "You already have a playlist with this title"
+const USER_NOT_LOGGED_IN = "You need to be logged in to access this"
+const NO_ACCESS_ERROR = "You do not have access to this"
+const NO_PLAYLISTS_EXIST = "You do not have any playlists"
+const TOO_MANY_PLAYLISTS = `You cannot have more than ${MAX_NUM_PLAYLISTS} playlists`
+const MISSING_REQUIRED_FIELDS = "You are missing required fields"
 
 app.get("/api/upload", (req, res) => {
     UploadData(DB_NAME, TRACKS_COLLECTION)
@@ -47,7 +55,6 @@ app.get("/api/user/:email", (req, res) => {
 //TODO: fix error messages
 app.put("/api/user", async (req, res) => {
     const body = req.body;
-    console.log(body)
     const search = {
         email: body.email
     }
@@ -91,7 +98,6 @@ app.put("/api/user", async (req, res) => {
 
 app.post("/api/user", async (req, res) => {
     const body = req.body;
-    console.log(body)
     const search = {
         email: body.email
     }
@@ -127,86 +133,63 @@ app.post("/api/user", async (req, res) => {
     res.status(200).send();
 })
 
-/*
-Display tracks to users and allow them to filter/click to select?
-
-request:
-{
-    userInfo: {
-        email, password, fullname
-    },
-    tracks: {
-        ...tracks
-    }
-    title,
-    visibility,
-    description
-    ADD date now
-}
-
-Join on Users and see if passwords match -> this is the authentication
-    If no match then return an unauthorization error
-Check if the playlist with this title and email already exists
-    If so, return an error saying so
-Then add the playlist data to the database
-*/
 app.put('/api/authenticated/playlists', async (req, res) => {
+    console.log("Called into PUT authenticated playlists")
     const userInfo = req.body.userInfo
     const tracks = req.body.tracks
-    const date = new Date(Date.now()).toLocaleDateString()
+    const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
 
     await getOneFrom(DB_NAME, USERS_COLLECTION, {email: userInfo.email})
     .then((data) => {
         if(!data){
-            res.statusMessage = "You need to be logged in to access this"
-            return res.status(404).send()
+            throw new Error(USER_NOT_LOGGED_IN)
         }
         if(data.password !== userInfo.password){
-            res.statusMessage = "You do not have access to this"
-            return res.status(1).send()
+            throw new Error(NO_ACCESS_ERROR)
         }
-    }).catch((err) => {
-        console.log(`Error: ${err}`)
-    })
-
-    await getOneFrom(DB_NAME, PLAYLISTS_COLLECTION, {
+    }).then(() => getOneFrom(DB_NAME, PLAYLISTS_COLLECTION, {
         list_title: req.body.list_title,
         email: userInfo.email
-    }).then((data) => {
+    })).then((data) => {
         if(data){
-            res.statusMessage = "You already have a playlist with this title"
-            return res.status(404).send()
+            throw new Error(PLAYLIST_EXISTS_ERROR)
         }
-    }).catch((err) => {
-        console.log(`Error: ${err}`)
-    })
-
-    const postData = {
-        email: userInfo.email,
-        list_title: req.body.list_title,
-        visibility: req.body.visibility,
-        tracks: tracks,
-        description: req.body.description,
-        date_modified: date,
-        user_name: userInfo.fullName,
-    }
-    insertOne(DB_NAME, PLAYLISTS_COLLECTION, postData)
-    .then((result) => {
+    }).then(() => getAllFrom(DB_NAME, PLAYLISTS_COLLECTION, {
+        email: userInfo.email
+    })).then((data) => {
+        if(data.length >= MAX_NUM_PLAYLISTS){
+            throw new Error(TOO_MANY_PLAYLISTS)
+        }
+    }).then(() => {
+        if(req.body.list_title.length === 0 || tracks === 0){
+            throw new Error(MISSING_REQUIRED_FIELDS)
+        }
+        const postData = {
+            email: userInfo.email,
+            list_title: req.body.list_title,
+            visibility: req.body.visibility,
+            tracks: tracks,
+            description: req.body.description,
+            date_modified: date,
+            user_name: userInfo.fullName,
+        }
+        return insertOne(DB_NAME, PLAYLISTS_COLLECTION, postData) 
+    }).then((result) => {
         if (!result) {
-            return res.status(400).send();
+            throw new Error(CANNOT_INSERT_PLAYLIST)
         }
 
-        console.log("Successfully Inserted")
-    })
-    .catch(() => {
-        res.statusMessage = CANNOT_INSERT_PLAYLIST
+        console.log("Successfully Inserted in here")
+    }).catch((err) => {
+        res.statusMessage = err.message
         return res.status(404).send()
     });
+
     res.status(200).send();
 })
 
 app.post('/api/tracks', async (req, res) => {
-    console.log(`Called into GET tracks`);
+    console.log(`Called into POST tracks`);
     var result = []
     const query = {
         track_id: {
@@ -221,7 +204,6 @@ app.post('/api/tracks', async (req, res) => {
         })
     })
     .catch((err) => {
-        console.log(err.message)
         res.statusMessage = err.message
         return res.status(404).send()
     })
@@ -231,7 +213,7 @@ app.post('/api/tracks', async (req, res) => {
 app.get('/api/playlists', async (req, res) => {
     console.log(`Called into GET playlists`);
     const query = {
-        visibility: "public"
+        visibility: 'public'
     }
     const options = {
         tracks: 1,
@@ -286,7 +268,6 @@ app.get('/api/search/:query', async (req, res) => {
         await getAggregate(DB_NAME, TRACKS_COLLECTION, agg)
         .then((data) => {
             data.forEach(d => {
-                console.log(`Iteration ${it} and ID ${d.track_id}`)
                 if(it === 0 && !(d.track_id in results)) {
                     results[d.track_id] = d
                     results[d.track_id].count = 0;
@@ -300,14 +281,86 @@ app.get('/api/search/:query', async (req, res) => {
     res.send(Object.values(results).filter((item) => {return item.count === queries.length}))
 })
 
+//Get all playlists for a user
+    //POST because GET is too complicated for this
+app.post('/api/authenticated/playlists', async (req, res) => {
+    console.log("Called into POST playlists")
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.body.email})
+    .then((data) => {
+        if(!data){
+            throw new Error(USER_NOT_LOGGED_IN)
+        }
+        if(data.password !== req.body.password){
+            throw new Error(NO_ACCESS_ERROR)
+        }
+    }).then(() => getAllFrom(DB_NAME, PLAYLISTS_COLLECTION, {
+        email: req.body.email
+    })).then((data) => {
+        if(!data){
+            throw new Error(NO_PLAYLISTS_EXIST)
+        }
+        console.log("Successfully got playlists")
+        return res.status(200).send(data)
+    }).catch((err) => {
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
+
+    return res.status(400).send();
+})
+
+//Update a user's playlist
+    //TODO: can I use PUT to update?
+app.put('/api/authenticated/playlist', async (req, res) => {
+    console.log("Called into PUT playlist")
+
+    const key = {
+        email: req.body.email,
+        list_title: req.body.original_title
+    }
+
+    const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
+    const query = {
+        $set: {
+            list_title: req.body.list_title,
+            tracks: req.body.tracks,
+            description: req.body.description,
+            visibility: req.body.visibility,
+            date_modified: date
+        }
+    }
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.body.email})
+    .then((data) => {
+        if(!data){
+            throw new Error(USER_NOT_LOGGED_IN)
+        }
+        if(data.password !== req.body.password){
+            throw new Error(NO_ACCESS_ERROR)
+        }
+    }).then(() => updateOneFrom(
+        DB_NAME, PLAYLISTS_COLLECTION, key, query
+    )).then((data) => {
+        if(!data){
+            throw new Error(NO_PLAYLISTS_EXIST)
+        }
+        console.log("Successfully updated playlists")
+        return res.status(200).send()
+    }).catch((err) => {
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
+
+    return res.status(400).send();
+})
+
 const getOneFrom = async (dbName, collectionName, query, options={}) => {
     await client.connect()
     try {
         const database = client.db(dbName);
         const collection = database.collection(collectionName);
         const result = await collection.findOne(query, options);
-        // since this method returns the matched document, not a cursor, print it directly
-        console.log(result)
         return result;
     } 
     finally {
@@ -375,7 +428,6 @@ const UploadData = async (dbName, collectionName) => {
     const database = client.db(dbName);
     const collection = database.collection(collectionName);
     await collection.find().forEach(async (c) => {
-        console.log(`Count ${++count} for ${c.track_title}`)
         if(Array.isArray(c.track_genres) || c.track_genres.length === 0) return;
         let parsedGenres = JSON.parse(c.track_genres.replace(/'/g, '"'))
 

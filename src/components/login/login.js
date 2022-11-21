@@ -23,7 +23,6 @@ const Login = ({updateParentLoginStatus}) => {
         error: '',
         buttonEnabled: true,
         authMode: 0,
-        userLoginStatus: 0,
         successMessage: ''
     })
     const navigate = useNavigate();

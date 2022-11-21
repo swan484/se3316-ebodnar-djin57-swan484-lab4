@@ -2,13 +2,15 @@ import React, {useEffect, useState} from "react";
 import Login from "./login/Login";
 import "./styles/home.css"
 
-const Home = ({updateUserLoginStatus}) => {
+const Home = ({updateUserLoginStatus, loginStatus}) => {
     const [state, setState] = useState({
-        userLoginStatus: {},
+        userLoginStatus: loginStatus,
         featureMode: {}
     })
 
     useEffect(() => {
+        console.log("Updating login status")
+        console.log(state.userLoginStatus)
         updateUserLoginStatus(state.userLoginStatus)
     }, [state.userLoginStatus])
 

@@ -76,7 +76,7 @@ const Playlist = () => {
                     </div>
                 }
                 {state.searchResults.map(item => (
-                    <div className="table-row table-row-2" key={item.list_title} value={item.track_id} >
+                    <div className="table-row table-row-2" key={item.list_title + item.email} value={item.track_id} >
                         <li onClick={(e) => expandResults(e, item)}>
                             <p className="list-title">{item.list_title || UNKNOWN}</p>
                             <p className="username">{item.user_name || UNKNOWN}</p>

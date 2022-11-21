@@ -32,7 +32,7 @@ const SearchBar = ({setQuery, label}) => {
     )
 }
 
-const Search = ({updateParentResults, updateParentSet, parentSet, disableExpanding, enableLabel, heading}) => {
+const Search = ({updateParentResults, updateParentSet, parentSet, disableExpanding, enableLabel, heading, triggerRefresh}) => {
     const [state, setState] = useState({
         query: '',
         buttonEnabled: true,
@@ -44,6 +44,10 @@ const Search = ({updateParentResults, updateParentSet, parentSet, disableExpandi
         if(!updateParentResults) return
         updateParentResults(state.searchResults)
     }, [state.searchResults])
+
+    useEffect(() => {
+        clearResults()
+    }, [triggerRefresh])
 
     const searchData = () => {
         console.log("Searching data")
@@ -92,13 +96,13 @@ const Search = ({updateParentResults, updateParentSet, parentSet, disableExpandi
         if(updateParentSet && !flag){
             if(parseInt(track.track_id) in parentSet){
                 delete parentSet[parseInt(track.track_id)]
-                updateParentSet(false, track, parseInt(track.track_id))
+                updateParentSet(track, parseInt(track.track_id))
                 track.selected = false;
                 e.target.className = e.target.className.replace('selected-track', '')
             }
             else{
                 parentSet[parseInt(track.track_id)] = track
-                updateParentSet(true, track, parseInt(track.track_id))
+                updateParentSet(track, parseInt(track.track_id))
                 track.selected = true;
                 e.target.className += ' selected-track'
             }
@@ -162,9 +166,9 @@ const Search = ({updateParentResults, updateParentSet, parentSet, disableExpandi
             {heading && <h1>Search</h1>}
             <SearchBar setQuery={updateQuery} label={enableLabel}/>
             <div>
-                <button onClick={() => searchData()} disabled={!state.buttonEnabled} className='pad-bottom'>Search</button>
-                {!heading && <button className='pad-bottom no-margin' disabled={!state.buttonEnabled} onClick={clearResults}>Clear Results</button>}
-                {!heading && <button className='pad-bottom no-margin' disabled={!state.buttonEnabled} onClick={showSelected}>Show Selected</button>}
+                <button onClick={() => searchData()} disabled={!state.buttonEnabled}>Search</button>
+                {!heading && <button className='no-margin' disabled={!state.buttonEnabled} onClick={clearResults}>Clear Results</button>}
+                {!heading && <button className='no-margin' disabled={!state.buttonEnabled} onClick={showSelected}>Show Selected</button>}
             </div>
             <SongList searchResults={state.searchResults} expandResults={expandResults} cName={TABLE_STYLE} disableExpanding={disableExpanding}/>
             {state.searchResults.length === 0 && state.invokedPreviously && state.buttonEnabled &&

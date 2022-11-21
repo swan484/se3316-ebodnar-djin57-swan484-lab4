@@ -25,7 +25,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path='/' element={<Layout userLoggedInStatus={state.loggedUser}/>}>
-            <Route index element={<Home updateUserLoginStatus={updateLoginStatus}/>}></Route>
+            <Route index element={<Home updateUserLoginStatus={updateLoginStatus} loginStatus={state.loggedUser}/>}></Route>
             <Route path='search' element={<Search enableLabel={true} heading={true}/>}></Route>
             <Route path='playlists' element={<Playlist />}></Route>
             <Route path='deactivated' element={<Deactivated />}></Route>

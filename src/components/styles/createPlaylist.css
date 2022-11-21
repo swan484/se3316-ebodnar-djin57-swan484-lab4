@@ -52,7 +52,7 @@ select {
 }
 
 .mod-playlist > label {
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     margin-top: 10px;
     padding-left: 5px;
 }
@@ -68,6 +68,10 @@ select {
     padding: 10px 5px 10px 5px;
     display: inline-block;
     resize: vertical;
+    margin-bottom: 10px;
+}
+
+.mod-playlist > input {
     margin-bottom: 10px;
 }
 

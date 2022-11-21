@@ -4,7 +4,7 @@ import './styles/songlist.css'
 const UNKNOWN = "Unknown"
 const YOUTUBE_URL = "https://www.youtube.com/results?search_query="
 
-const SongList = ({searchResults, expandResults, cName, disableExpanding, gotSearchResults}) => {
+const SongList = ({searchResults, expandResults, cName, disableExpanding}) => {
     const getYoutubeLink = (title, artist) => {
         var mappedTitle = title || ""
         if(title.toString().includes(" ")) mappedTitle = title.replace(" ", "+")
