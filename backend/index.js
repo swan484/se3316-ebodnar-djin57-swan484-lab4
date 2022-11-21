@@ -230,7 +230,8 @@ app.post('/api/tracks', async (req, res) => {
     return res.status(200).send(result)
 })
 
-app.get('/api/playlists', async (req, res) => {
+app.get('/api/playlists/:limit', async (req, res) => {
+    const lim = parseInt(req.params.limit)
     console.log(`Called into GET playlists`);
     const query = {
         visibility: 'public'
@@ -238,7 +239,7 @@ app.get('/api/playlists', async (req, res) => {
     const options = {
         tracks: 1,
         date_modified: 1,
-        limit: 10,
+        limit: lim,
         sort: {
             date_modified: -1
         }

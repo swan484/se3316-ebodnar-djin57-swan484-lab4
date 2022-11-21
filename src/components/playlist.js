@@ -4,6 +4,7 @@ import './styles/playlist.css'
 
 const UNKNOWN = "Unknown"
 const NO_DESCRIPTION = "No Description"
+const PLAYLISTS_LIMIT = 10
 
 const Playlist = ({overrideResults}) => {
     const [state, setState] = useState({
@@ -31,7 +32,7 @@ const Playlist = ({overrideResults}) => {
             searchResults: [],
             buttonEnabled: false
         })
-        fetch(`http://localhost:3001/api/playlists`)
+        fetch(`http://localhost:3001/api/playlists/${PLAYLISTS_LIMIT}`)
         .then((a) => {
             console.log(a)
             return a.json()
@@ -54,7 +55,6 @@ const Playlist = ({overrideResults}) => {
     }
 
     const expandResults = (e, track) => {
-        console.log(track)
         if("tracks" in track){
             for(const tr of track.tracks){
                 tr.additional_information = false

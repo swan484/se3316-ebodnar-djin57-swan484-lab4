@@ -50,7 +50,16 @@ const CreatePlaylist = ({userLoggedInStatus}) => {
     }, [state.userPlaylists])
 
     useEffect(() => {
-        if(!(state.selectedPlaylist && Object.keys(state.selectedPlaylist).length > 0)) return;
+        if(!(state.selectedPlaylist && Object.keys(state.selectedPlaylist).length > 0)){
+            setState({
+                ...state,
+                title: '',
+                description: '',
+                public: false,
+                selectedTracks: {}
+            })
+            return;
+        }
         updateAllTracks(state.selectedPlaylist.tracks)
     }, [state.selectedPlaylist])
 
@@ -400,7 +409,6 @@ const CreatePlaylist = ({userLoggedInStatus}) => {
                 {state.creatingPlaylist === 0 ? "Create" : "Update"} Playlist
             </button>}
             {state.deletingPlaylist && state.selectedPlaylist && Object.keys(state.selectedPlaylist).length > 0 && <div>
-                {console.log(state.selectedPlaylist)}
                 <Playlist overrideResults={[state.selectedPlaylist]} />
                 <button className={"create-playlist pad-above" + (state.confirmDelete ? " confirm-delete" : " delete-playlist")} onClick={handleDelete} disabled={state.invokeInProgress}>
                     {!state.confirmDelete ? "Delete Playlist" : "Confirm Delete"}    
