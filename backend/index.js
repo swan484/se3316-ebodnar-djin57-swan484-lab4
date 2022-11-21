@@ -1,4 +1,4 @@
-const {MongoClient, Db} = require('mongodb')
+const {MongoClient, Db, ObjectId} = require('mongodb')
 const cors = require('cors');
 const express = require("express");
 const app = express();
@@ -32,6 +32,11 @@ const NO_ACCESS_ERROR = "You do not have access to this"
 const NO_PLAYLISTS_EXIST = "You do not have any playlists"
 const TOO_MANY_PLAYLISTS = `You cannot have more than ${MAX_NUM_PLAYLISTS} playlists`
 const MISSING_REQUIRED_FIELDS = "You are missing required fields"
+const PLAYLIST_NOT_EXISTS = "This playlist does not exist"
+const DELETION_ERROR = "Playlist could not be deleted, try again later"
+const EMPTY_PLAYLIST_ERROR = "Playlist cannot be empty"
+const EMPTY_TITLE_ERROR = "Playlist must have a title"
+const INVALID_TRACK_EXISTS = "Playlist contains an invalid track"
 
 app.get("/api/upload", (req, res) => {
     UploadData(DB_NAME, TRACKS_COLLECTION)
@@ -139,6 +144,18 @@ app.put('/api/authenticated/playlists', async (req, res) => {
     const tracks = req.body.tracks
     const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
 
+    await checkTracksExist(tracks)
+    .then((data) => {
+        if(data.length != tracks.length){
+            res.statusMessage = INVALID_TRACK_EXISTS
+            return res.status(400).send()
+        }
+    })
+    .catch((err) => {
+        res.statusMessage = err.message
+        return res.status(400).send()
+    })
+
     await getOneFrom(DB_NAME, USERS_COLLECTION, {email: userInfo.email})
     .then((data) => {
         if(!data){
@@ -146,6 +163,12 @@ app.put('/api/authenticated/playlists', async (req, res) => {
         }
         if(data.password !== userInfo.password){
             throw new Error(NO_ACCESS_ERROR)
+        }
+        if(tracks.length === 0){
+            throw new Error(EMPTY_PLAYLIST_ERROR)
+        }
+        if(req.body.list_title.length === 0){
+            throw new Error(EMPTY_TITLE_ERROR)
         }
     }).then(() => getOneFrom(DB_NAME, PLAYLISTS_COLLECTION, {
         list_title: req.body.list_title,
@@ -160,21 +183,18 @@ app.put('/api/authenticated/playlists', async (req, res) => {
         if(data.length >= MAX_NUM_PLAYLISTS){
             throw new Error(TOO_MANY_PLAYLISTS)
         }
-    }).then(() => {
         if(req.body.list_title.length === 0 || tracks === 0){
             throw new Error(MISSING_REQUIRED_FIELDS)
         }
-        const postData = {
-            email: userInfo.email,
-            list_title: req.body.list_title,
-            visibility: req.body.visibility,
-            tracks: tracks,
-            description: req.body.description,
-            date_modified: date,
-            user_name: userInfo.fullName,
-        }
-        return insertOne(DB_NAME, PLAYLISTS_COLLECTION, postData) 
-    }).then((result) => {
+    }).then(() => insertOne(DB_NAME, PLAYLISTS_COLLECTION, {
+        email: userInfo.email,
+        list_title: req.body.list_title,
+        visibility: req.body.visibility,
+        tracks: tracks,
+        description: req.body.description,
+        date_modified: date,
+        user_name: userInfo.fullName,
+    })).then((result) => {
         if (!result) {
             throw new Error(CANNOT_INSERT_PLAYLIST)
         }
@@ -207,7 +227,7 @@ app.post('/api/tracks', async (req, res) => {
         res.statusMessage = err.message
         return res.status(404).send()
     })
-    res.status(200).send(result)
+    return res.status(200).send(result)
 })
 
 app.get('/api/playlists', async (req, res) => {
@@ -331,6 +351,18 @@ app.put('/api/authenticated/playlist', async (req, res) => {
         }
     }
 
+    await checkTracksExist(req.body.tracks)
+    .then((data) => {
+        if(data.length != req.body.tracks.length){
+            res.statusMessage = INVALID_TRACK_EXISTS
+            return res.status(400).send()
+        }
+    })
+    .catch((err) => {
+        res.statusMessage = err.message
+        return res.status(400).send()
+    })
+
     await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.body.email})
     .then((data) => {
         if(!data){
@@ -339,13 +371,54 @@ app.put('/api/authenticated/playlist', async (req, res) => {
         if(data.password !== req.body.password){
             throw new Error(NO_ACCESS_ERROR)
         }
+        if(req.body.tracks.length === 0){
+            throw new Error(EMPTY_PLAYLIST_ERROR)
+        }
+        if(req.body.list_title.length === 0){
+            throw new Error(EMPTY_TITLE_ERROR)
+        }
     }).then(() => updateOneFrom(
         DB_NAME, PLAYLISTS_COLLECTION, key, query
     )).then((data) => {
-        if(!data){
-            throw new Error(NO_PLAYLISTS_EXIST)
+        if(!data.value){
+            throw new Error(PLAYLIST_NOT_EXISTS)
         }
         console.log("Successfully updated playlists")
+        return res.status(200).send()
+    }).catch((err) => {
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
+
+    return res.status(400).send();
+})
+
+app.delete("/api/authenticated/playlist", async (req, res) => {
+    console.log("Called into DELETE playlist")
+
+    const key = {
+        email: req.body.email,
+        list_title: req.body.list_title
+    }
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.body.email})
+    .then((data) => {
+        if(!data){
+            throw new Error(USER_NOT_LOGGED_IN)
+        }
+        if(data.password !== req.body.password){
+            throw new Error(NO_ACCESS_ERROR)
+        }
+    }).then(() => deleteOneFrom(
+        DB_NAME, PLAYLISTS_COLLECTION, key
+    )).then((data) => {
+        if(!data){
+            throw new Error(PLAYLIST_NOT_EXISTS)
+        }
+        if(data.deletedCount === 0){
+            throw new Error(DELETION_ERROR)
+        }
+        console.log("Successfully deleted playlist")
         return res.status(200).send()
     }).catch((err) => {
         res.statusMessage = err.message
@@ -403,11 +476,10 @@ const updateOneFrom = async (dbName, collectionName, key, query) => {
     const database = client.db(dbName);
     const collection = database.collection(collectionName);
     
-    await collection.updateOne(key, query)
-    .then(() => console.log("Success In Update"))
-    .catch((e) => console.log(`Encountered error ${e}`))
+    const result = collection.findOneAndUpdate(key, query)
+    .catch((e) => {throw new Error(e.message)})
 
-    return true;
+    return result;
 }
 
 const insertOne = async (dbName, collectionName, doc) => {
@@ -415,13 +487,61 @@ const insertOne = async (dbName, collectionName, doc) => {
     const database = client.db(dbName);
     const collection = database.collection(collectionName);
     
-    await collection.insertOne(doc)
-    .then(() => console.log("Successfully Inserted"))
-    .catch((e) => console.log(`Encountered error ${e}`))
+    const result = collection.insertOne(doc)
+    .catch((e) => {throw new Error(e.message)})
 
-    return true;
+    return result;
 }
 
+const deleteOneFrom = async (dbName, collectionName, query) => {
+    await client.connect()
+    try {
+        const database = client.db(dbName);
+        const collection = database.collection(collectionName);
+        const result = await collection.deleteOne(query);
+        return result;
+    } 
+    finally {
+        await client.close();
+    }
+}
+
+const checkTracksExist = async (tracks) => {
+    await client.connect()
+    const database = client.db(DB_NAME);
+    const collection = database.collection(TRACKS_COLLECTION);
+
+    const list = []
+    const query = []
+    for(const track of tracks){
+        query.push({
+            _id: ObjectId(track._id)
+        })
+    }
+
+    const result = await collection.find({$or: query}, {});
+    await result.forEach((entry) => {
+        list.push(entry)
+    }).then(async () => {
+        await client.close();
+    })
+    return list;
+}
+
+const checkTrackExists = async (track) => {
+    await client.connect()
+    try {
+        const database = client.db(DB_NAME);
+        const collection = database.collection(TRACKS_COLLECTION);
+        const result = await collection.findOne(track, {});
+        return result;
+    } 
+    finally {
+        await client.close();
+    }
+}
+
+//Can delete this after
 const UploadData = async (dbName, collectionName) => {
     await client.connect()
     var count = 0

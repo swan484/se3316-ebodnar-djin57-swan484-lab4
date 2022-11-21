@@ -91,3 +91,24 @@ select {
 .parent-div {
     margin-bottom: 30px;
 }
+
+.pad-above {
+    margin-top: 10px;
+}
+
+.confirm-delete {
+    color: #d84d4d;
+    border-color: #d84d4d;
+}
+
+.confirm-delete:hover {
+    background-color: #a11313;
+    color: #F0F6FA;
+    border-color: #F0F6FA;
+}
+
+.delete-playlist:hover {
+    background-color: #d84d4d;
+    color: #F0F6FA;
+    border-color: #F0F6FA;
+}

@@ -166,9 +166,9 @@ const Search = ({updateParentResults, updateParentSet, parentSet, disableExpandi
             {heading && <h1>Search</h1>}
             <SearchBar setQuery={updateQuery} label={enableLabel}/>
             <div>
-                <button onClick={() => searchData()} disabled={!state.buttonEnabled}>Search</button>
-                {!heading && <button className='no-margin' disabled={!state.buttonEnabled} onClick={clearResults}>Clear Results</button>}
-                {!heading && <button className='no-margin' disabled={!state.buttonEnabled} onClick={showSelected}>Show Selected</button>}
+                <button onClick={() => searchData()} disabled={!state.buttonEnabled} className="submit-button">Search</button>
+                {!heading && <button className='no-margin submit-button' disabled={!state.buttonEnabled} onClick={clearResults}>Clear Results</button>}
+                {!heading && <button className='no-margin submit-button' disabled={!state.buttonEnabled} onClick={showSelected}>Show Selected</button>}
             </div>
             <SongList searchResults={state.searchResults} expandResults={expandResults} cName={TABLE_STYLE} disableExpanding={disableExpanding}/>
             {state.searchResults.length === 0 && state.invokedPreviously && state.buttonEnabled &&

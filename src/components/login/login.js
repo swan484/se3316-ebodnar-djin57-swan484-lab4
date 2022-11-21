@@ -210,7 +210,7 @@ const Login = ({updateParentLoginStatus}) => {
                     updateParentConfirmedPassword={updateConfirmedPassword} updateParentFullName={updateFullName} />
                 {state.successMessage.length > 0 && state.error.length === 0 && <MessageBar message={state.successMessage} cName={SUCCESS_CLASS} />}
                 {state.error.length > 0 && <MessageBar message={state.error} cName={ERROR_CLASS} />}
-                <button disabled={!state.buttonEnabled} onClick={() => createAccount()}>
+                <button disabled={!state.buttonEnabled} onClick={() => createAccount()} className="submit-button">
                     Submit
                 </button>
             </div>
@@ -226,7 +226,7 @@ const Login = ({updateParentLoginStatus}) => {
                     updateParentConfirmedPassword={updateConfirmedPassword} updateParentExistingPassword={updateExistingPassword} />
                 {state.successMessage.length > 0 && state.error.length === 0 && <MessageBar message={state.successMessage} cName={SUCCESS_CLASS} />}
                 {state.error.length > 0 && <MessageBar message={state.error} cName={ERROR_CLASS} />}
-                <button disabled={!state.buttonEnabled} onClick={() => submitChange()}>
+                <button disabled={!state.buttonEnabled} onClick={() => submitChange()} className="submit-button">
                     Submit
                 </button>
             </div>
@@ -240,7 +240,7 @@ const Login = ({updateParentLoginStatus}) => {
             <LoginForm updateParentEmail={updateEmail} updateParentPassword={updatePassword} />
             {state.successMessage.length > 0 && state.error.length === 0 && <MessageBar message={state.successMessage} cName={SUCCESS_CLASS} />}
             {state.error.length > 0 && <MessageBar message={state.error} cName={ERROR_CLASS} />}
-            <button disabled={!state.buttonEnabled} onClick={() => submitLogin()}>
+            <button disabled={!state.buttonEnabled} onClick={() => submitLogin()} className="submit-button">
                 Submit
             </button>
         </div>

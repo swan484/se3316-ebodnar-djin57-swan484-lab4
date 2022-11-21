@@ -5,16 +5,24 @@ import './styles/playlist.css'
 const UNKNOWN = "Unknown"
 const NO_DESCRIPTION = "No Description"
 
-const Playlist = () => {
+const Playlist = ({overrideResults}) => {
     const [state, setState] = useState({
-        searchResults: [],
+        searchResults: overrideResults && overrideResults.length > 0 ? overrideResults : [],
         buttonEnabled: true
     })
 
     useEffect(() => {
-        console.log("Searching data for playlists")
+        if(overrideResults && overrideResults.length > 0) return;
         searchData()
     }, [])
+
+    useEffect(() => {
+        if(!overrideResults) return;
+        setState({
+            ...state,
+            searchResults: overrideResults
+        })
+    }, [overrideResults])
 
     const searchData = () => {
         console.log("Searching data")
@@ -61,8 +69,10 @@ const Playlist = () => {
 
     return (
         <div>
-            <h1>Playlists</h1>
-            <button onClick={searchData}>Search</button>
+            {(!overrideResults || overrideResults.length === 0) && <div>
+                <h1>Playlists</h1>
+                <button onClick={searchData} className="submit-button">Search</button>
+            </div>}
             <ul className="search-table narrow-width table-colour-2" >
                 {state.searchResults.length > 0 && 
                     <div className="heading-row table-row table-header-2">

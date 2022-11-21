@@ -72,12 +72,6 @@ button:disabled {
     border-color: #bbbbbb;
 }
 
-button:enabled:hover {
-    background-color: #efa8ea;
-    color: #1F1F1F;
-    border-color: #1F1F1F;
-}
-
 .changeState:hover {
     cursor: pointer;
 }
@@ -114,4 +108,10 @@ button:enabled:hover {
     padding-top: 10px;
     font-weight: 600;
     font-size: 18px;
+}
+
+.submit-button:enabled:hover {
+    background-color: #efa8ea;
+    color: #1F1F1F;
+    border-color: #1F1F1F;
 }
