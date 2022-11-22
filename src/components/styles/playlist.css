@@ -44,3 +44,18 @@
 .no-pad {
     margin-bottom: 0px;
 }
+
+.success-msg{
+    color: #6ab743;
+    display: block;
+}
+
+.error-msg {
+    color: #b74343;
+    display: block;
+}
+
+.loading-msg {
+    color: #f397ff;
+    font-size: 20px;
+}

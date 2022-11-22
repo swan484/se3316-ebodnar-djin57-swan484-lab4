@@ -20,7 +20,7 @@ const ReviewPlaylist = ({userLoggedInStatus}) => {
     }
     return (
         <div className="parent-div">
-            <Playlist reviewContent={true} displayLimit={PLAYLISTS_LIMIT}/>
+            <Playlist reviewContent={true} displayLimit={PLAYLISTS_LIMIT} userLoggedInStatus={userLoggedInStatus}/>
         </div>
     )
 }

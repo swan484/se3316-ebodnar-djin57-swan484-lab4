@@ -27,7 +27,7 @@ const SongList = ({searchResults, expandResults, cName, disableExpanding}) => {
             }
             {searchResults.map(item => (
                 <div className="table-row" key={item.track_id} value={item.track_id} >
-                    <li onClick={(e) => expandResults(e, item, false)} className={item.selected && disableExpanding ? "selected-track" : ""}>
+                    <li onClick={(e) => expandResults(e, item)} className={item.selected && disableExpanding ? "selected-track" : ""}>
                         <p className="title">{item.track_title || UNKNOWN}</p>
                         <p className="artist">{item.artist_name || UNKNOWN}</p>
                         <p className="album">{item.album_title || UNKNOWN}</p>

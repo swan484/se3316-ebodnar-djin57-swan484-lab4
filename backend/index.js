@@ -17,6 +17,7 @@ const ALBUMS_COLLECTION = "albums"
 const ARTISTS_COLLECTION = "artists"
 const TRACKS_COLLECTION = "tracks"
 const PLAYLISTS_COLLECTION = "playlists"
+const REVIEWS_COLLECTION = "reviews"
 
 const MAX_NUM_PLAYLISTS = 20
 
@@ -37,6 +38,8 @@ const DELETION_ERROR = "Playlist could not be deleted, try again later"
 const EMPTY_PLAYLIST_ERROR = "Playlist cannot be empty"
 const EMPTY_TITLE_ERROR = "Playlist must have a title"
 const INVALID_TRACK_EXISTS = "Playlist contains an invalid track"
+const REVIEW_DOES_NOT_EXIST = "No review exists"
+const EMPTY_RATING = "Cannot have an empty rating"
 
 app.get("/api/upload", (req, res) => {
     UploadData(DB_NAME, TRACKS_COLLECTION)
@@ -244,11 +247,55 @@ app.get('/api/playlists/:limit', async (req, res) => {
             date_modified: -1
         }
     }
+
+    const aggQuery = [
+        {
+            $lookup: {
+                from: REVIEWS_COLLECTION,
+                localField: "_id",
+                foreignField: "list_id",
+                as: "PlaylistReviews"
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                email: 1,
+                list_title: 1,
+                visibility: 1,
+                tracks: 1,
+                description: 1,
+                date_modified: 1,
+                user_name: 1,
+                PlaylistReviews: 1
+            }
+        }
+    ]
+
+    const ratings = {}
+    await getAggregate(DB_NAME, PLAYLISTS_COLLECTION, aggQuery)
+    .then((result) => {
+        result.forEach((r) => {
+            console.log(r)
+            let sum = 0
+            let count = 0
+            r.PlaylistReviews.forEach((p) => {
+                sum += p.rating
+                count++
+            })
+            ratings[r._id] = (sum/count)
+        })
+    })
+
     var result = []
     await getAllFrom(DB_NAME, PLAYLISTS_COLLECTION, query, options)
     .then((data) => {
         data.forEach(d => {
-            result.push(d)
+            const avgRating = ratings[d._id]
+            result.push({
+                ...d,
+                avg_rating: avgRating
+            })
         })
     })
     return res.status(200).send(result)
@@ -429,6 +476,84 @@ app.delete("/api/authenticated/playlist", async (req, res) => {
     return res.status(400).send();
 })
 
+app.put('/api/authenticated/review', async (req, res) => {
+    console.log("Called into PUT review")
+
+    const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
+    const key = {
+        email: req.body.email,
+        list_id: ObjectId(req.body.list_id),
+        creator_email: req.body.creator_email
+    }
+    const query = {
+        $set: {
+            email: req.body.email,
+            list_id: ObjectId(req.body.list_id),
+            modified_date: date,
+            rating: req.body.rating,
+            comments: req.body.comments,
+            creator_email: req.body.creator_email,
+            user_name: req.body.username
+        }
+    }
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.body.email})
+    .then((data) => {
+        if(!data){
+            throw new Error(USER_NOT_LOGGED_IN)
+        }
+        if(data.password !== req.body.password){
+            throw new Error(NO_ACCESS_ERROR)
+        }
+        if(!req.body.rating || req.body.rating.length === 0){
+            throw new Error(EMPTY_RATING)
+        }
+    }).then(() => updateOneFrom(
+        DB_NAME, REVIEWS_COLLECTION, key, query, {upsert: true}
+    )).then((a) => {
+        console.log("Successfully completed review")
+        return res.status(200).send()
+    }).catch((err) => {
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
+
+    return res.status(400).send();
+})
+
+//Get review
+app.post('/api/authenticated/reviews', async (req, res) => {
+    console.log("Called into POST review")
+
+    const key = {
+        email: req.body.email
+    }
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.body.email})
+    .then((data) => {
+        if(!data){
+            throw new Error(USER_NOT_LOGGED_IN)
+        }
+        if(data.password !== req.body.password){
+            throw new Error(NO_ACCESS_ERROR)
+        }
+    }).then(() => getAllFrom(
+        DB_NAME, REVIEWS_COLLECTION, key
+    )).then((results) => {
+        if(!results){
+            throw new Error(REVIEW_DOES_NOT_EXIST)
+        }
+
+        console.log("Successfully got reviews")
+        return res.status(200).send(results)
+    }).catch((err) => {
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
+
+    return res.status(400).send();
+})
+
 const getOneFrom = async (dbName, collectionName, query, options={}) => {
     await client.connect()
     try {
@@ -472,12 +597,12 @@ const getAggregate = async (dbName, collectionName, query, options={}) => {
     return list;
 }
 
-const updateOneFrom = async (dbName, collectionName, key, query) => {
+const updateOneFrom = async (dbName, collectionName, key, query, additional={}) => {
     await client.connect()
     const database = client.db(dbName);
     const collection = database.collection(collectionName);
     
-    const result = collection.findOneAndUpdate(key, query)
+    const result = collection.findOneAndUpdate(key, query, additional)
     .catch((e) => {throw new Error(e.message)})
 
     return result;
@@ -527,19 +652,6 @@ const checkTracksExist = async (tracks) => {
         await client.close();
     })
     return list;
-}
-
-const checkTrackExists = async (track) => {
-    await client.connect()
-    try {
-        const database = client.db(DB_NAME);
-        const collection = database.collection(TRACKS_COLLECTION);
-        const result = await collection.findOne(track, {});
-        return result;
-    } 
-    finally {
-        await client.close();
-    }
 }
 
 //Can delete this after
