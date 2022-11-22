@@ -1,9 +1,9 @@
 .list-title {
-    width: 29%;
+    width: 24%;
 }
 
 .date-modified {
-    width: 25%;
+    width: 20%;
 }
 
 .username {
@@ -14,8 +14,12 @@
     width: 15%;
 }
 
-.rating {
+.num-tracks {
     width: 10%;
+}
+
+.rating {
+    width: 9%;
 }
 
 .table-row-2 {

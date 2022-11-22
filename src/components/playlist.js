@@ -287,17 +287,19 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
                             <p className="username">CREATOR</p>
                             <p className="date-modified">LAST MODIFIED</p>
                             <p className="playtime">PLAYTIME</p>
+                            <p className="num-tracks"># TRACKS</p>
                             <p className="rating">AVG RATING</p>
                         </li>
                     </div>
                 }
                 {state.searchResults.map(item => (
-                    <div className="table-row table-row-2" key={item.list_title + item.email} value={item.track_id} >
+                    <div className="table-row table-row-2" key={item.list_title + item.email} >
                         <li onClick={(e) => expandResults(e, item)}>
                             <p className="list-title">{item.list_title || UNKNOWN}</p>
                             <p className="username">{item.user_name || UNKNOWN}</p>
                             <p className="date-modified">{item.date_modified || UNKNOWN}</p>
                             <p className="playtime">{item.playtime || UNKNOWN}</p>
+                            <p className="num-tracks">{item.tracks.length || UNKNOWN}</p>
                             <p className="rating">{item.avg_rating || UNKNOWN}</p>
                         </li>
                         {item.additional_information && <div className="track-details no-pad top-pad">

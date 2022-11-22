@@ -141,15 +141,24 @@ app.post("/api/user", async (req, res) => {
     res.status(200).send();
 })
 
+//Create a playlist
 app.put('/api/authenticated/playlists', async (req, res) => {
     console.log("Called into PUT authenticated playlists")
     const userInfo = req.body.userInfo
     const tracks = req.body.tracks
     const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
 
-    await checkTracksExist(tracks)
+    const modifiedTracks = []
+    req.body.tracks.forEach((t) => {
+        modifiedTracks.push({
+            ...t,
+            _id: new ObjectId(t._id)
+        })
+    })
+
+    await checkTracksExist(modifiedTracks)
     .then((data) => {
-        if(data.length != tracks.length){
+        if(data.length != modifiedTracks.length){
             res.statusMessage = INVALID_TRACK_EXISTS
             return res.status(400).send()
         }
@@ -186,14 +195,14 @@ app.put('/api/authenticated/playlists', async (req, res) => {
         if(data.length >= MAX_NUM_PLAYLISTS){
             throw new Error(TOO_MANY_PLAYLISTS)
         }
-        if(req.body.list_title.length === 0 || tracks === 0){
+        if(req.body.list_title.length === 0 || modifiedTracks.length === 0){
             throw new Error(MISSING_REQUIRED_FIELDS)
         }
     }).then(() => insertOne(DB_NAME, PLAYLISTS_COLLECTION, {
         email: userInfo.email,
         list_title: req.body.list_title,
         visibility: req.body.visibility,
-        tracks: tracks,
+        tracks: modifiedTracks,
         description: req.body.description,
         date_modified: date,
         user_name: userInfo.fullName,
@@ -276,7 +285,6 @@ app.get('/api/playlists/:limit', async (req, res) => {
     await getAggregate(DB_NAME, PLAYLISTS_COLLECTION, aggQuery)
     .then((result) => {
         result.forEach((r) => {
-            console.log(r)
             let sum = 0
             let count = 0
             r.PlaylistReviews.forEach((p) => {
@@ -405,14 +413,9 @@ app.put('/api/authenticated/playlist', async (req, res) => {
             res.statusMessage = INVALID_TRACK_EXISTS
             return res.status(400).send()
         }
-    })
-    .catch((err) => {
-        res.statusMessage = err.message
-        return res.status(400).send()
-    })
-
-    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.body.email})
-    .then((data) => {
+    }).then(() => getOneFrom(
+        DB_NAME, USERS_COLLECTION, {email: req.body.email}
+    )).then((data) => {
         if(!data){
             throw new Error(USER_NOT_LOGGED_IN)
         }
@@ -633,6 +636,7 @@ const deleteOneFrom = async (dbName, collectionName, query) => {
 }
 
 const checkTracksExist = async (tracks) => {
+    console.log("Checking if tracks exist")
     await client.connect()
     const database = client.db(DB_NAME);
     const collection = database.collection(TRACKS_COLLECTION);

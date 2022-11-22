@@ -278,6 +278,7 @@ const CreatePlaylist = ({userLoggedInStatus}) => {
             body: JSON.stringify(query)
         })
         .then((a) => {
+            console.log(a)
             if(a.status !== 200){
                 throw new Error(a.statusText)
             }
