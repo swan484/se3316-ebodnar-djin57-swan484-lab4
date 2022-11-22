@@ -1,4 +1,3 @@
-import e from "cors";
 import React, { startTransition, useEffect, useState } from "react";
 import Search from "./search";
 import './styles/createPlaylist.css'

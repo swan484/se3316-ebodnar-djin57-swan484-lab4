@@ -7,6 +7,7 @@ import {useEffect, useState} from 'react'
 import Deactivated from './components/deactivated';
 import Playlist from './components/playlist';
 import CreatePlaylist from './components/createPlaylist';
+import ReviewPlaylist from './components/reviewPlaylist';
 
 function App() {
   const [state, setState] = useState({
@@ -30,6 +31,7 @@ function App() {
             <Route path='playlists' element={<Playlist />}></Route>
             <Route path='deactivated' element={<Deactivated />}></Route>
             <Route path='create' element={<CreatePlaylist userLoggedInStatus={state.loggedUser}/>}></Route>
+            <Route path='review' element={<ReviewPlaylist userLoggedInStatus={state.loggedUser}/>}></Route>
           </Route>
         </Routes>
       </BrowserRouter>

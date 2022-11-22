@@ -18,6 +18,9 @@ const Navbar = ({userLoggedInStatus}) => {
                 {userLoggedInStatus && Object.keys(userLoggedInStatus).length > 0 && <li>
                     <NavLink to='/create' className={({ isActive }) => "link" + (isActive ? " active" : "")}>My Playlists</NavLink>
                 </li>}
+                {userLoggedInStatus && Object.keys(userLoggedInStatus).length > 0 && <li>
+                    <NavLink to='/review' className={({ isActive }) => "link" + (isActive ? " active" : "")}>Rate Playlists</NavLink>
+                </li>}
             </ul>
         </nav>
     )
