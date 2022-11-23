@@ -135,7 +135,7 @@ const Login = ({updateParentLoginStatus}) => {
             password: state.password
         }
 
-        await fetch(`http://localhost:3001/api/user/create`, {
+        await fetch(`http://localhost:3001/api/user/information`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
@@ -157,7 +157,7 @@ const Login = ({updateParentLoginStatus}) => {
             else if(a.status !== 200){
                 throw new Error(a.statusText)
             }
-            
+
             return a.json()
         })
         .then((a) => {

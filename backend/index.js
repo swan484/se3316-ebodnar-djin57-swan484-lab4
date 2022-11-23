@@ -14,9 +14,6 @@ const CryptoJS = require("crypto-js")
 
 const DB_NAME = "music"
 const USERS_COLLECTION = "users"
-const GENRES_COLLECTION = "genres"
-const ALBUMS_COLLECTION = "albums"
-const ARTISTS_COLLECTION = "artists"
 const TRACKS_COLLECTION = "tracks"
 const PLAYLISTS_COLLECTION = "playlists"
 const REVIEWS_COLLECTION = "reviews"
@@ -25,7 +22,6 @@ const MAX_NUM_PLAYLISTS = 20
 
 const INCORRECT_PASSWORD = "Incorrect password"
 const INVALID_EMAIL = "Email not recognized"
-const CANNOT_UPDATE = "Cannot update password, try again later"
 const EMAIL_EXISTS = "An account with this email already exists"
 const CANNOT_INSERT = "Cannot create account, try again later"
 const CANNOT_INSERT_PLAYLIST = "Cannot insert playlist, try again later"
@@ -43,15 +39,26 @@ const INVALID_TRACK_EXISTS = "Playlist contains an invalid track"
 const REVIEW_DOES_NOT_EXIST = "No review exists"
 const EMPTY_RATING = "Cannot have an empty rating"
 const USER_NOT_EXISTS = "User does not exist"
+const COULD_NOT_DECRYPT = "Could not decrypt details, try again later"
+const COULD_NOT_UPDATE = "Could not update details, try again later"
 
 const SECRET_KEY = "fTjWnZr4u7x!A%D*G-KaNdRgUkXp2s5v8y/B?E(H+MbQeShVmYq3t6w9z$C&F)J@NcRfUjWnZr4u7x!A%D*G-KaPdSgVkYp2s5v8y/B?E(H+MbQeThWmZq4t6w9z$C&F"
 
+/*
+*   Upload data to the database - NEED TO DELETE
+*/
 app.get("/api/upload", (req, res) => {
     UploadData(DB_NAME, TRACKS_COLLECTION)
 })
 
-app.post("/api/user/create", (req, res) => {
-    console.log(`Called into POST user/create (email)`);
+/**
+ * Get a User (used for login):
+ *  Query by email (unique in database) - if it does not exist return an error
+ *  If the returned user object has a mismatched password (with the user input), then return an error
+ *  If the user is not verified, return a new cypher for them to verify with
+ */
+app.post("/api/user/information", (req, res) => {
+    console.log(`Called into POST user/information (email)`);
     const search = req.body;
     const query = {
         email: search.email
@@ -78,11 +85,12 @@ app.post("/api/user/create", (req, res) => {
     });
 });
 
-/*
-    body: 
-    {email, password, newPassword}
-*/
-//TODO: fix error messages
+/**
+ * Update a User in the DB
+ *  First check if a user with this email exists - return an error if not
+ *  Check if the inputted password matches the existing password in the DB
+ *  Then update the user document in the DB, setting the password to the new user inputted password
+ */
 app.put("/api/user", async (req, res) => {
     const body = req.body;
     const search = {
@@ -92,40 +100,39 @@ app.put("/api/user", async (req, res) => {
     await getOneFrom(DB_NAME, USERS_COLLECTION, search)
     .then((foundUser) => {
         if(!foundUser){
-            res.statusMessage = INVALID_EMAIL
-            return res.status(404).send(); 
+            throw new Error(INVALID_EMAIL)
         }
         if(body.password != foundUser.password){
-            res.statusMessage = INCORRECT_PASSWORD
-            return res.status(404).send()
+            throw new Error(INCORRECT_PASSWORD)
         }
     })
-    .then(() => {
-        const key = {
-            email: body.email
-        }
-        const query = { 
-            $set: {
-                password: body.newPassword 
-            } 
+    .then(() => updateOneFrom(DB_NAME, USERS_COLLECTION, {
+        email: body.email }, { 
+        $set: {
+            password: body.newPassword 
+        } 
+    })).then((result) => {
+        if (!result) {
+            throw new Error(COULD_NOT_UPDATE)
         }
 
-        updateOneFrom(DB_NAME, USERS_COLLECTION, key, query)
-        .then((result) => {
-            if (!result) {
-                return res.status(400).send();
-            }
-    
-            console.log("Success In Change")
-        })
+        console.log("Success In Change")
     })
-    .catch(() => {
-        res.statusMessage = CANNOT_UPDATE
-        res.status(404).send()
+    .catch((err) => {
+        res.statusMessage = err.message
+        return res.status(404).send()
     });
-    res.status(200).send();
+    
+    return res.status(200).send();
 })
 
+/**
+ * THIS IS ACTUALLY NOT BEING USED - DELETE IF THAT DOESN'T CHANGE
+ * Encrypt the sent user details
+ *  First check if the user email exists in the DB - if not return an error
+ *  Check if the user inputted password matches the DB record
+ *  Return a cypher generated from the username and password for them to verify with
+ */
 app.post('/api/user/encrypt', async (req, res) => {
     const userDetails = {
         email: req.body.email,
@@ -135,37 +142,38 @@ app.post('/api/user/encrypt', async (req, res) => {
     await getOneFrom(DB_NAME, USERS_COLLECTION, {email: userDetails.email})
     .then((foundUser) => {
         if(!foundUser){
-            res.statusMessage = USER_NOT_EXISTS
-            return res.status(404).send(); 
+            throw new Error(USER_NOT_EXISTS)
         }
         if(userDetails.password != foundUser.password){
-            res.statusMessage = INCORRECT_PASSWORD
-            return res.status(404).send()
+            throw new Error(INCORRECT_PASSWORD)
         }
     }).then(() => {
         const cypher = CryptoJS.AES.encrypt(JSON.stringify(userDetails), SECRET_KEY).toString()
-        res.status(200).send(cypher)
+        return res.status(200).send(cypher)
     }).catch((err) => {
         res.statusMessage = err.message
-        res.status(404).send()
+        return res.status(404).send()
     })
 })
 
+/**
+ * Decrypt a User encrypted string in order to verify the User who clicked it
+ *  First decrypt the string, then check the resulting data (email exists, password matches record)
+ *  Then update the corresponding User document in the DB, setting verified = true
+ */
 app.post("/api/user/decrypt", async (req, res) => {
     const id = req.body.id
     
-    const bytes  = CryptoJS.AES.decrypt(id, SECRET_KEY);
+    const bytes = CryptoJS.AES.decrypt(id, SECRET_KEY);
     const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
 
     await getOneFrom(DB_NAME, USERS_COLLECTION, {email: decryptedData.email})
     .then((foundUser) => {
         if(!foundUser){
-            res.statusMessage = USER_NOT_EXISTS
-            return res.status(404).send(); 
+            throw new Error(USER_NOT_EXISTS) 
         }
         if(decryptedData.password != foundUser.password){
-            res.statusMessage = INCORRECT_PASSWORD
-            return res.status(404).send()
+            throw new Error(INCORRECT_PASSWORD)
         }
     }).then(() => updateOneFrom(
         DB_NAME, USERS_COLLECTION, {email: decryptedData.email}, {
@@ -175,54 +183,23 @@ app.post("/api/user/decrypt", async (req, res) => {
         }
     )).then((result) => {
         if (!result) {
-            return res.status(400).send();
+            throw new Error(COULD_NOT_DECRYPT)
         }
 
         console.log("Successfully Verified User")
         return res.status(200).send(result);
     }).catch((err) => {
         res.statusMessage = err.message
-        res.status(404).send()
-    })
-})
-
-app.post('/api/user/verification', async (req, res) => {
-    const body = req.body;
-    const search = {
-        email: body.email
-    }
-
-    await getOneFrom(DB_NAME, USERS_COLLECTION, search)
-    .then((foundUser) => {
-        if(!foundUser){
-            res.statusMessage = USER_NOT_EXISTS
-            return res.status(404).send(); 
-        }
-        if(body.password != foundUser.password){
-            res.statusMessage = INCORRECT_PASSWORD
-            return res.status(404).send()
-        }
-    }).then(() => updateOneFrom(
-        DB_NAME, USERS_COLLECTION, search, {
-            $set: {
-                verified: true
-            }
-        }
-    )).then((result) => {
-        if (!result) {
-            return res.status(400).send();
-        }
-
-        console.log("Successfully Updated Verification")
-        return res.status(200).send(result);
-    })
-    .catch(() => {
-        res.statusMessage = CANNOT_INSERT
         return res.status(404).send()
-    });
-    return res.status(200).send();
+    })
 })
 
+/**
+ * Add a User to the DB
+ *  First check if a user with this email already exists, returning an error if so (no two users can have the same email)
+ *  Then insert the (unverified) user object into the DB, returning an error in case of failure
+ *  Then generate a cypher for the user to verify their email with and return it to them
+ */
 app.post("/api/user", async (req, res) => {
     const body = req.body;
     const search = {
@@ -235,7 +212,6 @@ app.post("/api/user", async (req, res) => {
 
     await getOneFrom(DB_NAME, USERS_COLLECTION, search)
     .then((foundUser) => {
-        console.log(foundUser)
         if(foundUser){
             throw new Error(EMAIL_EXISTS)
         }
@@ -246,7 +222,6 @@ app.post("/api/user", async (req, res) => {
         deactivated: false,
         verified: false
     })).then((result) => {
-        console.log(result)
         if (!result) {
             throw new Error(CANNOT_INSERT)
         }
@@ -254,7 +229,6 @@ app.post("/api/user", async (req, res) => {
         console.log("Successfully Inserted")
     }).then(() => {
         const cypher = CryptoJS.AES.encrypt(JSON.stringify(userDetails), SECRET_KEY).toString()
-        console.log(cypher)
         return res.status(200).send(cypher)
     }).catch((err) => {
         res.statusMessage = err.message
@@ -262,7 +236,15 @@ app.post("/api/user", async (req, res) => {
     });
 })
 
-//Create a playlist
+/**
+ * Create a playlist (for authenticated users)
+ *  Modify the input slightly - apply correct IDs for all playlist tracks (for joining with the tracks table) and get the current datetime
+ *  Check that all of the tracks that the user wants to add to the playlist exist, returning an error if not
+ *  Return errors if the user is not logged in, logged in to the wrong account, the playlist is empty (no tracks), or the playlist has no title
+ *  Then check if this playlist title already exists, returning an error if so
+ *  Then get all of the user's existing playlists, returining an error if they already have more than the max number of playlists (20)
+ *  Then insert the playlist into the playlists DB and return a success message
+ */
 app.put('/api/authenticated/playlists', async (req, res) => {
     console.log("Called into PUT authenticated playlists")
     const userInfo = req.body.userInfo
@@ -277,22 +259,10 @@ app.put('/api/authenticated/playlists', async (req, res) => {
         })
     })
 
-    if(req.body.tracks.length === 0){
-        console.log("Empty tracks")
-        res.statusMessage = EMPTY_PLAYLIST_ERROR
-        res.status(400).send()
-    }
-    if(req.body.list_title.length === 0){
-        console.log("Empty Title")
-        res.statusMessage = EMPTY_TITLE_ERROR
-        res.status(400).send()
-    }
-
     await checkTracksExist(modifiedTracks)
     .then((data) => {
         if(data.length != modifiedTracks.length){
-            res.statusMessage = INVALID_TRACK_EXISTS
-            return res.status(400).send()
+            throw new Error(INVALID_TRACK_EXISTS)
         }
     }).then(() => getOneFrom(
         DB_NAME, USERS_COLLECTION, {email: userInfo.email}
@@ -303,7 +273,7 @@ app.put('/api/authenticated/playlists', async (req, res) => {
         if(data.password !== userInfo.password){
             throw new Error(NO_ACCESS_ERROR)
         }
-        if(tracks.length === 0){
+        if(modifiedTracks.length === 0){
             throw new Error(EMPTY_PLAYLIST_ERROR)
         }
         if(req.body.list_title.length === 0){
@@ -321,9 +291,6 @@ app.put('/api/authenticated/playlists', async (req, res) => {
     })).then((data) => {
         if(data.length >= MAX_NUM_PLAYLISTS){
             throw new Error(TOO_MANY_PLAYLISTS)
-        }
-        if(req.body.list_title.length === 0 || modifiedTracks.length === 0){
-            throw new Error(MISSING_REQUIRED_FIELDS)
         }
     }).then(() => insertOne(DB_NAME, PLAYLISTS_COLLECTION, {
         email: userInfo.email,
@@ -347,6 +314,10 @@ app.put('/api/authenticated/playlists', async (req, res) => {
     res.status(200).send();
 })
 
+/**
+ * Get all tracks with IDs in the user inputted list of IDs
+ *  Formulate the user input into a MongoDB query, then return the list of tracks
+ */
 app.post('/api/tracks', async (req, res) => {
     console.log(`Called into POST tracks`);
     var result = []
@@ -355,9 +326,9 @@ app.post('/api/tracks', async (req, res) => {
             $in: req.body.ids
         }
     }
+
     await getAllFrom(DB_NAME, TRACKS_COLLECTION, query, {})
     .then((data) => {
-        console.log("Got data")
         data.forEach(d => {
             result.push(d)
         })
@@ -366,9 +337,17 @@ app.post('/api/tracks', async (req, res) => {
         res.statusMessage = err.message
         return res.status(404).send()
     })
+
     return res.status(200).send(result)
 })
 
+/**
+ * Get a limited number of public playlists
+ *  Create the DB queries (limit to only "public" visibilities, only get tracks and date modified (sorted by most recent))
+ *  Create an aggregate query, joining the reviews and playlist collections - returns a list of playlists, each containing a list of reviews for that playlist
+ *  Run this aggregate and for each playlist record the average rating
+ *  Then get all playlists according to the previously defined criteria, returning it to the user
+ */
 app.get('/api/playlists/:limit', async (req, res) => {
     const lim = parseInt(req.params.limit)
     console.log(`Called into GET playlists`);
@@ -432,12 +411,23 @@ app.get('/api/playlists/:limit', async (req, res) => {
                 avg_rating: avgRating
             })
         })
+    }).catch((err) => {
+        res.statusMessage = err.message
+        return res.status(404).send()
     })
+
     return res.status(200).send(result)
 })
 
+/**
+ * Fuzzy search for tracks, matching user input against the artist name, track title, and genres for each track
+ *  Split the user input by comma (ie. "abc, def" -> results need to match both "abc" AND "def")
+ *  Perform a search on tracks according to the user queries, recording how many times each track has come up
+ *  Return tracks that match ALL of the user's queries
+ *  Note: fuzzy searching is applied here (built into MongoDB) - each subquery is searched with double replacement
+ */
 app.get('/api/search/:query', async (req, res) => {
-    console.log("Called into test " + req.params.query)
+    console.log("Called into search " + req.params.query)
     const queries = req.params.query.split(",")
 
     var results = {}
@@ -478,14 +468,20 @@ app.get('/api/search/:query', async (req, res) => {
                 if(d.track_id in results) results[d.track_id].count++;
             })
         })
-        .catch((err) => console.log(`Error: ${err}`))
+        .catch((err) => {
+            res.statusMessage = err.message
+            res.status(404).send()
+        })
         it++;
     }
     res.send(Object.values(results).filter((item) => {return item.count === queries.length}))
 })
 
-//Get all playlists for a user
-    //POST because GET is too complicated for this
+/**
+ * Get all of a specific User's playlists
+ *  First check if the user is logged into the correct account that they are trying to access (and this account exists)
+ *  Then get all of this User's playlists (query by email), retuning them if found and an error if not
+ */
 app.post('/api/authenticated/playlists', async (req, res) => {
     console.log("Called into POST playlists")
 
@@ -513,8 +509,14 @@ app.post('/api/authenticated/playlists', async (req, res) => {
     return res.status(400).send();
 })
 
-//Update a user's playlist
-    //TODO: can I use PUT to update?
+/**
+ * Update a User's playlist
+ *  First set up the queries (key being email, list title pair - this is enforced as unique)
+ *  Check if all of the tracks that the user wants to add exist, returning an error if not
+ *  Then verify that the user is logged into the correct account that they are trying to modify under
+ *  Check that the playlist title is not empty and the playlist contains at least one track
+ *  Then update the value, retuning a success code if updated or an error if not
+ */
 app.put('/api/authenticated/playlist', async (req, res) => {
     console.log("Called into PUT playlist")
 
@@ -548,6 +550,9 @@ app.put('/api/authenticated/playlist', async (req, res) => {
         if(data.password !== req.body.password){
             throw new Error(NO_ACCESS_ERROR)
         }
+        if(req.body.ltracks.length === 0){
+            throw new Error(EMPTY_PLAYLIST_ERROR)
+        }
         if(req.body.list_title.length === 0){
             throw new Error(EMPTY_TITLE_ERROR)
         }
@@ -567,6 +572,12 @@ app.put('/api/authenticated/playlist', async (req, res) => {
     return res.status(400).send();
 })
 
+/**
+ * Delete a User's playlist
+ *  Query by (email, playlist title) pair - enforced as unique
+ *  First check that the user is logged into the account that they are deleting from
+ *  Then delete the playlist, returning an error if the playlist does not exist or nothing was deleted
+ */
 app.delete("/api/authenticated/playlist", async (req, res) => {
     console.log("Called into DELETE playlist")
 
@@ -602,6 +613,15 @@ app.delete("/api/authenticated/playlist", async (req, res) => {
     return res.status(400).send();
 })
 
+//TODO: Is it correct to use PUT here?
+/**
+ * Create a review for a playlist
+ *  Query based on (reviewer email, playlist title, creator email) tuple - must be unique (user can only post one review per playlist)
+ *  First check that the user is logged into the account that they are trying to review from
+ *  Check that the review contains a rating (comment is optional)
+ *  Insert the review - if a review already exists for this playlist by this user, then replace it (this is the {upsert: true} option)
+ *  Notify the user of success or failure
+ */
 app.put('/api/authenticated/review', async (req, res) => {
     console.log("Called into PUT review")
 
@@ -636,7 +656,7 @@ app.put('/api/authenticated/review', async (req, res) => {
         }
     }).then(() => updateOneFrom(
         DB_NAME, REVIEWS_COLLECTION, key, query, {upsert: true}
-    )).then((a) => {
+    )).then(() => {
         console.log("Successfully completed review")
         return res.status(200).send()
     }).catch((err) => {
@@ -647,7 +667,11 @@ app.put('/api/authenticated/review', async (req, res) => {
     return res.status(400).send();
 })
 
-//Get review
+/**
+ * Get reviews for a User (queried by email)
+ *  Check that the user is logged into the account they are attempting to query from
+ *  Get all of this User's reviews and send them to the client
+ */
 app.post('/api/authenticated/reviews', async (req, res) => {
     console.log("Called into POST review")
 
@@ -680,6 +704,15 @@ app.post('/api/authenticated/reviews', async (req, res) => {
     return res.status(400).send();
 })
 
+/**
+ * Helper function: query the MongoDB collection according to the entered query (with optional options) to get a single result
+ * @param {string} dbName: name of DB to connect to (we use "music")
+ * @param {string} collectionName: name of the collection in the DB to query
+ * @param {object} query: object to query the database with
+ * @param {object} options: optional options (ie. ordering, include only specific attributes, etc)
+ * @returns a single DB response object
+ * I think findOne was wrongly deprecated
+ */
 const getOneFrom = async (dbName, collectionName, query, options={}) => {
     await client.connect()
     try {
@@ -693,6 +726,14 @@ const getOneFrom = async (dbName, collectionName, query, options={}) => {
     }
 }
 
+/**
+ * Helper function: query the MongoDB collection according to the entered query (with optional options) to get all results
+ * @param {string} dbName: name of DB to connect to (we use "music")
+ * @param {string} collectionName: name of the collection in the DB to query
+ * @param {object} query: object to query the database with
+ * @param {object} options: optional options (ie. ordering, include only specific attributes, etc)
+* @returns a complex DB response object
+ */
 const getAllFrom = async (dbName, collectionName, query, options={}) => {
     await client.connect()
     const database = client.db(dbName);
@@ -708,6 +749,14 @@ const getAllFrom = async (dbName, collectionName, query, options={}) => {
     return list;
 }
 
+/**
+ * Helper function: query the MongoDB collection according to the entered query (with optional options) as an aggregate function
+ * @param {string} dbName: name of DB to connect to (we use "music")
+ * @param {string} collectionName: name of the collection in the DB to query
+ * @param {object} query: aggregate function to query the database with
+ * @param {object} options: optional options (ie. ordering, include only specific attributes, etc)
+ * @returns a complex DB response object
+ */
 const getAggregate = async (dbName, collectionName, query, options={}) => {
     await client.connect()
     const database = client.db(dbName);
@@ -723,6 +772,16 @@ const getAggregate = async (dbName, collectionName, query, options={}) => {
     return list;
 }
 
+/**
+ * Helper function: query the MongoDB collection according to the entered query (with optional options) to update a single document
+ * @param {string} dbName: name of DB to connect to (we use "music")
+ * @param {string} collectionName: name of the collection in the DB to query
+ * @param {object} key: key for the object - uniquely identifies the object that is to be modified
+ * @param {object} query: contains changes to make to the object identified by the key
+ * @param {object} additional: optional options (ie. ordering, include only specific attributes, etc)
+ * @returns a complex DB response object
+ * I think findOneAndUpdate (with options) was wrongly deprecated
+ */
 const updateOneFrom = async (dbName, collectionName, key, query, additional={}) => {
     await client.connect()
     const database = client.db(dbName);
@@ -734,6 +793,13 @@ const updateOneFrom = async (dbName, collectionName, key, query, additional={}) 
     return result;
 }
 
+/**
+ * Helper function: query the MongoDB collection according to the entered query (with optional options) to insert a single document
+ * @param {string} dbName: name of DB to connect to (we use "music")
+ * @param {string} collectionName: name of the collection in the DB to query
+ * @param {object} doc: document to insert into the database
+ * @returns an object with information about the insertion (success, etc.)
+ */
 const insertOne = async (dbName, collectionName, doc) => {
     await client.connect()
     const database = client.db(dbName);
@@ -745,6 +811,13 @@ const insertOne = async (dbName, collectionName, doc) => {
     return result;
 }
 
+/**
+ * Helper function: query the MongoDB collection according to the entered query (with optional options) to delete a single document
+ * @param {string} dbName: name of DB to connect to (we use "music")
+ * @param {string} collectionName: name of the collection in the DB to query
+ * @param {object} query: key for the object - uniquely identifies the object that is to be deleted
+ * @returns an object with infromation about the deletion
+ */
 const deleteOneFrom = async (dbName, collectionName, query) => {
     await client.connect()
     try {
@@ -758,6 +831,11 @@ const deleteOneFrom = async (dbName, collectionName, query) => {
     }
 }
 
+/**
+ * Helper function: query the MongoDB "tracks" collection according to find if all passed tracks exist in the collection
+ * @param {list} tracks: list of tracks to check for existence
+ * @returns a list of all tracks that were in the tracks argument that also exist in the "tracks" DB
+ */
 const checkTracksExist = async (tracks) => {
     console.log("Checking if tracks exist")
     await client.connect()
@@ -786,7 +864,9 @@ const checkTracksExist = async (tracks) => {
     return list;
 }
 
-//Can delete this after
+/*
+ * Was a helper function for uploading data - should be deleted if not needed anymore
+ */
 const UploadData = async (dbName, collectionName) => {
     await client.connect()
     var count = 0
