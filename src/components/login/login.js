@@ -5,8 +5,9 @@ import LoginForm from "./LoginForm";
 import CreateForm from "./CreateForm";
 import ForgotForm from "./ForgotForm";
 import MessageBar from "./MessageBar";
+import VerifyAccount from "../verifyAccount";
 
-const INVALID_LOGIN = "Incorrect username or password"
+const INVALID_LOGIN = "Unverified Account"
 const ERROR_CLASS = "error"
 const SUCCESS_CLASS = "login-success"
 const SUCCESS_MESSAGE = "Successfully logged in"
@@ -23,7 +24,8 @@ const Login = ({updateParentLoginStatus}) => {
         error: '',
         buttonEnabled: true,
         authMode: 0,
-        successMessage: ''
+        successMessage: '',
+        verificationPath: ''
     })
     const navigate = useNavigate();
 
@@ -78,25 +80,25 @@ const Login = ({updateParentLoginStatus}) => {
         })
     }
 
-    const clearError = () => {
-        setState({
+    const clearError = async () => {
+        await setState({
             ...state,
             error: ''
         })
     }
-    const writeErroMessage = (e) => {
-        setState({
+    const writeErroMessage = async (e) => {
+        await setState({
             ...state,
             error: e
         })
     }
 
-    const updateError = (err) => {
+    const updateError = async (err) => {
         if(err){
-            writeErroMessage(err)
+            await writeErroMessage(err)
         }
         else{
-            clearError()
+            await clearError()
         }
     }
     const toggleButtonEnabled = (val) => {
@@ -116,31 +118,62 @@ const Login = ({updateParentLoginStatus}) => {
             error: ''
         })
     }
-    const submitLogin = () => {
-        console.log(state)
+
+    const setVerificationPath = async (path) => {
+        await setState({
+            ...state,
+            verificationPath: path
+        })
+    }
+
+    const submitLogin = async () => {
         toggleButtonEnabled(false)
         clearSuccess()
-        fetch(`http://localhost:3001/api/user/${state.email}`)
-        .then((a) => {
+
+        const payload = {
+            email: state.email,
+            password: state.password
+        }
+
+        await fetch(`http://localhost:3001/api/user/${JSON.stringify(payload)}`)
+        .then(async (a) => {
+            console.log(a)
+            if(a.status === 202){
+                const text = await a.text()
+                console.log(text)
+                await setState({
+                    ...state,
+                    verificationPath: text,
+                    error: INVALID_LOGIN,
+                    successMessage: '',
+                    buttonEnabled: true
+                })
+                return;
+            }
             return a.json()
         })
         .then((a) => {
-            toggleButtonEnabled(true)
-            if(a.deactivated){
-                navigate("/deactivated")
+            if(!a){
+                return;
             }
-            if(!(a.email === state.email && a.password === state.password)){
-                updateError(INVALID_LOGIN)
+            else if(a.deactivated){
+                navigate("/deactivated")
             }
             else{
                 updateLoggedInStatus(a)
                 updateSuccessMessage(SUCCESS_MESSAGE)
             }
         })
-        .catch(() => {
-            toggleButtonEnabled(true)
-            updateError(INVALID_LOGIN)
+        .catch(async (err) => {
+            console.log(err.message)
+            setState({
+                ...state,
+                error: err.message,
+                successMessage: '',
+                buttonEnabled: true
+            })
         })
+        console.log("BOTTOM")
     }
     const submitChange = () => {
         if(state.password !== state.confirmedPassword){
@@ -174,14 +207,12 @@ const Login = ({updateParentLoginStatus}) => {
         if(state.password !== state.confirmedPassword){
             return;
         }
-        console.log(state)
         toggleButtonEnabled(false)
         clearSuccess()
         const payload = {
             email: state.email,
             password: state.password,
-            fullName: state.fullName,
-            verified: false
+            fullName: state.fullName
         }
         fetch(`http://localhost:3001/api/user`, {
             method: "POST",
@@ -192,12 +223,34 @@ const Login = ({updateParentLoginStatus}) => {
             if(a.status !== 200){
                 throw new Error(a.statusText)
             }
-            updateSuccessMessage(CREATE_ACCOUNT_SUCCESS)
+
+            return a.text()
+        }).then((result) => {
+            setState({
+                ...state,
+                verificationPath: result,
+                successMessage: CREATE_ACCOUNT_SUCCESS
+            })
         })
-        .catch((a) => {
-            updateError(a.message)
+        .catch(async (a) => {
+            await updateError(a.message)
         })
+
         toggleButtonEnabled(true)
+    }
+
+    useEffect(() => {
+        console.log(state.buttonEnabled)
+    }, [state.buttonEnabled])
+
+    useEffect(() => {
+        console.log(`Now have ${state.verificationPath}`)
+        console.log(state.error)
+        console.log(state.successMessage)
+    }, [state.verificationPath])
+
+    const verifyAccount = () => {
+        navigate(`/verify?id=${state.verificationPath}`)
     }
     
     if(state.authMode === 1){
@@ -208,7 +261,10 @@ const Login = ({updateParentLoginStatus}) => {
                 <p onClick={() => updatePageStatus(2)} className='login-link'>Change password</p>
                 <CreateForm updateParentEmail={updateEmail} updateParentPassword={updatePassword}
                     updateParentConfirmedPassword={updateConfirmedPassword} updateParentFullName={updateFullName} />
-                {state.successMessage.length > 0 && state.error.length === 0 && <MessageBar message={state.successMessage} cName={SUCCESS_CLASS} />}
+                {state.successMessage.length > 0 && state.error.length === 0 && <div>
+                    <MessageBar message={state.successMessage} cName={SUCCESS_CLASS} />
+                    {state.verificationPath.length > 0 && <p onClick={verifyAccount} className='underline-p'>Verify account</p>}
+                </div>}
                 {state.error.length > 0 && <MessageBar message={state.error} cName={ERROR_CLASS} />}
                 <button disabled={!state.buttonEnabled} onClick={() => createAccount()} className="submit-button">
                     Submit
@@ -239,7 +295,13 @@ const Login = ({updateParentLoginStatus}) => {
             <p onClick={() => updatePageStatus(2)} className='login-link'>Change password</p>
             <LoginForm updateParentEmail={updateEmail} updateParentPassword={updatePassword} />
             {state.successMessage.length > 0 && state.error.length === 0 && <MessageBar message={state.successMessage} cName={SUCCESS_CLASS} />}
-            {state.error.length > 0 && <MessageBar message={state.error} cName={ERROR_CLASS} />}
+            {state.error.length > 0 && <div> 
+                <MessageBar message={state.error} cName={ERROR_CLASS} />
+                {state.verificationPath.length > 0 && <div className='subtext'>
+                    <p>Your account has not been verified</p>
+                    <p onClick={verifyAccount} className='underline-p'>Verify account</p>
+                </div>}
+            </div>}
             <button disabled={!state.buttonEnabled} onClick={() => submitLogin()} className="submit-button">
                 Submit
             </button>

@@ -6,8 +6,6 @@ import Playlist from "./playlist";
 
 const ERROR_CLASS = "error"
 const SUCCESS_CLASS = "login-success"
-const NO_TITLE = "Please enter a title"
-const NO_TRACKS = "A playlist must have at least one track"
 
 const CreatePlaylist = ({userLoggedInStatus}) => {
     const [state, setState] = useState({
@@ -28,7 +26,7 @@ const CreatePlaylist = ({userLoggedInStatus}) => {
 
     useEffect(() => {
         updateErrorMessage()
-    }, [state.title, state.selectedTracks, state.deletingPlaylist])
+    }, [state.title, state.selectedTracks, state.deletingPlaylist, state.creatingPlaylist])
 
     useEffect(() => {
         if(!(state.userPlaylists && Object.keys(state.userPlaylists).length > 0)){

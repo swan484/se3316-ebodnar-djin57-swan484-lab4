@@ -1,0 +1,33 @@
+.underline-p {
+    text-decoration: underline;
+}
+
+.underline-p:hover {
+    cursor: pointer;
+}
+
+.verifying, .verified {
+    font-size: 25px;
+    margin: 0px auto;
+    margin-bottom: 5px;
+    width: fit-content;
+}
+
+.verifying {
+    color: #c774cb
+}
+
+.sub {
+    margin: 0px auto;
+    font-size: 20px;
+    width: fit-content;
+}
+
+.login-nav {
+    color: inherit;
+    text-decoration: underline;
+}
+
+.failure {
+    color: #b74343;
+}

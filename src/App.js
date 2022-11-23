@@ -8,6 +8,7 @@ import Deactivated from './components/deactivated';
 import Playlist from './components/playlist';
 import CreatePlaylist from './components/createPlaylist';
 import ReviewPlaylist from './components/reviewPlaylist';
+import VerifyAccount from './components/verifyAccount';
 
 function App() {
   const [state, setState] = useState({
@@ -32,6 +33,7 @@ function App() {
             <Route path='deactivated' element={<Deactivated />}></Route>
             <Route path='create' element={<CreatePlaylist userLoggedInStatus={state.loggedUser}/>}></Route>
             <Route path='review' element={<ReviewPlaylist userLoggedInStatus={state.loggedUser}/>}></Route>
+            <Route path='verify' element={<VerifyAccount userDetails={state.loggedUser}/>}></Route>
           </Route>
         </Routes>
       </BrowserRouter>

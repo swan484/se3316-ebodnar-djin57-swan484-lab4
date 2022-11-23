@@ -115,3 +115,12 @@ button:disabled {
     color: #1F1F1F;
     border-color: #1F1F1F;
 }
+
+.subtext {
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.subtext > p {
+    margin: 0px;
+}

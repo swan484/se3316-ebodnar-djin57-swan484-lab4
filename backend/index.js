@@ -10,6 +10,8 @@ app.use(cors());
 const uri = "mongodb+srv://root:root@cluster0.dklnv6c.mongodb.net/?retryWrites=true&w=majority"
 const client = new MongoClient(uri)
 
+const CryptoJS = require("crypto-js")
+
 const DB_NAME = "music"
 const USERS_COLLECTION = "users"
 const GENRES_COLLECTION = "genres"
@@ -40,20 +42,40 @@ const EMPTY_TITLE_ERROR = "Playlist must have a title"
 const INVALID_TRACK_EXISTS = "Playlist contains an invalid track"
 const REVIEW_DOES_NOT_EXIST = "No review exists"
 const EMPTY_RATING = "Cannot have an empty rating"
+const USER_NOT_EXISTS = "User does not exist"
+
+const SECRET_KEY = "fTjWnZr4u7x!A%D*G-KaNdRgUkXp2s5v8y/B?E(H+MbQeShVmYq3t6w9z$C&F)J@NcRfUjWnZr4u7x!A%D*G-KaPdSgVkYp2s5v8y/B?E(H+MbQeThWmZq4t6w9z$C&F"
 
 app.get("/api/upload", (req, res) => {
     UploadData(DB_NAME, TRACKS_COLLECTION)
 })
 
-app.get("/api/user/:email", (req, res) => {
-    console.log(`Called into GET user (email) with ${req.params.email}`);
+app.get("/api/user/:object", (req, res) => {
+    console.log(`Called into GET user (email) with ${req.params.object}`);
+    const search = JSON.parse(req.params.object)
     const query = {
-        email: req.params.email
+        email: search.email
     }
 
     getOneFrom(DB_NAME, USERS_COLLECTION, query)
-    .then((data) => res.send(data))
-    .catch((err) => res.status(404).send(err));
+    .then((foundUser) => {
+        if(!foundUser){
+            throw new Error(INVALID_EMAIL)
+        }
+        if(search.password != foundUser.password){
+            throw new Error(INCORRECT_PASSWORD)
+        }
+        if(!foundUser.verified){
+            const cypher = CryptoJS.AES.encrypt(JSON.stringify(search), SECRET_KEY).toString()
+            return res.status(202).send(cypher)
+        }
+
+        return res.status(200).send(foundUser)
+    })
+    .catch((err) => {
+        res.statusMessage = err.message
+        res.status(404).send()
+    });
 });
 
 /*
@@ -104,7 +126,67 @@ app.put("/api/user", async (req, res) => {
     res.status(200).send();
 })
 
-app.post("/api/user", async (req, res) => {
+app.post('/api/user/encrypt', async (req, res) => {
+    const userDetails = {
+        email: req.body.email,
+        password: req.body.password
+    }
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: userDetails.email})
+    .then((foundUser) => {
+        if(!foundUser){
+            res.statusMessage = USER_NOT_EXISTS
+            return res.status(404).send(); 
+        }
+        if(userDetails.password != foundUser.password){
+            res.statusMessage = INCORRECT_PASSWORD
+            return res.status(404).send()
+        }
+    }).then(() => {
+        const cypher = CryptoJS.AES.encrypt(JSON.stringify(userDetails), SECRET_KEY).toString()
+        res.status(200).send(cypher)
+    }).catch((err) => {
+        res.statusMessage = err.message
+        res.status(404).send()
+    })
+})
+
+app.post("/api/user/decrypt", async (req, res) => {
+    const id = req.body.id
+    
+    const bytes  = CryptoJS.AES.decrypt(id, SECRET_KEY);
+    const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: decryptedData.email})
+    .then((foundUser) => {
+        if(!foundUser){
+            res.statusMessage = USER_NOT_EXISTS
+            return res.status(404).send(); 
+        }
+        if(decryptedData.password != foundUser.password){
+            res.statusMessage = INCORRECT_PASSWORD
+            return res.status(404).send()
+        }
+    }).then(() => updateOneFrom(
+        DB_NAME, USERS_COLLECTION, {email: decryptedData.email}, {
+            $set: {
+                verified: true
+            }
+        }
+    )).then((result) => {
+        if (!result) {
+            return res.status(400).send();
+        }
+
+        console.log("Successfully Verified User")
+        return res.status(200).send(result);
+    }).catch((err) => {
+        res.statusMessage = err.message
+        res.status(404).send()
+    })
+})
+
+app.post('/api/user/verification', async (req, res) => {
     const body = req.body;
     const search = {
         email: body.email
@@ -112,33 +194,72 @@ app.post("/api/user", async (req, res) => {
 
     await getOneFrom(DB_NAME, USERS_COLLECTION, search)
     .then((foundUser) => {
-        if(foundUser){
-            res.statusMessage = EMAIL_EXISTS
+        if(!foundUser){
+            res.statusMessage = USER_NOT_EXISTS
             return res.status(404).send(); 
         }
-    })
-    .then(() => {
-        const doc = {
-            email: body.email,
-            password: body.password,
-            fullName: body.fullName,
-            deactivated: false
+        if(body.password != foundUser.password){
+            res.statusMessage = INCORRECT_PASSWORD
+            return res.status(404).send()
+        }
+    }).then(() => updateOneFrom(
+        DB_NAME, USERS_COLLECTION, search, {
+            $set: {
+                verified: true
+            }
+        }
+    )).then((result) => {
+        if (!result) {
+            return res.status(400).send();
         }
 
-        insertOne(DB_NAME, USERS_COLLECTION, doc)
-        .then((result) => {
-            if (!result) {
-                return res.status(400).send();
-            }
-    
-            console.log("Successfully Inserted")
-        })
+        console.log("Successfully Updated Verification")
+        return res.status(200).send(result);
     })
     .catch(() => {
         res.statusMessage = CANNOT_INSERT
-        res.status(404).send()
+        return res.status(404).send()
     });
-    res.status(200).send();
+    return res.status(200).send();
+})
+
+app.post("/api/user", async (req, res) => {
+    const body = req.body;
+    const search = {
+        email: body.email
+    }
+    const userDetails = {
+        email: req.body.email,
+        password: req.body.password
+    }
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, search)
+    .then((foundUser) => {
+        console.log(foundUser)
+        if(foundUser){
+            throw new Error(EMAIL_EXISTS)
+        }
+    }).then(() => insertOne(DB_NAME, USERS_COLLECTION, {
+        email: body.email,
+        password: body.password,
+        fullName: body.fullName,
+        deactivated: false,
+        verified: false
+    })).then((result) => {
+        console.log(result)
+        if (!result) {
+            throw new Error(CANNOT_INSERT)
+        }
+
+        console.log("Successfully Inserted")
+    }).then(() => {
+        const cypher = CryptoJS.AES.encrypt(JSON.stringify(userDetails), SECRET_KEY).toString()
+        console.log(cypher)
+        return res.status(200).send(cypher)
+    }).catch((err) => {
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
 })
 
 //Create a playlist
@@ -156,20 +277,26 @@ app.put('/api/authenticated/playlists', async (req, res) => {
         })
     })
 
+    if(req.body.tracks.length === 0){
+        console.log("Empty tracks")
+        res.statusMessage = EMPTY_PLAYLIST_ERROR
+        res.status(400).send()
+    }
+    if(req.body.list_title.length === 0){
+        console.log("Empty Title")
+        res.statusMessage = EMPTY_TITLE_ERROR
+        res.status(400).send()
+    }
+
     await checkTracksExist(modifiedTracks)
     .then((data) => {
         if(data.length != modifiedTracks.length){
             res.statusMessage = INVALID_TRACK_EXISTS
             return res.status(400).send()
         }
-    })
-    .catch((err) => {
-        res.statusMessage = err.message
-        return res.status(400).send()
-    })
-
-    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: userInfo.email})
-    .then((data) => {
+    }).then(() => getOneFrom(
+        DB_NAME, USERS_COLLECTION, {email: userInfo.email}
+    )).then((data) => {
         if(!data){
             throw new Error(USER_NOT_LOGGED_IN)
         }
@@ -410,8 +537,7 @@ app.put('/api/authenticated/playlist', async (req, res) => {
     await checkTracksExist(req.body.tracks)
     .then((data) => {
         if(data.length != req.body.tracks.length){
-            res.statusMessage = INVALID_TRACK_EXISTS
-            return res.status(400).send()
+            throw new Error(INVALID_TRACK_EXISTS)
         }
     }).then(() => getOneFrom(
         DB_NAME, USERS_COLLECTION, {email: req.body.email}
@@ -421,9 +547,6 @@ app.put('/api/authenticated/playlist', async (req, res) => {
         }
         if(data.password !== req.body.password){
             throw new Error(NO_ACCESS_ERROR)
-        }
-        if(req.body.tracks.length === 0){
-            throw new Error(EMPTY_PLAYLIST_ERROR)
         }
         if(req.body.list_title.length === 0){
             throw new Error(EMPTY_TITLE_ERROR)
@@ -640,6 +763,11 @@ const checkTracksExist = async (tracks) => {
     await client.connect()
     const database = client.db(DB_NAME);
     const collection = database.collection(TRACKS_COLLECTION);
+
+    if(tracks.length === 0){
+        await client.close();
+        throw new Error(EMPTY_PLAYLIST_ERROR)
+    }
 
     const list = []
     const query = []
