@@ -50,9 +50,9 @@ app.get("/api/upload", (req, res) => {
     UploadData(DB_NAME, TRACKS_COLLECTION)
 })
 
-app.get("/api/user/:object", (req, res) => {
-    console.log(`Called into GET user (email) with ${req.params.object}`);
-    const search = JSON.parse(req.params.object)
+app.post("/api/user/create", (req, res) => {
+    console.log(`Called into POST user/create (email)`);
+    const search = req.body;
     const query = {
         email: search.email
     }
