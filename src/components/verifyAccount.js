@@ -48,7 +48,7 @@ const VerifyAccount = ({userDetails}) => {
                 <p className="verifying">Verifying account</p>
             </div>}
             {verified && <div>
-                <p className="verified">Thanks {userDetails.fullName}!</p>
+                <p className="verified">Thank You!</p>
                 <p className="sub">
                     Your account has been verified. <br/>
                     Please <span className="login-nav sub" onClick={navigateToLogin}>Login</span>

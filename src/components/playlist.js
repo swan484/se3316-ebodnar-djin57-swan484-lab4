@@ -41,11 +41,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
             ...state,
             buttonEnabled: false
         })
-        await fetch(`http://localhost:3001/api/playlists/${limit}`, {
-            headers: new Headers({ 
-                "Authorization": localStorage.getItem('token') 
-            })
-        })
+        await fetch(`http://localhost:3001/api/playlists/${limit}`)
         .then((a) => {
             console.log(a)
             return a.json()

@@ -162,7 +162,11 @@ const Login = ({updateParentLoginStatus}) => {
                 navigate("/deactivated")
             }
             else{
-                updateLoggedInStatus(a)
+                updateLoggedInStatus({
+                    verified: a.verified,
+                    deactivated: a.deactivated, 
+                    admin: a.admin
+                })
                 updateSuccessMessage(SUCCESS_MESSAGE)
             }
         })

@@ -138,8 +138,7 @@ const Search = ({updateParentResults, updateParentSet, parentSet, disableExpandi
         fetch(`http://localhost:3001/api/tracks`, {
             method: "POST",
             headers: new Headers({ 
-                "Content-Type": "application/json",
-                "Authorization": localStorage.getItem('token') 
+                "Content-Type": "application/json"
             }),
             body: JSON.stringify(payload),
         })
@@ -181,6 +180,9 @@ const Search = ({updateParentResults, updateParentSet, parentSet, disableExpandi
             {state.searchResults.length === 0 && state.invokedPreviously && state.buttonEnabled &&
                 <h1 className="no-results-container">No Results Found</h1>
             }
+            {(!localStorage.getItem('token') || localStorage.getItem('token') === '') && <div>
+
+            </div>}
         </div>
     )
 }

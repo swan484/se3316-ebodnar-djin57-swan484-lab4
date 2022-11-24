@@ -129,15 +129,6 @@ app.get("/api/upload", (req, res) => {
     UploadData(DB_NAME, TRACKS_COLLECTION)
 })
 
-app.post('/api/test', (req, res) => {
-    const {username, password} = req.body
-    
-    const accessToken = jwt.sign({ username: username, password: password }, SECRET_TOKEN);
-    return res.json({
-        token: accessToken
-    })
-})
-
 /**
  * Check a JWT's authorization
  *  Take an encrypted token in the body as {token: 'abcdef...'}
@@ -145,7 +136,7 @@ app.post('/api/test', (req, res) => {
  *  If this token is still valid return true
  */
 app.post('/api/checkAuthorization', (req, res) => {
-    if(!req.body.token || req.body.token.length === 0){
+    if(!req.body.token || req.body.token.length === 0 || req.body.token === 'undefined'){
         return res.status(200).send(
             {valid: false}
         )
@@ -190,19 +181,25 @@ app.post("/api/user/information", (req, res) => {
             return res.status(202).send(cypher)
         }
 
-        console.log(foundUser)
         const token = jwt.sign(
             { 
                 email: foundUser.email,
                 password: foundUser.password,
                 fullName: foundUser.fullName,
                 verified: foundUser.verified,
-                deactivated: foundUser.deactivated
+                deactivated: foundUser.deactivated,
+                admin: foundUser.admin
             },
             SECRET_TOKEN,
-            {expiresIn: '0.25h'});
+            {expiresIn: 60 * 60 * 10});
           foundUser.token = token;
 
+          foundUser = {
+            verified: foundUser.verified,
+            deactivated: foundUser.deactivated,
+            admin: foundUser.admin,
+            token: foundUser.token
+          }
         return res.status(200).send(foundUser)
     })
     .catch((err) => {
@@ -443,8 +440,9 @@ app.put('/api/authenticated/playlists', auth, async (req, res) => {
 /**
  * Get all tracks with IDs in the user inputted list of IDs
  *  Formulate the user input into a MongoDB query, then return the list of tracks
+ *  ** NO AUTH **
  */
-app.post('/api/tracks', auth, async (req, res) => {
+app.post('/api/tracks', async (req, res) => {
     console.log(`Called into POST tracks`);
     var result = []
     const query = {
@@ -473,8 +471,9 @@ app.post('/api/tracks', auth, async (req, res) => {
  *  Create an aggregate query, joining the reviews and playlist collections - returns a list of playlists, each containing a list of reviews for that playlist
  *  Run this aggregate and for each playlist record the average rating
  *  Then get all playlists according to the previously defined criteria, returning it to the user
+ *  ** NO AUTH **
  */
-app.get('/api/playlists/:limit', auth, async (req, res) => {
+app.get('/api/playlists/:limit', async (req, res) => {
     const lim = parseInt(req.params.limit)
     console.log(`Called into GET playlists`);
     const query = {
@@ -551,8 +550,9 @@ app.get('/api/playlists/:limit', auth, async (req, res) => {
  *  Perform a search on tracks according to the user queries, recording how many times each track has come up
  *  Return tracks that match ALL of the user's queries
  *  Note: fuzzy searching is applied here (built into MongoDB) - each subquery is searched with double replacement
+ *  ** NO AUTH **
  */
-app.get('/api/search/:query', auth, async (req, res) => {
+app.get('/api/search/:query', async (req, res) => {
     console.log("Called into search " + req.params.query)
     const queries = req.params.query.split(",")
 

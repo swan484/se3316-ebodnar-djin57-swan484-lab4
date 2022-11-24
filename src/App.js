@@ -40,11 +40,17 @@ function App() {
   }
   
   const updateLoginStatus = (obj) => {
+    console.log("UPDATING")
+    console.log(obj)
     setState({
         ...state,
         loggedUser: obj
     })
   }
+
+  useEffect(() => {
+    localStorage.setItem('token', '')
+  }, [])
 
   //Every 20 seconds, check if the JWT is still valid
   useEffect(() => {
