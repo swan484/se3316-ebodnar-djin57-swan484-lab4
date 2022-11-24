@@ -129,6 +129,15 @@ app.get("/api/upload", (req, res) => {
     UploadData(DB_NAME, TRACKS_COLLECTION)
 })
 
+const encodeString = (str) => {
+    return CryptoJS.AES.encrypt(JSON.stringify(str), SECRET_KEY).toString()
+}
+
+const decodeString = (str) => {
+    const bytes = CryptoJS.AES.decrypt(str, SECRET_KEY);
+    return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+}
+
 /**
  * Check a JWT's authorization
  *  Take an encrypted token in the body as {token: 'abcdef...'}
@@ -164,8 +173,12 @@ app.post('/api/checkAuthorization', (req, res) => {
 app.post("/api/user/information", (req, res) => {
     console.log(`Called into POST user/information (email)`);
     const search = req.body;
+
+    const email = search.email
+    const password = search.password
+
     const query = {
-        email: search.email
+        email: email
     }
 
     getOneFrom(DB_NAME, USERS_COLLECTION, query)
@@ -173,18 +186,17 @@ app.post("/api/user/information", (req, res) => {
         if(!foundUser){
             throw new Error(INVALID_EMAIL)
         }
-        if(search.password != foundUser.password){
+        if(password != decodeString(foundUser.password)){
             throw new Error(INCORRECT_PASSWORD)
         }
         if(!foundUser.verified){
-            const cypher = CryptoJS.AES.encrypt(JSON.stringify(search), SECRET_KEY).toString()
-            return res.status(202).send(cypher)
+            return res.status(202).send(encodeString(search))
         }
 
         const token = jwt.sign(
             { 
-                email: foundUser.email,
-                password: foundUser.password,
+                email: email,
+                password: password,
                 fullName: foundUser.fullName,
                 verified: foundUser.verified,
                 deactivated: foundUser.deactivated,
@@ -192,14 +204,14 @@ app.post("/api/user/information", (req, res) => {
             },
             SECRET_TOKEN,
             {expiresIn: 60 * 60 * 10});
-          foundUser.token = token;
 
-          foundUser = {
+        foundUser = {
             verified: foundUser.verified,
             deactivated: foundUser.deactivated,
             admin: foundUser.admin,
-            token: foundUser.token
-          }
+            token: token
+        }
+
         return res.status(200).send(foundUser)
     })
     .catch((err) => {
@@ -217,23 +229,27 @@ app.post("/api/user/information", (req, res) => {
  */
 app.put("/api/user", async (req, res) => {
     const body = req.body;
+    const email = body.email
+
     const search = {
-        email: body.email
+        email: email
     }
+
+    const password = body.password
+    const newPassword = encodeString(body.newPassword)
 
     await getOneFrom(DB_NAME, USERS_COLLECTION, search)
     .then((foundUser) => {
         if(!foundUser){
             throw new Error(INVALID_EMAIL)
         }
-        if(body.password != foundUser.password){
+        if(password != decodeString(foundUser.password)){
             throw new Error(INCORRECT_PASSWORD)
         }
     })
-    .then(() => updateOneFrom(DB_NAME, USERS_COLLECTION, {
-        email: body.email }, { 
+    .then(() => updateOneFrom(DB_NAME, USERS_COLLECTION, search, { 
         $set: {
-            password: body.newPassword 
+            password: newPassword
         } 
     })).then((result) => {
         if (!result) {
@@ -268,7 +284,7 @@ app.post('/api/user/encrypt', async (req, res) => {
         if(!foundUser){
             throw new Error(USER_NOT_EXISTS)
         }
-        if(userDetails.password != foundUser.password){
+        if(userDetails.password != decodeString(foundUser.password)){
             throw new Error(INCORRECT_PASSWORD)
         }
     }).then(() => {
@@ -285,22 +301,26 @@ app.post('/api/user/encrypt', async (req, res) => {
  *  First decrypt the string, then check the resulting data (email exists, password matches record)
  *  Then update the corresponding User document in the DB, setting verified = true
  */
-app.post("/api/user/decrypt", auth, async (req, res) => {
+app.post("/api/user/decrypt", async (req, res) => {
     const id = req.body.id
     
-    const bytes = CryptoJS.AES.decrypt(id, SECRET_KEY);
-    const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+    const decryptedData = decodeString(id)
+    const email = decryptedData.email
 
-    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: decryptedData.email})
+    console.log("Decrypted")
+    console.log(decryptedData)
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: email})
     .then((foundUser) => {
+        console.log(foundUser)
         if(!foundUser){
             throw new Error(USER_NOT_EXISTS) 
         }
-        if(decryptedData.password != foundUser.password){
+        if(decryptedData.password != decodeString(foundUser.password)){
             throw new Error(INCORRECT_PASSWORD)
         }
     }).then(() => updateOneFrom(
-        DB_NAME, USERS_COLLECTION, {email: decryptedData.email}, {
+        DB_NAME, USERS_COLLECTION, {email: email}, {
             $set: {
                 verified: true
             }
@@ -327,22 +347,26 @@ app.post("/api/user/decrypt", auth, async (req, res) => {
  */
 app.post("/api/user", async (req, res) => {
     const body = req.body;
+    const email = body.email
+    const password = encodeString(body.password)
+
     const search = {
-        email: body.email
+        email: email
     }
     const userDetails = {
-        email: req.body.email,
-        password: req.body.password
+        email: email,
+        password: body.password
     }
 
     await getOneFrom(DB_NAME, USERS_COLLECTION, search)
     .then((foundUser) => {
+        console.log(foundUser)
         if(foundUser){
             throw new Error(EMAIL_EXISTS)
         }
     }).then(() => insertOne(DB_NAME, USERS_COLLECTION, {
-        email: body.email,
-        password: body.password,
+        email: email,
+        password: password,
         fullName: body.fullName,
         deactivated: false,
         verified: false
@@ -356,6 +380,7 @@ app.post("/api/user", async (req, res) => {
         const cypher = CryptoJS.AES.encrypt(JSON.stringify(userDetails), SECRET_KEY).toString()
         return res.status(200).send(cypher)
     }).catch((err) => {
+        console.log(err)
         res.statusMessage = err.message
         return res.status(404).send()
     });
@@ -393,7 +418,7 @@ app.put('/api/authenticated/playlists', auth, async (req, res) => {
         if(!data){
             throw new Error(USER_NOT_LOGGED_IN)
         }
-        if(data.password !== req.user.password){
+        if(decodeString(data.password) !== req.user.password){
             throw new Error(NO_ACCESS_ERROR)
         }
         if(modifiedTracks.length === 0){
@@ -616,7 +641,7 @@ app.get('/api/authenticated/playlists', auth, async (req, res) => {
         if(!data){
             throw new Error(USER_NOT_LOGGED_IN)
         }
-        if(data.password !== req.user.password){
+        if(decodeString(data.password) !== req.user.password){
             throw new Error(NO_ACCESS_ERROR)
         }
     }).then(() => getAllFrom(DB_NAME, PLAYLISTS_COLLECTION, {
@@ -673,7 +698,7 @@ app.put('/api/authenticated/playlist', auth, async (req, res) => {
         if(!data){
             throw new Error(USER_NOT_LOGGED_IN)
         }
-        if(data.password !== req.user.password){
+        if(decodeString(data.password) !== req.user.password){
             throw new Error(NO_ACCESS_ERROR)
         }
         if(req.body.tracks.length === 0){
@@ -717,7 +742,7 @@ app.delete("/api/authenticated/playlist", auth, async (req, res) => {
         if(!data){
             throw new Error(USER_NOT_LOGGED_IN)
         }
-        if(data.password !== req.user.password){
+        if(decodeString(data.password) !== req.user.password){
             throw new Error(NO_ACCESS_ERROR)
         }
     }).then(() => deleteOneFrom(
@@ -751,6 +776,7 @@ app.delete("/api/authenticated/playlist", auth, async (req, res) => {
 app.put('/api/authenticated/review', auth, async (req, res) => {
     console.log("Called into PUT review")
 
+    console.log(req.user)
     const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
     const key = {
         email: req.user.email,
@@ -774,7 +800,7 @@ app.put('/api/authenticated/review', auth, async (req, res) => {
         if(!data){
             throw new Error(USER_NOT_LOGGED_IN)
         }
-        if(data.password !== req.user.password){
+        if(decodeString(data.password) !== req.user.password){
             throw new Error(NO_ACCESS_ERROR)
         }
         if(!req.body.rating || req.body.rating.length === 0){
@@ -810,7 +836,7 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
         if(!data){
             throw new Error(USER_NOT_LOGGED_IN)
         }
-        if(data.password !== req.user.password){
+        if(decodeString(data.password) !== req.user.password){
             throw new Error(NO_ACCESS_ERROR)
         }
     }).then(() => getAllFrom(

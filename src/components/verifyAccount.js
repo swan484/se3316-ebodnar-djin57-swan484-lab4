@@ -29,6 +29,7 @@ const VerifyAccount = ({userDetails}) => {
             body: JSON.stringify(payload),
           })
         .then((a) => {
+            console.log(a)
             if(a.status !== 200){
                 throw new Error(a.statusText)
             }

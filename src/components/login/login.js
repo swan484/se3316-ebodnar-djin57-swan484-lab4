@@ -134,10 +134,8 @@ const Login = ({updateParentLoginStatus}) => {
             body: JSON.stringify(payload)
         })
         .then(async (a) => {
-            console.log(a)
             if(a.status === 202){
                 const text = await a.text()
-                console.log(text)
                 await setState({
                     ...state,
                     verificationPath: text,
@@ -154,7 +152,6 @@ const Login = ({updateParentLoginStatus}) => {
             return a.json()
         })
         .then((a) => {
-            localStorage.setItem('token', a.token)
             if(!a){
                 return;
             }
@@ -162,6 +159,7 @@ const Login = ({updateParentLoginStatus}) => {
                 navigate("/deactivated")
             }
             else{
+                localStorage.setItem('token', a.token)
                 updateLoggedInStatus({
                     verified: a.verified,
                     deactivated: a.deactivated, 
