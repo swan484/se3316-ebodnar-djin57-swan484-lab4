@@ -41,7 +41,11 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
             ...state,
             buttonEnabled: false
         })
-        await fetch(`http://localhost:3001/api/playlists/${limit}`)
+        await fetch(`http://localhost:3001/api/playlists/${limit}`, {
+            headers: new Headers({ 
+                "Authorization": localStorage.getItem('token') 
+            })
+        })
         .then((a) => {
             console.log(a)
             return a.json()
@@ -200,9 +204,6 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
 
     const submitReview = async (item) => {
         const query = {
-            email: userLoggedInStatus.email,
-            password: userLoggedInStatus.password,
-            username: userLoggedInStatus.fullName,
             list_id: item._id,
             creator_email: item.email,
             rating: parseInt(state.reviews[item._id].rating),
@@ -211,7 +212,10 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
         updateButtonDisabled(item, true)
         await fetch(`http://localhost:3001/api/authenticated/review`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: new Headers({ 
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem('token') 
+            }),
             body: JSON.stringify(query),
         })
         .then((a) => {
@@ -234,18 +238,14 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
     }
 
     const loadUserReviews = async () => {
-        const query = {
-            email: userLoggedInStatus.email,
-            password: userLoggedInStatus.password
-        }
         setState({
             ...state,
             buttonEnabled: false
         })
         await fetch(`http://localhost:3001/api/authenticated/reviews`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(query),
+            headers: new Headers({ 
+                "Authorization": localStorage.getItem('token') 
+            })
         })
         .then((a) => {
             if(a.status !== 200){

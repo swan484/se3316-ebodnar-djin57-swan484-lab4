@@ -112,14 +112,10 @@ const CreatePlaylist = ({userLoggedInStatus}) => {
     }
 
     const getExistingPlaylists = async () => {
-        const query = {
-            email: userLoggedInStatus.email,
-            password: userLoggedInStatus.password
-        }
         await fetch(`http://localhost:3001/api/authenticated/playlists`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(query),
+            headers: new Headers({ 
+                "Authorization": localStorage.getItem('token') 
+            })
         })
         .then((a) => {
             if(a.status !== 200){
@@ -221,7 +217,6 @@ const CreatePlaylist = ({userLoggedInStatus}) => {
         if(state.error.length > 0) return;
         updateInvokeInProgress(true)
         const query = {
-            userInfo: userLoggedInStatus,
             tracks: Object.values(state.selectedTracks),
             list_title: state.title,
             description: state.description,
@@ -229,7 +224,10 @@ const CreatePlaylist = ({userLoggedInStatus}) => {
         }
         await fetch(`http://localhost:3001/api/authenticated/playlists`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: new Headers({ 
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem('token') 
+            }),
             body: JSON.stringify(query),
         })
         .then((a) => {
@@ -261,8 +259,6 @@ const CreatePlaylist = ({userLoggedInStatus}) => {
         if(state.error.length > 0) return;
         updateInvokeInProgress(true)
         const query = {
-            email: userLoggedInStatus.email,
-            password: userLoggedInStatus.password,
             tracks: Object.values(state.selectedTracks),
             original_title: state.selectedPlaylist.list_title,
             list_title: state.title,
@@ -272,7 +268,10 @@ const CreatePlaylist = ({userLoggedInStatus}) => {
         
         fetch(`http://localhost:3001/api/authenticated/playlist`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: new Headers({ 
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem('token') 
+            }),
             body: JSON.stringify(query)
         })
         .then((a) => {
@@ -307,14 +306,15 @@ const CreatePlaylist = ({userLoggedInStatus}) => {
     const deletePlaylist = () => {
         updateInvokeInProgress(true)
         const query = {
-            email: userLoggedInStatus.email,
-            password: userLoggedInStatus.password,
             list_title: state.title
         }
         
         fetch(`http://localhost:3001/api/authenticated/playlist`, {
             method: "DELETE",
-            headers: { "Content-Type": "application/json" },
+            headers: new Headers({ 
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem('token') 
+            }),
             body: JSON.stringify(query)
         })
         .then(async (a) => {

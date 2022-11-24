@@ -22,7 +22,10 @@ const VerifyAccount = ({userDetails}) => {
         }
         fetch(`http://localhost:3001/api/user/decrypt`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: new Headers({ 
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem('token') 
+            }),
             body: JSON.stringify(payload),
           })
         .then((a) => {

@@ -9,8 +9,13 @@ app.use(cors());
 
 const uri = "mongodb+srv://root:root@cluster0.dklnv6c.mongodb.net/?retryWrites=true&w=majority"
 const client = new MongoClient(uri)
+const {GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SECRET_TOKEN} = require('../middleware/config')
+const jwt = require('jsonwebtoken');
+const auth = require('../middleware/auth')
 
 const CryptoJS = require("crypto-js")
+const GoogleStrategy = require('passport-google-oauth20')
+const passport = require('passport')
 
 const DB_NAME = "music"
 const USERS_COLLECTION = "users"
@@ -45,10 +50,117 @@ const COULD_NOT_UPDATE = "Could not update details, try again later"
 const SECRET_KEY = "fTjWnZr4u7x!A%D*G-KaNdRgUkXp2s5v8y/B?E(H+MbQeShVmYq3t6w9z$C&F)J@NcRfUjWnZr4u7x!A%D*G-KaPdSgVkYp2s5v8y/B?E(H+MbQeThWmZq4t6w9z$C&F"
 
 /*
+passport.use(new GoogleStrategy({
+    clientID: GOOGLE_CLIENT_ID,
+    clientSecret: GOOGLE_CLIENT_SECRET,
+    callbackURL: 'https://www.example.com/oauth2/redirect/google',
+    scope: [ 'profile' ],
+    state: true
+  },
+  function verify(accessToken, refreshToken, profile, cb) {
+    getOneFrom(DB_NAME, USERS_COLLECTION, {
+        federatedId: profile.id
+    }).then((cred) => {
+        console.log(cred)
+        if(!cred){
+            insertOne(DB_NAME, USERS_COLLECTION, {
+                federatedId: profile.id,
+                fullName: profile.displayName,
+                email: generateRandomPassword(),
+                password: generateRandomPassword(),
+                verified: true,
+                deactivated: false
+            })
+            return cb(null, {
+                id: profile.id,
+                name: profile.displayName
+            })
+        }
+        else{
+            return cb(null, {
+                id: cred.federatedId,
+                name: cred.displayName
+            })
+        }
+    }).catch((err) => {
+        return cb(err)
+    })
+  }))
+
+passport.serializeUser(function(user, cb) {
+    process.nextTick(function() {
+        cb(null, { id: user.id, username: user.username, name: user.name });
+    });
+});
+
+passport.deserializeUser(function(user, cb) {
+    process.nextTick(function() {
+        return cb(null, user);
+    });
+});
+
+app.get('/login/federated/google', passport.authenticate('google'))
+
+app.get('/oauth2/redirect/google', passport.authenticate('google', {
+    successReturnToOrRedirect: '/',
+    failureRedirect: '/login'
+}))
+*/
+
+const generateRandomPassword = () => {
+    const pass = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890!@#$%^&*()_+{}:<>?,./"
+    var pwd = [];
+    const count = Math.max(Math.floor(Math.random() * 100), 50)
+    for(var i = 0; i < count; i++){
+        pwd.push(pass.charAt(Math.floor(Math.random() * pass.length)))
+    }
+    
+    return pwd.join("")
+}
+
+app.get('/api/random', (req, res) => {
+    res.status(200).send(generateRandomPassword())
+})
+
+/*
 *   Upload data to the database - NEED TO DELETE
 */
 app.get("/api/upload", (req, res) => {
     UploadData(DB_NAME, TRACKS_COLLECTION)
+})
+
+app.post('/api/test', (req, res) => {
+    const {username, password} = req.body
+    
+    const accessToken = jwt.sign({ username: username, password: password }, SECRET_TOKEN);
+    return res.json({
+        token: accessToken
+    })
+})
+
+/**
+ * Check a JWT's authorization
+ *  Take an encrypted token in the body as {token: 'abcdef...'}
+ *  If this token does not exist, is empty, or has timed out then return false
+ *  If this token is still valid return true
+ */
+app.post('/api/checkAuthorization', (req, res) => {
+    if(!req.body.token || req.body.token.length === 0){
+        return res.status(200).send(
+            {valid: false}
+        )
+    }
+    const token = req.body.token
+
+    const decodedToken = jwt.decode(token, {complete: true});
+    const dateNow = new Date();
+
+    if(decodedToken.payload.exp < dateNow.getTime() / 1000)
+        return res.status(200).send(
+            {valid: false}
+        )
+
+    return res.status(200).send({valid: true})
 })
 
 /**
@@ -56,6 +168,7 @@ app.get("/api/upload", (req, res) => {
  *  Query by email (unique in database) - if it does not exist return an error
  *  If the returned user object has a mismatched password (with the user input), then return an error
  *  If the user is not verified, return a new cypher for them to verify with
+ *  ** No Auth **
  */
 app.post("/api/user/information", (req, res) => {
     console.log(`Called into POST user/information (email)`);
@@ -77,6 +190,19 @@ app.post("/api/user/information", (req, res) => {
             return res.status(202).send(cypher)
         }
 
+        console.log(foundUser)
+        const token = jwt.sign(
+            { 
+                email: foundUser.email,
+                password: foundUser.password,
+                fullName: foundUser.fullName,
+                verified: foundUser.verified,
+                deactivated: foundUser.deactivated
+            },
+            SECRET_TOKEN,
+            {expiresIn: '0.25h'});
+          foundUser.token = token;
+
         return res.status(200).send(foundUser)
     })
     .catch((err) => {
@@ -90,6 +216,7 @@ app.post("/api/user/information", (req, res) => {
  *  First check if a user with this email exists - return an error if not
  *  Check if the inputted password matches the existing password in the DB
  *  Then update the user document in the DB, setting the password to the new user inputted password
+ *  ** No Auth **
  */
 app.put("/api/user", async (req, res) => {
     const body = req.body;
@@ -161,7 +288,7 @@ app.post('/api/user/encrypt', async (req, res) => {
  *  First decrypt the string, then check the resulting data (email exists, password matches record)
  *  Then update the corresponding User document in the DB, setting verified = true
  */
-app.post("/api/user/decrypt", async (req, res) => {
+app.post("/api/user/decrypt", auth, async (req, res) => {
     const id = req.body.id
     
     const bytes = CryptoJS.AES.decrypt(id, SECRET_KEY);
@@ -199,6 +326,7 @@ app.post("/api/user/decrypt", async (req, res) => {
  *  First check if a user with this email already exists, returning an error if so (no two users can have the same email)
  *  Then insert the (unverified) user object into the DB, returning an error in case of failure
  *  Then generate a cypher for the user to verify their email with and return it to them
+ *  ** No Auth **
  */
 app.post("/api/user", async (req, res) => {
     const body = req.body;
@@ -245,10 +373,8 @@ app.post("/api/user", async (req, res) => {
  *  Then get all of the user's existing playlists, returining an error if they already have more than the max number of playlists (20)
  *  Then insert the playlist into the playlists DB and return a success message
  */
-app.put('/api/authenticated/playlists', async (req, res) => {
+app.put('/api/authenticated/playlists', auth, async (req, res) => {
     console.log("Called into PUT authenticated playlists")
-    const userInfo = req.body.userInfo
-    const tracks = req.body.tracks
     const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
 
     const modifiedTracks = []
@@ -265,12 +391,12 @@ app.put('/api/authenticated/playlists', async (req, res) => {
             throw new Error(INVALID_TRACK_EXISTS)
         }
     }).then(() => getOneFrom(
-        DB_NAME, USERS_COLLECTION, {email: userInfo.email}
+        DB_NAME, USERS_COLLECTION, {email: req.user.email}
     )).then((data) => {
         if(!data){
             throw new Error(USER_NOT_LOGGED_IN)
         }
-        if(data.password !== userInfo.password){
+        if(data.password !== req.user.password){
             throw new Error(NO_ACCESS_ERROR)
         }
         if(modifiedTracks.length === 0){
@@ -281,25 +407,25 @@ app.put('/api/authenticated/playlists', async (req, res) => {
         }
     }).then(() => getOneFrom(DB_NAME, PLAYLISTS_COLLECTION, {
         list_title: req.body.list_title,
-        email: userInfo.email
+        email: req.user.email
     })).then((data) => {
         if(data){
             throw new Error(PLAYLIST_EXISTS_ERROR)
         }
     }).then(() => getAllFrom(DB_NAME, PLAYLISTS_COLLECTION, {
-        email: userInfo.email
+        email: req.user.email
     })).then((data) => {
         if(data.length >= MAX_NUM_PLAYLISTS){
             throw new Error(TOO_MANY_PLAYLISTS)
         }
     }).then(() => insertOne(DB_NAME, PLAYLISTS_COLLECTION, {
-        email: userInfo.email,
+        email: req.user.email,
         list_title: req.body.list_title,
         visibility: req.body.visibility,
         tracks: modifiedTracks,
         description: req.body.description,
         date_modified: date,
-        user_name: userInfo.fullName,
+        user_name: req.user.fullName,
     })).then((result) => {
         if (!result) {
             throw new Error(CANNOT_INSERT_PLAYLIST)
@@ -318,7 +444,7 @@ app.put('/api/authenticated/playlists', async (req, res) => {
  * Get all tracks with IDs in the user inputted list of IDs
  *  Formulate the user input into a MongoDB query, then return the list of tracks
  */
-app.post('/api/tracks', async (req, res) => {
+app.post('/api/tracks', auth, async (req, res) => {
     console.log(`Called into POST tracks`);
     var result = []
     const query = {
@@ -348,7 +474,7 @@ app.post('/api/tracks', async (req, res) => {
  *  Run this aggregate and for each playlist record the average rating
  *  Then get all playlists according to the previously defined criteria, returning it to the user
  */
-app.get('/api/playlists/:limit', async (req, res) => {
+app.get('/api/playlists/:limit', auth, async (req, res) => {
     const lim = parseInt(req.params.limit)
     console.log(`Called into GET playlists`);
     const query = {
@@ -426,7 +552,7 @@ app.get('/api/playlists/:limit', async (req, res) => {
  *  Return tracks that match ALL of the user's queries
  *  Note: fuzzy searching is applied here (built into MongoDB) - each subquery is searched with double replacement
  */
-app.get('/api/search/:query', async (req, res) => {
+app.get('/api/search/:query', auth, async (req, res) => {
     console.log("Called into search " + req.params.query)
     const queries = req.params.query.split(",")
 
@@ -482,19 +608,19 @@ app.get('/api/search/:query', async (req, res) => {
  *  First check if the user is logged into the correct account that they are trying to access (and this account exists)
  *  Then get all of this User's playlists (query by email), retuning them if found and an error if not
  */
-app.post('/api/authenticated/playlists', async (req, res) => {
-    console.log("Called into POST playlists")
+app.get('/api/authenticated/playlists', auth, async (req, res) => {
+    console.log("Called into GET playlists")
 
-    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.body.email})
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.user.email})
     .then((data) => {
         if(!data){
             throw new Error(USER_NOT_LOGGED_IN)
         }
-        if(data.password !== req.body.password){
+        if(data.password !== req.user.password){
             throw new Error(NO_ACCESS_ERROR)
         }
     }).then(() => getAllFrom(DB_NAME, PLAYLISTS_COLLECTION, {
-        email: req.body.email
+        email: req.user.email
     })).then((data) => {
         if(!data){
             throw new Error(NO_PLAYLISTS_EXIST)
@@ -517,11 +643,11 @@ app.post('/api/authenticated/playlists', async (req, res) => {
  *  Check that the playlist title is not empty and the playlist contains at least one track
  *  Then update the value, retuning a success code if updated or an error if not
  */
-app.put('/api/authenticated/playlist', async (req, res) => {
+app.put('/api/authenticated/playlist', auth, async (req, res) => {
     console.log("Called into PUT playlist")
 
     const key = {
-        email: req.body.email,
+        email: req.user.email,
         list_title: req.body.original_title
     }
 
@@ -542,15 +668,15 @@ app.put('/api/authenticated/playlist', async (req, res) => {
             throw new Error(INVALID_TRACK_EXISTS)
         }
     }).then(() => getOneFrom(
-        DB_NAME, USERS_COLLECTION, {email: req.body.email}
+        DB_NAME, USERS_COLLECTION, {email: req.user.email}
     )).then((data) => {
         if(!data){
             throw new Error(USER_NOT_LOGGED_IN)
         }
-        if(data.password !== req.body.password){
+        if(data.password !== req.user.password){
             throw new Error(NO_ACCESS_ERROR)
         }
-        if(req.body.ltracks.length === 0){
+        if(req.body.tracks.length === 0){
             throw new Error(EMPTY_PLAYLIST_ERROR)
         }
         if(req.body.list_title.length === 0){
@@ -578,20 +704,20 @@ app.put('/api/authenticated/playlist', async (req, res) => {
  *  First check that the user is logged into the account that they are deleting from
  *  Then delete the playlist, returning an error if the playlist does not exist or nothing was deleted
  */
-app.delete("/api/authenticated/playlist", async (req, res) => {
+app.delete("/api/authenticated/playlist", auth, async (req, res) => {
     console.log("Called into DELETE playlist")
 
     const key = {
-        email: req.body.email,
+        email: req.user.email,
         list_title: req.body.list_title
     }
 
-    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.body.email})
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.user.email})
     .then((data) => {
         if(!data){
             throw new Error(USER_NOT_LOGGED_IN)
         }
-        if(data.password !== req.body.password){
+        if(data.password !== req.user.password){
             throw new Error(NO_ACCESS_ERROR)
         }
     }).then(() => deleteOneFrom(
@@ -622,33 +748,33 @@ app.delete("/api/authenticated/playlist", async (req, res) => {
  *  Insert the review - if a review already exists for this playlist by this user, then replace it (this is the {upsert: true} option)
  *  Notify the user of success or failure
  */
-app.put('/api/authenticated/review', async (req, res) => {
+app.put('/api/authenticated/review', auth, async (req, res) => {
     console.log("Called into PUT review")
 
     const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
     const key = {
-        email: req.body.email,
+        email: req.user.email,
         list_id: ObjectId(req.body.list_id),
         creator_email: req.body.creator_email
     }
     const query = {
         $set: {
-            email: req.body.email,
+            email: req.user.email,
             list_id: ObjectId(req.body.list_id),
             modified_date: date,
             rating: req.body.rating,
             comments: req.body.comments,
             creator_email: req.body.creator_email,
-            user_name: req.body.username
+            user_name: req.user.fullName
         }
     }
 
-    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.body.email})
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.user.email})
     .then((data) => {
         if(!data){
             throw new Error(USER_NOT_LOGGED_IN)
         }
-        if(data.password !== req.body.password){
+        if(data.password !== req.user.password){
             throw new Error(NO_ACCESS_ERROR)
         }
         if(!req.body.rating || req.body.rating.length === 0){
@@ -672,19 +798,19 @@ app.put('/api/authenticated/review', async (req, res) => {
  *  Check that the user is logged into the account they are attempting to query from
  *  Get all of this User's reviews and send them to the client
  */
-app.post('/api/authenticated/reviews', async (req, res) => {
+app.get('/api/authenticated/reviews', auth, async (req, res) => {
     console.log("Called into POST review")
 
     const key = {
-        email: req.body.email
+        email: req.user.email
     }
 
-    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.body.email})
+    await getOneFrom(DB_NAME, USERS_COLLECTION, key)
     .then((data) => {
         if(!data){
             throw new Error(USER_NOT_LOGGED_IN)
         }
-        if(data.password !== req.body.password){
+        if(data.password !== req.user.password){
             throw new Error(NO_ACCESS_ERROR)
         }
     }).then(() => getAllFrom(

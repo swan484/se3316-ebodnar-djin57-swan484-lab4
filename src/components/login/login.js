@@ -119,13 +119,6 @@ const Login = ({updateParentLoginStatus}) => {
         })
     }
 
-    const setVerificationPath = async (path) => {
-        await setState({
-            ...state,
-            verificationPath: path
-        })
-    }
-
     const submitLogin = async () => {
         toggleButtonEnabled(false)
         clearSuccess()
@@ -138,7 +131,7 @@ const Login = ({updateParentLoginStatus}) => {
         await fetch(`http://localhost:3001/api/user/information`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
+            body: JSON.stringify(payload)
         })
         .then(async (a) => {
             console.log(a)
@@ -161,6 +154,7 @@ const Login = ({updateParentLoginStatus}) => {
             return a.json()
         })
         .then((a) => {
+            localStorage.setItem('token', a.token)
             if(!a){
                 return;
             }
@@ -197,7 +191,9 @@ const Login = ({updateParentLoginStatus}) => {
         }
         fetch(`http://localhost:3001/api/user`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: new Headers({ 
+                "Content-Type": "application/json"
+            }),
             body: JSON.stringify(payload),
           })
         .then((a) => {
@@ -224,7 +220,9 @@ const Login = ({updateParentLoginStatus}) => {
         }
         fetch(`http://localhost:3001/api/user`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: new Headers({ 
+                "Content-Type": "application/json"
+            }),
             body: JSON.stringify(payload),
           })
         .then((a) => {

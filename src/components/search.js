@@ -56,7 +56,11 @@ const Search = ({updateParentResults, updateParentSet, parentSet, disableExpandi
             searchResults: [],
             buttonEnabled: false
         })
-        fetch(`http://localhost:3001/api/search/${state.query}`)
+        fetch(`http://localhost:3001/api/search/${state.query}`, {
+            headers: new Headers({ 
+                "Authorization": localStorage.getItem('token') 
+            }),
+        })
         .then((a) => {
             return a.json()
         })
@@ -133,7 +137,10 @@ const Search = ({updateParentResults, updateParentSet, parentSet, disableExpandi
         }
         fetch(`http://localhost:3001/api/tracks`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: new Headers({ 
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem('token') 
+            }),
             body: JSON.stringify(payload),
         })
         .then((a) => {

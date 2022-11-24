@@ -14,13 +14,47 @@ function App() {
   const [state, setState] = useState({
       loggedUser: {}
   })
+
+  const MINUTE_MS = 20000;
+
+  const checkJWTExpiry = () => {
+    fetch('http://localhost:3001/api/checkAuthorization', {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({token: localStorage.getItem('token')})
+    })
+    .then((res) => {
+      return res.json()
+    })
+    .then((r) => {
+      if(!r.valid){
+        localStorage.setItem('token', '')
+        setState({
+          loggedUser: {}
+        })
+      }
+    })
+    .catch((err) => {
+      console.log(err)
+    })
+  }
   
   const updateLoginStatus = (obj) => {
     setState({
         ...state,
         loggedUser: obj
     })
-}
+  }
+
+  //Every 20 seconds, check if the JWT is still valid
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log("Checking expiry")
+      checkJWTExpiry()
+    }, MINUTE_MS);
+
+    return () => clearInterval(interval);
+  }, [])
 
   return (
     <div className="App">
