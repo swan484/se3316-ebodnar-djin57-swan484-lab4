@@ -5,7 +5,6 @@ import LoginForm from "./LoginForm";
 import CreateForm from "./CreateForm";
 import ForgotForm from "./ForgotForm";
 import MessageBar from "./MessageBar";
-import VerifyAccount from "../verifyAccount";
 
 const INVALID_LOGIN = "Unverified Account"
 const ERROR_CLASS = "error"

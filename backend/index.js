@@ -538,8 +538,10 @@ app.get('/api/playlists/:limit', async (req, res) => {
     ]
 
     const ratings = {}
+    const reviews = {}
     await getAggregate(DB_NAME, PLAYLISTS_COLLECTION, aggQuery)
     .then((result) => {
+        console.log(result)
         result.forEach((r) => {
             let sum = 0
             let count = 0
@@ -547,6 +549,8 @@ app.get('/api/playlists/:limit', async (req, res) => {
                 sum += p.rating
                 count++
             })
+
+            reviews[r._id] = r.PlaylistReviews
             ratings[r._id] = (sum/count)
         })
     })
@@ -558,7 +562,8 @@ app.get('/api/playlists/:limit', async (req, res) => {
             const avgRating = ratings[d._id]
             result.push({
                 ...d,
-                avg_rating: avgRating
+                avg_rating: avgRating,
+                reviews: reviews[d._id]
             })
         })
     }).catch((err) => {

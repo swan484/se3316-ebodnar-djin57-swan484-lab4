@@ -63,3 +63,25 @@
     color: #f397ff;
     font-size: 20px;
 }
+
+.view-review-box {
+    background-color: #393939;
+    margin-bottom: 10px;
+    padding: 10px;
+    border-radius: 15px;
+    width: 400px;
+}
+
+.view-review-box > p {
+    padding-bottom: 0px;
+    display: block;
+}
+
+.review-heading {
+    font-size: 30px;
+    font-weight: 600;
+}
+
+.review-sub {
+    width: fit-content
+}

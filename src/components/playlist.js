@@ -24,6 +24,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
     }, [])
 
     useEffect(() => {
+        console.log(state.searchResults)
         fillEmptyReviews()
     }, [state.searchResults])
 
@@ -43,7 +44,6 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
         })
         await fetch(`http://localhost:3001/api/playlists/${limit}`)
         .then((a) => {
-            console.log(a)
             return a.json()
         })
         .then(async (a) => {
@@ -302,6 +302,11 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
                             <p>TITLE: {item.list_title}</p>
                             <p>DESCRIPTION: {item.description || NO_DESCRIPTION}</p>
                             <SongList searchResults={item.tracks} expandResults={expandResults} cName={"sub-table"} disableExpanding={false}/>
+                            {!reviewContent && item.reviews.map((r) => <div className='view-review-box' key={r.user_name}>
+                                <p className='review-heading'>{r.user_name}</p>
+                                <p className='review-sub'>Comment: "{r.comments}"</p>
+                                <p className="review-sub">Rating: {r.rating}/10</p>
+                            </div>)}
                             {reviewContent && <div className="review-box">
                                 <h1>Create Review</h1>
                                 <label>Rating (/10)</label>
