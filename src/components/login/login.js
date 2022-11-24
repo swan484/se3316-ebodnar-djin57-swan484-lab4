@@ -118,9 +118,16 @@ const Login = ({updateParentLoginStatus}) => {
         })
     }
 
+    useEffect(() => {
+        console.log(`Button enabled? ${state.buttonEnabled}`)
+    }, [state.buttonEnabled])
+
     const submitLogin = async () => {
-        toggleButtonEnabled(false)
-        clearSuccess()
+        setState({
+            ...state,
+            buttonEnabled: false,
+            successMessage: ''
+        })
 
         const payload = {
             email: state.email,
@@ -176,21 +183,22 @@ const Login = ({updateParentLoginStatus}) => {
                 buttonEnabled: true
             })
         })
-        console.log("BOTTOM")
     }
-    const submitChange = () => {
+    const submitChange = async () => {
         if(state.password !== state.confirmedPassword){
             return;
         }
-        console.log(state)
-        toggleButtonEnabled(false)
-        clearSuccess()
+        await setState({
+            ...state,
+            buttonEnabled: false,
+            successMessage: ''
+        })
         const payload = {
             email: state.email,
             password: state.existingPassword,
             newPassword: state.password
         }
-        fetch(`http://localhost:3001/api/user`, {
+        await fetch(`http://localhost:3001/api/user`, {
             method: "PUT",
             headers: new Headers({ 
                 "Content-Type": "application/json"
@@ -201,25 +209,37 @@ const Login = ({updateParentLoginStatus}) => {
             if(a.status !== 200){
                 throw new Error(a.statusText)
             }
-            updateSuccessMessage(PASSWORD_CHANGE_SUCCESS)
+            setState({
+                ...state,
+                successMessage: PASSWORD_CHANGE_SUCCESS,
+                error: '',
+                buttonEnabled: true
+            })
         })
         .catch((a) => {
-            updateError(a.message)
+            setState({
+                ...state,
+                successMessage: '',
+                error: a.message,
+                buttonEnabled: true
+            })
         })
-        toggleButtonEnabled(true)
     }
-    const createAccount = () => {
+    const createAccount = async () => {
         if(state.password !== state.confirmedPassword){
             return;
         }
-        toggleButtonEnabled(false)
-        clearSuccess()
+        await setState({
+            ...state,
+            buttonEnabled: false,
+            successMessage: ''
+        })
         const payload = {
             email: state.email,
             password: state.password,
             fullName: state.fullName
         }
-        fetch(`http://localhost:3001/api/user`, {
+        await fetch(`http://localhost:3001/api/user`, {
             method: "POST",
             headers: new Headers({ 
                 "Content-Type": "application/json"
@@ -236,25 +256,20 @@ const Login = ({updateParentLoginStatus}) => {
             setState({
                 ...state,
                 verificationPath: result,
-                successMessage: CREATE_ACCOUNT_SUCCESS
+                successMessage: CREATE_ACCOUNT_SUCCESS,
+                buttonEnabled: true,
+                error: ''
             })
         })
         .catch(async (a) => {
-            await updateError(a.message)
+            setState({
+                ...state,
+                successMessage: '',
+                error: a.message,
+                buttonEnabled: true
+            })
         })
-
-        toggleButtonEnabled(true)
     }
-
-    useEffect(() => {
-        console.log(state.buttonEnabled)
-    }, [state.buttonEnabled])
-
-    useEffect(() => {
-        console.log(`Now have ${state.verificationPath}`)
-        console.log(state.error)
-        console.log(state.successMessage)
-    }, [state.verificationPath])
 
     const verifyAccount = () => {
         navigate(`/verify?id=${state.verificationPath}`)

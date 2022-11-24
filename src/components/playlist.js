@@ -3,6 +3,7 @@ import SongList from "./songlist";
 import './styles/playlist.css'
 
 const UNKNOWN = "Unknown"
+const NONE = "None"
 const NO_DESCRIPTION = "No Description"
 const PLAYLISTS_LIMIT = 10
 
@@ -266,6 +267,12 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
         })
     }
 
+    const hideReview = (e, r) => {
+        console.log("Clicked hide review")
+        console.log(r)
+        //Fetch with an API call to update this review to set "hidden = true"
+    }
+
     return (
         <div>
             {state.globalError && <p className="error-msg">
@@ -282,7 +289,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
                             <p className="list-title">TITLE</p>
                             <p className="username">CREATOR</p>
                             <p className="date-modified">LAST MODIFIED</p>
-                            <p className="playtime">PLAYTIME</p>
+                            <p className="playtime">PLAYTIME (HR)</p>
                             <p className="num-tracks"># TRACKS</p>
                             <p className="rating">AVG RATING</p>
                         </li>
@@ -291,21 +298,30 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
                 {state.searchResults.map(item => (
                     <div className="table-row table-row-2" key={item.list_title + item.email} >
                         <li onClick={(e) => expandResults(e, item)}>
-                            <p className="list-title">{item.list_title || UNKNOWN}</p>
-                            <p className="username">{item.user_name || UNKNOWN}</p>
+                            <p className="list-title">{item.list_title || NONE}</p>
+                            <p className="username">{item.user_name || NONE}</p>
                             <p className="date-modified">{item.date_modified || UNKNOWN}</p>
                             <p className="playtime">{item.playtime || UNKNOWN}</p>
-                            <p className="num-tracks">{item.tracks.length || UNKNOWN}</p>
-                            <p className="rating">{item.avg_rating || UNKNOWN}</p>
+                            <p className="num-tracks">{item.tracks.length || NONE}</p>
+                            <p className="rating">{item.avg_rating || NONE}</p>
                         </li>
                         {item.additional_information && <div className="track-details no-pad top-pad">
                             <p>TITLE: {item.list_title}</p>
                             <p>DESCRIPTION: {item.description || NO_DESCRIPTION}</p>
                             <SongList searchResults={item.tracks} expandResults={expandResults} cName={"sub-table"} disableExpanding={false}/>
-                            {!reviewContent && item.reviews.map((r) => <div className='view-review-box' key={r.user_name}>
-                                <p className='review-heading'>{r.user_name}</p>
-                                <p className='review-sub'>Comment: "{r.comments}"</p>
-                                <p className="review-sub">Rating: {r.rating}/10</p>
+                            {!reviewContent && item.reviews.map((r) => <div key={r.user_name}>
+                                {!r.hidden && !userLoggedInStatus.admin &&  <div className='view-review-box'>
+                                    <p className='review-heading'>{r.user_name}</p>
+                                    <p className='review-sub'>Comment: "{r.comments}"</p>
+                                    <p className="review-sub">Rating: {r.rating}/10</p>
+                                </div>}
+                                {userLoggedInStatus && userLoggedInStatus.admin === true && <div className='view-review-box'>
+                                    <p className='review-heading'>{r.user_name}</p>
+                                    <p className='review-sub'>Comment: "{r.comments}"</p>
+                                    <p className="review-sub">Rating: {r.rating}/10</p>
+                                    <button className='admin-button' onClick={(e) => hideReview(e, r)}>Hide review</button>
+                                </div>}
+                                {console.log(userLoggedInStatus)}
                             </div>)}
                             {reviewContent && <div className="review-box">
                                 <h1>Create Review</h1>

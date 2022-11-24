@@ -5,7 +5,7 @@ import './styles/navbar.css';
 const Navbar = ({userLoggedInStatus}) => {
     return(
         <nav>
-            <ul className="navbar">
+            <ul className={"navbar " + (userLoggedInStatus.admin === true ? "admin" : "")}>
                 <li>
                     <NavLink to='/' className={({ isActive }) => "link" + (isActive ? " active" : "")}>Home</NavLink>
                 </li>
@@ -15,12 +15,16 @@ const Navbar = ({userLoggedInStatus}) => {
                 <li>
                     <NavLink to='/playlists' className={({ isActive }) => "link" + (isActive ? " active" : "")}>View Playlists</NavLink>
                 </li>
-                {userLoggedInStatus && Object.keys(userLoggedInStatus).length > 0 && <li>
+                {userLoggedInStatus && Object.keys(userLoggedInStatus).length > 0 && !userLoggedInStatus.admin && <li>
                     <NavLink to='/create' className={({ isActive }) => "link" + (isActive ? " active" : "")}>My Playlists</NavLink>
                 </li>}
-                {userLoggedInStatus && Object.keys(userLoggedInStatus).length > 0 && <li>
+                {userLoggedInStatus && Object.keys(userLoggedInStatus).length > 0 && !userLoggedInStatus.admin && <li>
                     <NavLink to='/review' className={({ isActive }) => "link" + (isActive ? " active" : "")}>Rate Playlists</NavLink>
                 </li>}
+                {userLoggedInStatus.admin === true && <li>
+                    <NavLink to='/manage' className={({ isActive }) => "link" + (isActive ? " active" : "")}>Manage Users</NavLink>
+                </li>}
+                {userLoggedInStatus.admin === true && <li className="right-display">Admin Console</li>}
             </ul>
         </nav>
     )

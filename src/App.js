@@ -9,6 +9,7 @@ import Playlist from './components/playlist';
 import CreatePlaylist from './components/createPlaylist';
 import ReviewPlaylist from './components/reviewPlaylist';
 import VerifyAccount from './components/verifyAccount';
+import Manage from './components/manage';
 
 function App() {
   const [state, setState] = useState({
@@ -69,11 +70,12 @@ function App() {
           <Route path='/' element={<Layout userLoggedInStatus={state.loggedUser}/>}>
             <Route index element={<Home updateUserLoginStatus={updateLoginStatus} loginStatus={state.loggedUser}/>}></Route>
             <Route path='search' element={<Search enableLabel={true} heading={true}/>}></Route>
-            <Route path='playlists' element={<Playlist />}></Route>
+            <Route path='playlists' element={<Playlist userLoggedInStatus={state.loggedUser}/>}></Route>
             <Route path='deactivated' element={<Deactivated />}></Route>
             <Route path='create' element={<CreatePlaylist userLoggedInStatus={state.loggedUser}/>}></Route>
             <Route path='review' element={<ReviewPlaylist userLoggedInStatus={state.loggedUser}/>}></Route>
             <Route path='verify' element={<VerifyAccount userDetails={state.loggedUser}/>}></Route>
+            <Route path='manage' element={<Manage loginStatus={state.loggedUser}/>}></Route>
           </Route>
         </Routes>
       </BrowserRouter>

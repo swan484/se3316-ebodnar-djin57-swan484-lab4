@@ -70,6 +70,7 @@
     padding: 10px;
     border-radius: 15px;
     width: 400px;
+    text-align: left;
 }
 
 .view-review-box > p {
@@ -84,4 +85,14 @@
 
 .review-sub {
     width: fit-content
+}
+
+.admin-button {
+    border-color: rgb(63, 128, 128);
+    justify-content: left;
+    color: #ffe9e9;
+}
+
+.admin-button:hover {
+    background-color: rgb(12, 61, 61);
 }

@@ -7,6 +7,10 @@
     padding-bottom: 4px;
 }
 
+.admin {
+    background-color: rgb(63, 128, 128);
+}
+
 .navbar > li {
     display: inline-block;
     list-style: none;
@@ -26,4 +30,9 @@
 
 .active {
     color: #f6a5fc;
+}
+
+.right-display {
+    float: right;
+    padding-right: 30px;
 }

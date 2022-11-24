@@ -119,7 +119,8 @@ const generateRandomPassword = () => {
 }
 
 app.get('/api/random', (req, res) => {
-    res.status(200).send(generateRandomPassword())
+    console.log(parseTime("20:01"))
+    console.log(secondsToTime(1201))
 })
 
 /*
@@ -539,9 +540,9 @@ app.get('/api/playlists/:limit', async (req, res) => {
 
     const ratings = {}
     const reviews = {}
+    const trackPlaytimes = {}
     await getAggregate(DB_NAME, PLAYLISTS_COLLECTION, aggQuery)
     .then((result) => {
-        console.log(result)
         result.forEach((r) => {
             let sum = 0
             let count = 0
@@ -550,6 +551,13 @@ app.get('/api/playlists/:limit', async (req, res) => {
                 count++
             })
 
+            let totalPlaytime = 0;
+            r.tracks.forEach((t) => {
+                const playtime = parseTime(t.track_duration) * t.track_listens;
+                totalPlaytime += playtime
+            })
+
+            trackPlaytimes[r._id] = secondsToTime(totalPlaytime)
             reviews[r._id] = r.PlaylistReviews
             ratings[r._id] = (sum/count)
         })
@@ -563,7 +571,8 @@ app.get('/api/playlists/:limit', async (req, res) => {
             result.push({
                 ...d,
                 avg_rating: avgRating,
-                reviews: reviews[d._id]
+                reviews: reviews[d._id],
+                playtime: trackPlaytimes[d._id]
             })
         })
     }).catch((err) => {
@@ -573,6 +582,23 @@ app.get('/api/playlists/:limit', async (req, res) => {
 
     return res.status(200).send(result)
 })
+
+const parseTime = (time) => {
+    var seconds = 0
+    const timeComponents = time.split(":")
+    for(var i = 0; i < timeComponents.length; i++){
+        seconds = 60 * seconds + parseInt(timeComponents[i])
+    }
+
+    return seconds
+}
+
+const secondsToTime = (seconds) => {
+    let date = new Date(null);
+    date.setSeconds(seconds);
+
+    return parseFloat(((date - new Date(null)) / 36e5).toString()).toFixed(1);
+}
 
 /**
  * Fuzzy search for tracks, matching user input against the artist name, track title, and genres for each track
@@ -796,7 +822,8 @@ app.put('/api/authenticated/review', auth, async (req, res) => {
             rating: req.body.rating,
             comments: req.body.comments,
             creator_email: req.body.creator_email,
-            user_name: req.user.fullName
+            user_name: req.user.fullName,
+            hidden: false
         }
     }
 
