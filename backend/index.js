@@ -25,6 +25,7 @@ const REVIEWS_COLLECTION = "reviews"
 const MAX_NUM_PLAYLISTS = 20
 
 const INCORRECT_PASSWORD = "Incorrect password"
+const INVALID_NAME = "Invalid name"
 const INVALID_EMAIL = "Invalid email"
 const INVALID_PWD = "Password must be minimum 8 characters, at least one upper and lowercase letter, at least one number and special character. Spaces are not allowed."
 const INVALID_SEARCH = "Search query is invalid"
@@ -250,7 +251,7 @@ app.post("/api/user/decrypt", async (req, res) => {
 })
 
 /**
- * Add a User to the DB
+ * Add a new User to the DB
  *  First check if a user with this email already exists, returning an error if so (no two users can have the same email)
  *  Then insert the (unverified) user object into the DB, returning an error in case of failure
  *  Then generate a cypher for the user to verify their email with and return it to them
@@ -258,7 +259,7 @@ app.post("/api/user/decrypt", async (req, res) => {
  */
 app.post("/api/user", async (req, res) => {
     try {
-        validateEmailPwd(req.body)
+        validateRegistration(req.body)
     } catch (e) {
         res.statusMessage = e.message
         return res.status(404).send()
@@ -327,7 +328,7 @@ app.put('/api/authenticated/playlists', auth, async (req, res) => {
 
     await checkTracksExist(modifiedTracks)
     .then((data) => {
-        if(data.length != modifiedTracks.length){
+        if(data.length !== modifiedTracks.length){
             throw new Error(INVALID_TRACK_EXISTS)
         }
     }).then(() => getOneFrom(
@@ -646,7 +647,7 @@ app.put('/api/authenticated/playlist', auth, async (req, res) => {
 
     await checkTracksExist(req.body.tracks)
     .then((data) => {
-        if(data.length != req.body.tracks.length){
+        if(data.length !== req.body.tracks.length){
             throw new Error(INVALID_TRACK_EXISTS)
         }
     }).then(() => getOneFrom(
@@ -992,6 +993,30 @@ const UploadData = async (dbName, collectionName) => {
     })
    
     console.log("Finished");
+}
+
+function validateRegistration(body){
+    var pwd = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!#%*&^]{8,30}$/;
+    var name = /^(?=.*[^{}]+$)(?!.*<[^>]+>).*/;
+
+    const schema = Joi.object({
+        email: Joi.string().min(6).required().email(),
+        password: Joi.string().regex(pwd).required(),
+        fullName: Joi.string().min(2).max(40).regex(name).required(),
+    })
+ 
+    const result = schema.validate(body)
+
+    if (result.error){
+        const key = result.error.details[0].context.key
+        if (key === "password") {
+            throw new Error(INVALID_PWD)
+        } else if (key === "email"){
+            throw new Error(INVALID_EMAIL)
+        } else if (key === "fullName"){
+            throw new Error(INVALID_NAME)
+        }
+    }
 }
 
 function validateSearch(query){
