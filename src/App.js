@@ -55,6 +55,7 @@ function App() {
 
   //Every 20 seconds, check if the JWT is still valid
   useEffect(() => {
+    console.log(state.loggedUser)
     const interval = setInterval(() => {
       console.log("Checking expiry")
       checkJWTExpiry()

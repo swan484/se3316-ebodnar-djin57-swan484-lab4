@@ -3,6 +3,7 @@ import SongList from "./songlist";
 import './styles/search.css'
 
 const TABLE_STYLE = "narrow-width heavy-bottom-pad"
+const INVALID_SEARCH = "Invalid search query"
 
 const SearchBar = ({setQuery, label}) => {
     const [search, setSearch] = useState('');
@@ -37,7 +38,8 @@ const Search = ({updateParentResults, updateParentSet, parentSet, disableExpandi
         query: '',
         buttonEnabled: true,
         searchResults: [],
-        invokedPreviously: false
+        invokedPreviously: false,
+        errorMessage: ''
     }) 
 
     useEffect(() => {
@@ -56,6 +58,7 @@ const Search = ({updateParentResults, updateParentSet, parentSet, disableExpandi
             searchResults: [],
             buttonEnabled: false
         })
+        console.log(state.query)
         fetch(`http://localhost:3001/api/search/${state.query}`, {
             headers: new Headers({ 
                 "Authorization": localStorage.getItem('token') 
@@ -64,9 +67,9 @@ const Search = ({updateParentResults, updateParentSet, parentSet, disableExpandi
         .then((a) => {
             return a.json()
         })
-        .then((a) => {
+        .then(async (a) => {
             console.log(a)
-            setState({
+            await setState({
                 ...state,
                 searchResults: a,
                 invokedPreviously: true,
@@ -80,10 +83,12 @@ const Search = ({updateParentResults, updateParentSet, parentSet, disableExpandi
             }
             console.log("Finished search")
         })
-        .catch(() => {
+        .catch((err) => {
             setState({
                 ...state,
-                buttonEnabled: true
+                buttonEnabled: true,
+                errorMessage: INVALID_SEARCH,
+                searchResults: [],
             })
         })
     }
@@ -91,7 +96,8 @@ const Search = ({updateParentResults, updateParentSet, parentSet, disableExpandi
     const updateQuery = (q) => {
         setState({
             ...state,
-            query: q
+            query: q,
+            errorMessage: ''
         })
     }
 
@@ -171,6 +177,7 @@ const Search = ({updateParentResults, updateParentSet, parentSet, disableExpandi
         <div>
             {heading && <h1>Search</h1>}
             <SearchBar setQuery={updateQuery} label={enableLabel}/>
+            {state.errorMessage.length > 0 && <div className="error">{state.errorMessage}</div>}
             <div>
                 <button onClick={() => searchData()} disabled={!state.buttonEnabled} className="submit-button">Search</button>
                 {!heading && <button className='no-margin submit-button' disabled={!state.buttonEnabled} onClick={clearResults}>Clear Results</button>}

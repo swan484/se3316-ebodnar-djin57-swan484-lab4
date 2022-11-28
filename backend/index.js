@@ -9,14 +9,12 @@ app.use(cors());
 
 const uri = "mongodb+srv://root:root@cluster0.dklnv6c.mongodb.net/?retryWrites=true&w=majority"
 const client = new MongoClient(uri)
-const {GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SECRET_TOKEN} = require('../middleware/config')
+const {SECRET_TOKEN} = require('../middleware/config')
 const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth')
 const Joi = require('joi');
 
 const CryptoJS = require("crypto-js")
-const GoogleStrategy = require('passport-google-oauth20')
-const passport = require('passport')
 
 const DB_NAME = "music"
 const USERS_COLLECTION = "users"
@@ -29,6 +27,7 @@ const MAX_NUM_PLAYLISTS = 20
 const INCORRECT_PASSWORD = "Incorrect password"
 const INVALID_EMAIL = "Invalid email"
 const INVALID_PWD = "Password must be minimum 8 characters, at least one upper and lowercase letter, at least one number and special character. Spaces are not allowed."
+const INVALID_SEARCH = "Search query is invalid"
 const EMAIL_EXISTS = "An account with this email already exists"
 const CANNOT_INSERT = "Cannot create account, try again later"
 const CANNOT_INSERT_PLAYLIST = "Cannot insert playlist, try again later"
@@ -48,80 +47,6 @@ const EMPTY_RATING = "Cannot have an empty rating"
 const USER_NOT_EXISTS = "User does not exist"
 const COULD_NOT_DECRYPT = "Could not decrypt details, try again later"
 const COULD_NOT_UPDATE = "Could not update details, try again later"
-
-/*
-passport.use(new GoogleStrategy({
-    clientID: GOOGLE_CLIENT_ID,
-    clientSecret: GOOGLE_CLIENT_SECRET,
-    callbackURL: 'https://www.example.com/oauth2/redirect/google',
-    scope: [ 'profile' ],
-    state: true
-  },
-  function verify(accessToken, refreshToken, profile, cb) {
-    getOneFrom(DB_NAME, USERS_COLLECTION, {
-        federatedId: profile.id
-    }).then((cred) => {
-        console.log(cred)
-        if(!cred){
-            insertOne(DB_NAME, USERS_COLLECTION, {
-                federatedId: profile.id,
-                fullName: profile.displayName,
-                email: generateRandomPassword(),
-                password: generateRandomPassword(),
-                verified: true,
-                deactivated: false
-            })
-            return cb(null, {
-                id: profile.id,
-                name: profile.displayName
-            })
-        }
-        else{
-            return cb(null, {
-                id: cred.federatedId,
-                name: cred.displayName
-            })
-        }
-    }).catch((err) => {
-        return cb(err)
-    })
-  }))
-
-passport.serializeUser(function(user, cb) {
-    process.nextTick(function() {
-        cb(null, { id: user.id, username: user.username, name: user.name });
-    });
-});
-
-passport.deserializeUser(function(user, cb) {
-    process.nextTick(function() {
-        return cb(null, user);
-    });
-});
-
-app.get('/login/federated/google', passport.authenticate('google'))
-
-app.get('/oauth2/redirect/google', passport.authenticate('google', {
-    successReturnToOrRedirect: '/',
-    failureRedirect: '/login'
-}))
-*/
-
-const generateRandomPassword = () => {
-    const pass = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890!@#$%^&*()_+{}:<>?,./"
-    var pwd = [];
-    const count = Math.max(Math.floor(Math.random() * 100), 50)
-    for(var i = 0; i < count; i++){
-        pwd.push(pass.charAt(Math.floor(Math.random() * pass.length)))
-    }
-    
-    return pwd.join("")
-}
-
-app.get('/api/random', (req, res) => {
-    console.log(parseTime("20:01"))
-    console.log(secondsToTime(1201))
-})
 
 /*
 *   Upload data to the database - NEED TO DELETE
@@ -165,7 +90,7 @@ app.post('/api/checkAuthorization', (req, res) => {
 })
 
 /**
- * Get a User (used for login):
+ * Get a User (Login):
  *  Validate request body (email and password)
  *  Query by email (unique in database) - if it does not exist return an error
  *  If the returned user object has a mismatched password (with the user input), then return an error
@@ -195,7 +120,7 @@ app.post("/api/user/information", (req, res) => {
         if(!foundUser){
             throw new Error(USER_NOT_EXISTS)
         }
-        if(password != decodeString(foundUser.password)){
+        if(password !== decodeString(foundUser.password)){
             throw new Error(INCORRECT_PASSWORD)
         }
         if(!foundUser.verified){
@@ -283,43 +208,6 @@ app.put("/api/user", async (req, res) => {
 })
 
 /**
- * THIS IS ACTUALLY NOT BEING USED - DELETE IF THAT DOESN'T CHANGE
- * Encrypt the sent user details
- *  First check if the user email exists in the DB - if not return an error
- *  Check if the user inputted password matches the DB record
- *  Return a cypher generated from the username and password for them to verify with
- */
-app.post('/api/user/encrypt', async (req, res) => {
-    try {
-        validateEmailPwd(req.body)
-    } catch (e) {
-        res.statusMessage = e.message
-        return res.status(404).send()
-    }
-
-    const userDetails = {
-        email: req.body.email,
-        password: req.body.password
-    }
-
-    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: userDetails.email})
-    .then((foundUser) => {
-        if(!foundUser){
-            throw new Error(USER_NOT_EXISTS)
-        }
-        if(userDetails.password != decodeString(foundUser.password)){
-            throw new Error(INCORRECT_PASSWORD)
-        }
-    }).then(() => {
-        const cypher = CryptoJS.AES.encrypt(JSON.stringify(userDetails), SECRET_TOKEN).toString()
-        return res.status(200).send(cypher)
-    }).catch((err) => {
-        res.statusMessage = err.message
-        return res.status(404).send()
-    })
-})
-
-/**
  * Decrypt a User encrypted string in order to verify the User who clicked it
  *  First decrypt the string, then check the resulting data (email exists, password matches record)
  *  Then update the corresponding User document in the DB, setting verified = true
@@ -339,7 +227,7 @@ app.post("/api/user/decrypt", async (req, res) => {
         if(!foundUser){
             throw new Error(USER_NOT_EXISTS) 
         }
-        if(decryptedData.password != decodeString(foundUser.password)){
+        if(decryptedData.password !== decodeString(foundUser.password)){
             throw new Error(INCORRECT_PASSWORD)
         }
     }).then(() => updateOneFrom(
@@ -639,7 +527,16 @@ const secondsToTime = (seconds) => {
  */
 app.get('/api/search/:query', async (req, res) => {
     console.log("Called into search " + req.params.query)
-    const queries = req.params.query.split(",")
+
+    try{
+        validateSearch(req.params.query)
+    } catch (e) {
+        console.log(e.message)
+        res.statusMessage = e.message
+        return res.status(404).send()
+    }
+        
+    const queries = req.params.query.split(",")    
 
     var results = {}
     var it = 0;
@@ -1097,13 +994,32 @@ const UploadData = async (dbName, collectionName) => {
     console.log("Finished");
 }
 
+function validateSearch(query){
+    let queries = [];
+    let split = query.split(",")
+    split.forEach((q) => {
+        queries.push(q.trim())
+    })
+
+    var rgex1 = /^(?!.*<[^>]+>).*/;
+    var rgex2 = /^[^{}]+$/;
+
+    console.log("This is the query:", queries)
+
+    queries.forEach((q) => {
+        if(q === "" || !rgex1.test(q) || !rgex2.test(q)){
+            throw new Error(INVALID_SEARCH)
+        } 
+    })
+}
+
 function validateEmailPwd(body){
     // Password must be at least 8 characters, have at least one upper and one lowercase letter, 
     // at least one number, and a special character. No spaces allowed.
 
     const schema = Joi.object({
         email: Joi.string().min(6).required().email(),
-        password: Joi.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!#%*&^]{8,}$/).required()
+        password: Joi.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!#%*&^]{8,30}$/).required()
     })
  
     const result = schema.validate(body)
