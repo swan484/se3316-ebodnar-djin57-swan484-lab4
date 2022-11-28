@@ -27,7 +27,8 @@ const REVIEWS_COLLECTION = "reviews"
 const MAX_NUM_PLAYLISTS = 20
 
 const INCORRECT_PASSWORD = "Incorrect password"
-const INVALID_INPUT = "Input not recognized"
+const INVALID_EMAIL = "Invalid email"
+const INVALID_PWD = "Password must be minimum 8 characters, at least one upper and lowercase letter, at least one number and special character. Spaces are not allowed."
 const EMAIL_EXISTS = "An account with this email already exists"
 const CANNOT_INSERT = "Cannot create account, try again later"
 const CANNOT_INSERT_PLAYLIST = "Cannot insert playlist, try again later"
@@ -174,8 +175,13 @@ app.post('/api/checkAuthorization', (req, res) => {
 app.post("/api/user/information", (req, res) => {
     console.log(`Called into POST user/information (email)`);
     
-    validateEmailPwd(req.body)
-
+    try {
+        validateEmailPwd(req.body)
+    } catch (e) {
+        res.statusMessage = e.message
+        return res.status(404).send()
+    }
+    
     const search = req.body;
     const email = search.email
     const password = search.password
@@ -231,7 +237,12 @@ app.post("/api/user/information", (req, res) => {
  *  ** No Auth **
  */
 app.put("/api/user", async (req, res) => {
-    validateEmailPwd(req.body)
+    try {
+        validateEmailPwd(req.body)
+    } catch (e) {
+        res.statusMessage = e.message
+        return res.status(404).send()
+    }
 
     const body = req.body;
     const email = body.email
@@ -279,7 +290,12 @@ app.put("/api/user", async (req, res) => {
  *  Return a cypher generated from the username and password for them to verify with
  */
 app.post('/api/user/encrypt', async (req, res) => {
-    validateEmailPwd(req.body)
+    try {
+        validateEmailPwd(req.body)
+    } catch (e) {
+        res.statusMessage = e.message
+        return res.status(404).send()
+    }
 
     const userDetails = {
         email: req.body.email,
@@ -353,8 +369,13 @@ app.post("/api/user/decrypt", async (req, res) => {
  *  ** No Auth **
  */
 app.post("/api/user", async (req, res) => {
-    validateEmailPwd(req.body)
-    
+    try {
+        validateEmailPwd(req.body)
+    } catch (e) {
+        res.statusMessage = e.message
+        return res.status(404).send()
+    }
+
     const body = req.body;
     const email = body.email
     const password = encodeString(body.password)
@@ -1079,15 +1100,20 @@ const UploadData = async (dbName, collectionName) => {
 function validateEmailPwd(body){
     // Password must be at least 8 characters, have at least one upper and one lowercase letter, 
     // at least one number, and a special character. No spaces allowed.
-    const schema = {
-        email: Joi.string().regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g).required(),
-        password: Joi.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!#%*&^]{8,}$/).required()
-    }
 
-    const result = Joi.validate(body, schema);
-    
-    if (result.error) {
-        throw new Error(INVALID_INPUT)
+    const schema = Joi.object({
+        email: Joi.string().min(6).required().email(),
+        password: Joi.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!#%*&^]{8,}$/).required()
+    })
+ 
+    const result = schema.validate(body)
+
+    const key = result.error.details[0].context.key
+
+    if (key === "password") {
+        throw new Error(INVALID_PWD)
+    } else if (key === "email"){
+        throw new Error(INVALID_EMAIL)
     }
 }
 
