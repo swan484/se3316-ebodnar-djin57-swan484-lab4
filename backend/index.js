@@ -1108,12 +1108,13 @@ function validateEmailPwd(body){
  
     const result = schema.validate(body)
 
-    const key = result.error.details[0].context.key
-
-    if (key === "password") {
-        throw new Error(INVALID_PWD)
-    } else if (key === "email"){
-        throw new Error(INVALID_EMAIL)
+    if (result.error){
+        const key = result.error.details[0].context.key
+        if (key === "password") {
+            throw new Error(INVALID_PWD)
+        } else if (key === "email"){
+            throw new Error(INVALID_EMAIL)
+        }
     }
 }
 
