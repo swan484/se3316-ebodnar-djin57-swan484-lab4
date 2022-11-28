@@ -12,6 +12,7 @@ const client = new MongoClient(uri)
 const {GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SECRET_TOKEN} = require('../middleware/config')
 const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth')
+const Joi = require('joi');
 
 const CryptoJS = require("crypto-js")
 const GoogleStrategy = require('passport-google-oauth20')
@@ -26,7 +27,7 @@ const REVIEWS_COLLECTION = "reviews"
 const MAX_NUM_PLAYLISTS = 20
 
 const INCORRECT_PASSWORD = "Incorrect password"
-const INVALID_EMAIL = "Email not recognized"
+const INVALID_INPUT = "Input not recognized"
 const EMAIL_EXISTS = "An account with this email already exists"
 const CANNOT_INSERT = "Cannot create account, try again later"
 const CANNOT_INSERT_PLAYLIST = "Cannot insert playlist, try again later"
@@ -46,8 +47,6 @@ const EMPTY_RATING = "Cannot have an empty rating"
 const USER_NOT_EXISTS = "User does not exist"
 const COULD_NOT_DECRYPT = "Could not decrypt details, try again later"
 const COULD_NOT_UPDATE = "Could not update details, try again later"
-
-const SECRET_KEY = "fTjWnZr4u7x!A%D*G-KaNdRgUkXp2s5v8y/B?E(H+MbQeShVmYq3t6w9z$C&F)J@NcRfUjWnZr4u7x!A%D*G-KaPdSgVkYp2s5v8y/B?E(H+MbQeThWmZq4t6w9z$C&F"
 
 /*
 passport.use(new GoogleStrategy({
@@ -131,11 +130,11 @@ app.get("/api/upload", (req, res) => {
 })
 
 const encodeString = (str) => {
-    return CryptoJS.AES.encrypt(JSON.stringify(str), SECRET_KEY).toString()
+    return CryptoJS.AES.encrypt(JSON.stringify(str), SECRET_TOKEN).toString()
 }
 
 const decodeString = (str) => {
-    const bytes = CryptoJS.AES.decrypt(str, SECRET_KEY);
+    const bytes = CryptoJS.AES.decrypt(str, SECRET_TOKEN);
     return JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
 }
 
@@ -166,6 +165,7 @@ app.post('/api/checkAuthorization', (req, res) => {
 
 /**
  * Get a User (used for login):
+ *  Validate request body (email and password)
  *  Query by email (unique in database) - if it does not exist return an error
  *  If the returned user object has a mismatched password (with the user input), then return an error
  *  If the user is not verified, return a new cypher for them to verify with
@@ -173,8 +173,10 @@ app.post('/api/checkAuthorization', (req, res) => {
  */
 app.post("/api/user/information", (req, res) => {
     console.log(`Called into POST user/information (email)`);
-    const search = req.body;
+    
+    validateEmailPwd(req.body)
 
+    const search = req.body;
     const email = search.email
     const password = search.password
 
@@ -185,7 +187,7 @@ app.post("/api/user/information", (req, res) => {
     getOneFrom(DB_NAME, USERS_COLLECTION, query)
     .then((foundUser) => {
         if(!foundUser){
-            throw new Error(INVALID_EMAIL)
+            throw new Error(USER_NOT_EXISTS)
         }
         if(password != decodeString(foundUser.password)){
             throw new Error(INCORRECT_PASSWORD)
@@ -229,6 +231,8 @@ app.post("/api/user/information", (req, res) => {
  *  ** No Auth **
  */
 app.put("/api/user", async (req, res) => {
+    validateEmailPwd(req.body)
+
     const body = req.body;
     const email = body.email
 
@@ -242,9 +246,9 @@ app.put("/api/user", async (req, res) => {
     await getOneFrom(DB_NAME, USERS_COLLECTION, search)
     .then((foundUser) => {
         if(!foundUser){
-            throw new Error(INVALID_EMAIL)
+            throw new Error(USER_NOT_EXISTS)
         }
-        if(password != decodeString(foundUser.password)){
+        if(password !== decodeString(foundUser.password)){
             throw new Error(INCORRECT_PASSWORD)
         }
     })
@@ -275,6 +279,8 @@ app.put("/api/user", async (req, res) => {
  *  Return a cypher generated from the username and password for them to verify with
  */
 app.post('/api/user/encrypt', async (req, res) => {
+    validateEmailPwd(req.body)
+
     const userDetails = {
         email: req.body.email,
         password: req.body.password
@@ -289,7 +295,7 @@ app.post('/api/user/encrypt', async (req, res) => {
             throw new Error(INCORRECT_PASSWORD)
         }
     }).then(() => {
-        const cypher = CryptoJS.AES.encrypt(JSON.stringify(userDetails), SECRET_KEY).toString()
+        const cypher = CryptoJS.AES.encrypt(JSON.stringify(userDetails), SECRET_TOKEN).toString()
         return res.status(200).send(cypher)
     }).catch((err) => {
         res.statusMessage = err.message
@@ -347,6 +353,8 @@ app.post("/api/user/decrypt", async (req, res) => {
  *  ** No Auth **
  */
 app.post("/api/user", async (req, res) => {
+    validateEmailPwd(req.body)
+    
     const body = req.body;
     const email = body.email
     const password = encodeString(body.password)
@@ -378,7 +386,7 @@ app.post("/api/user", async (req, res) => {
 
         console.log("Successfully Inserted")
     }).then(() => {
-        const cypher = CryptoJS.AES.encrypt(JSON.stringify(userDetails), SECRET_KEY).toString()
+        const cypher = CryptoJS.AES.encrypt(JSON.stringify(userDetails), SECRET_TOKEN).toString()
         return res.status(200).send(cypher)
     }).catch((err) => {
         console.log(err)
@@ -1066,6 +1074,21 @@ const UploadData = async (dbName, collectionName) => {
     })
    
     console.log("Finished");
+}
+
+function validateEmailPwd(body){
+    // Password must be at least 8 characters, have at least one upper and one lowercase letter, 
+    // at least one number, and a special character. No spaces allowed.
+    const schema = {
+        email: Joi.string().regex(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/g).required(),
+        password: Joi.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!#%*&^]{8,}$/).required()
+    }
+
+    const result = Joi.validate(body, schema);
+    
+    if (result.error) {
+        throw new Error(INVALID_INPUT)
+    }
 }
 
 /*
