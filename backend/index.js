@@ -894,6 +894,7 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
             throw new Error(NO_ACCESS_ERROR)
         }
     }).then(() => updateOneFrom(DB_NAME, USERS_COLLECTION, search, query))
+    .then(() => getOneFrom(DB_NAME, USERS_COLLECTION, search))
     .then((user) => {  
         console.log(user)
         console.log("Successfully updated user")
