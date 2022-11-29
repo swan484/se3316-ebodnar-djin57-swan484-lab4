@@ -1,8 +1,9 @@
 import React, {useEffect, useState, useCallback, useReducer} from "react";
 import './styles/manage.css'
+import './styles/songlist.css'
 
 const UNKNOWN = "Unknown"
-const NONE = "None"
+const YES = "Yes"
 const NO = "No"
 
 const Manage = ({loginStatus}) => {
@@ -57,11 +58,11 @@ const Manage = ({loginStatus}) => {
             <input className="admin-input" type="text"/>
             <button className="admin-button">Search</button>
             {state.userResults.length > 0 && 
-                <div>
+                <div className="heading-row table-row table-header-2">
                     <li>
                         <p className="username">USER</p>
                         <p className="email">EMAIL</p>
-                        <p className="verified-status">VERIFIED?</p>
+                        <p className="verified-status">VERIFIED</p>
                         <p className="admin-status">ADMIN</p>
                         <p className="deactivated-status">DEACTIVATE</p>
                     </li>
@@ -71,16 +72,16 @@ const Manage = ({loginStatus}) => {
                 <div className="table-row table-row-2" key={user.fullName + user.email} >
                         <li>
                             {console.log(user)}
-                            <p className="username">{user.fullName || NONE}</p>
+                            <p className="username">{user.fullName}</p>
                             <p className="email">{user.email || UNKNOWN}</p>
-                            <p className="verified-status">{user.verified || NO}</p>
-                            <p className="admin-status">{user.admin || NONE}</p>
-                            <p className="deactivated-status">{user.deactivated || NO}</p>
+                            <p className="verified-status">{user.verified ? YES : NO}</p>
+                            <p className="admin-status">{user.admin ? YES : NO}</p>
+                            <p className="deactivated-status">{user.deactivated ? YES : NO}</p>
                         </li>
                 </div>
             ))}
                 
-
+ 
 
 
 
