@@ -840,10 +840,66 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
         if(!data){
             throw new Error(NO_USERS_EXIST)
         }
-        console.log("the data:", data)
         console.log("Successfully got users")
         return res.status(200).send(data)
     }).catch((err) => {
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
+
+    return res.status(400).send();
+})
+
+/**
+ * Admin edit user settings
+ *  First check if the requester is an admin and logged in
+ *  Then, update admin status and active stat
+ */
+ app.put('/api/admin/users/:setting', auth, async (req, res) => {
+    console.log("Called into PUT user update")
+
+    const toChange = req.params.setting
+    const search = {
+        email: req.body.email,
+    }
+    const newAdmin = req.body.admin
+    const newDeactivated = req.body.deactivated
+
+    let query = {}
+
+    // Set update query
+    if (toChange === "admin"){
+        query = {
+            $set: {
+                admin: newAdmin
+            } 
+        }
+    } else if (toChange === "deactivate"){
+        query = {
+            $set: {
+                deactivated: newDeactivated
+            } 
+        }
+    }
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.user.email})
+    .then((data) => {
+        if(!data){
+            throw new Error(USER_NOT_LOGGED_IN)
+        }
+        if(decodeString(data.password) !== req.user.password){
+            throw new Error(INCORRECT_PASSWORD)
+        }
+        if(req.user.admin === false){
+            throw new Error(NO_ACCESS_ERROR)
+        }
+    }).then(() => updateOneFrom(DB_NAME, USERS_COLLECTION, search, query))
+    .then((user) => {  
+        console.log(user)
+        console.log("Successfully updated user")
+        return res.status(200).send(user);
+    })
+    .catch((err) => {
         res.statusMessage = err.message
         return res.status(404).send()
     });
