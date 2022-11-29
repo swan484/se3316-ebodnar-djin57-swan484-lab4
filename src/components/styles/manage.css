@@ -1,0 +1,27 @@
+.admin-button{
+    border-color: rgb(63, 128, 128);
+    border-bottom-color: rgb(63, 128, 128);
+}
+
+.admin-label {
+    font-size: 25px;
+}
+
+.admin-input {
+    width: 100%;
+    font-size: 25px;
+    background-color: #1f1f1f;
+    color: #F0F6FA;
+    border: none;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgb(63, 128, 128);
+}
+
+.admin-form{
+    font-size: 20px;
+    justify-content: center;
+    width: 60%;
+    margin: 0 auto;
+    margin-top: 20px
+}
+
