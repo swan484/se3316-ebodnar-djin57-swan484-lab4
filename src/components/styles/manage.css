@@ -25,3 +25,36 @@
     margin-top: 20px
 }
 
+.username {
+    width: 26%;
+    display: inline-block;
+}
+
+.email {
+    width: 26%;
+    display: inline-block;
+}
+
+.verified-status {
+    width: 15%;
+    display: inline-block;
+}
+
+.admin-status {
+    width: 15%;
+    display: inline-block;
+}
+
+.deactivated-status {
+    width: 15%;
+    display: inline-block;
+}
+
+.table-row-2 {
+    border-color: rgb(63, 128, 128);
+}
+
+.table-row-2:hover {
+    color: rgb(63, 128, 128);
+    background-color: #1f1f1f;
+}

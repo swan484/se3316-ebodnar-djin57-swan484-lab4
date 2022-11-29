@@ -46,6 +46,7 @@ const INVALID_TRACK_EXISTS = "Playlist contains an invalid track"
 const REVIEW_DOES_NOT_EXIST = "No review exists"
 const EMPTY_RATING = "Cannot have an empty rating"
 const USER_NOT_EXISTS = "User does not exist"
+const NO_USERS_EXIST = "There are no users in the system"
 const COULD_NOT_DECRYPT = "Could not decrypt details, try again later"
 const COULD_NOT_UPDATE = "Could not update details, try again later"
 
@@ -338,7 +339,7 @@ app.put('/api/authenticated/playlists', auth, async (req, res) => {
             throw new Error(USER_NOT_LOGGED_IN)
         }
         if(decodeString(data.password) !== req.user.password){
-            throw new Error(NO_ACCESS_ERROR)
+            throw new Error(INCORRECT_PASSWORD)
         }
         if(modifiedTracks.length === 0){
             throw new Error(EMPTY_PLAYLIST_ERROR)
@@ -600,7 +601,7 @@ app.get('/api/authenticated/playlists', auth, async (req, res) => {
             throw new Error(USER_NOT_LOGGED_IN)
         }
         if(decodeString(data.password) !== req.user.password){
-            throw new Error(NO_ACCESS_ERROR)
+            throw new Error(INCORRECT_PASSWORD)
         }
     }).then(() => getAllFrom(DB_NAME, PLAYLISTS_COLLECTION, {
         email: req.user.email
@@ -657,7 +658,7 @@ app.put('/api/authenticated/playlist', auth, async (req, res) => {
             throw new Error(USER_NOT_LOGGED_IN)
         }
         if(decodeString(data.password) !== req.user.password){
-            throw new Error(NO_ACCESS_ERROR)
+            throw new Error(INCORRECT_PASSWORD)
         }
         if(req.body.tracks.length === 0){
             throw new Error(EMPTY_PLAYLIST_ERROR)
@@ -701,7 +702,7 @@ app.delete("/api/authenticated/playlist", auth, async (req, res) => {
             throw new Error(USER_NOT_LOGGED_IN)
         }
         if(decodeString(data.password) !== req.user.password){
-            throw new Error(NO_ACCESS_ERROR)
+            throw new Error(INCORRECT_PASSWORD)
         }
     }).then(() => deleteOneFrom(
         DB_NAME, PLAYLISTS_COLLECTION, key
@@ -760,7 +761,7 @@ app.put('/api/authenticated/review', auth, async (req, res) => {
             throw new Error(USER_NOT_LOGGED_IN)
         }
         if(decodeString(data.password) !== req.user.password){
-            throw new Error(NO_ACCESS_ERROR)
+            throw new Error(INCORRECT_PASSWORD)
         }
         if(!req.body.rating || req.body.rating.length === 0){
             throw new Error(EMPTY_RATING)
@@ -796,7 +797,7 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
             throw new Error(USER_NOT_LOGGED_IN)
         }
         if(decodeString(data.password) !== req.user.password){
-            throw new Error(NO_ACCESS_ERROR)
+            throw new Error(INCORRECT_PASSWORD)
         }
     }).then(() => getAllFrom(
         DB_NAME, REVIEWS_COLLECTION, key
@@ -807,6 +808,41 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
 
         console.log("Successfully got reviews")
         return res.status(200).send(results)
+    }).catch((err) => {
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
+
+    return res.status(400).send();
+})
+
+/**
+ * Get all users
+ *  First check if the requester is an admin and logged in
+ *  Then get a list of all users (full name, email, verified status, admin status and deactivated status)
+ */
+ app.get('/api/admin/users', auth, async (req, res) => {
+    console.log("Called into GET users")
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.user.email})
+    .then((data) => {
+        
+        if(!data){
+            throw new Error(USER_NOT_LOGGED_IN)
+        }
+        if(decodeString(data.password) !== req.user.password){
+            throw new Error(INCORRECT_PASSWORD)
+        }
+        if(req.user.admin === false){
+            throw new Error(NO_ACCESS_ERROR)
+        }
+    }).then(() => getAllFrom(DB_NAME, USERS_COLLECTION)).then((data) => {
+        if(!data){
+            throw new Error(NO_USERS_EXIST)
+        }
+        console.log("the data:", data)
+        console.log("Successfully got users")
+        return res.status(200).send(data)
     }).catch((err) => {
         res.statusMessage = err.message
         return res.status(404).send()
