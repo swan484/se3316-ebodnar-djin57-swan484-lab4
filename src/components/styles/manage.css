@@ -25,6 +25,11 @@
     margin-top: 20px
 }
 
+.loading-msg {
+    color: rgb(63, 128, 128);
+    font-size: 20px;
+}
+
 .username {
     width: 26%;
     display: inline-block;
@@ -43,6 +48,18 @@
 .admin-status {
     width: 15%;
     display: inline-block;
+}
+
+.toggle-user {
+    height: 40px;
+    border-radius: 15px;
+    border: 1px solid rgb(63, 128, 128);
+    background-color: #1F1F1F;
+    color: #F0F6FA;
+    font-size: 15px;
+    margin: 0px;
+    padding: 0px;
+    align-items: middle;
 }
 
 .deactivated-status {

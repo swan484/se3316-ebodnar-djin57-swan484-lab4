@@ -877,11 +877,13 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
     } else if (toChange === "deactivate"){
         query = {
             $set: {
-                deactivated: newDeactivated
+                deactivated: newDeactivated,
+                admin: newAdmin,
             } 
         }
     }
 
+    // Update user info
     await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.user.email})
     .then((data) => {
         if(!data){

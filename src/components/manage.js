@@ -10,6 +10,7 @@ const Manage = ({loginStatus}) => {
     const [state, setState] = useState({
         userResults: [],
         errorMessage: '',
+        buttonEnabled: false,
         invokeInProgress: false,
     })
 
@@ -31,7 +32,8 @@ const Manage = ({loginStatus}) => {
         .then(async (a) => {
             await setState({
                 ...state,
-                userResults: a
+                userResults: a,
+                buttonEnabled: true,
             })
             console.log("Finished query")
         })
@@ -42,6 +44,57 @@ const Manage = ({loginStatus}) => {
         await searchUsers()
         console.log("Complete")
     }
+
+    const updateStatus = async (e, user, toChange) => {
+        console.log("Updating (PUT) ",  toChange, " for ", user.email)
+        setState({
+            ...state,
+            buttonEnabled: false
+        })
+        let query = {}
+
+        if (toChange === "admin"){
+            query = {
+                email: user.email,
+                admin: !user.admin,
+                deactivated: user.deactivated,
+            }
+        } else if (toChange === "deactivate"){ // When deactivating/reactivating a user, also revoke admin status
+            query = {
+                email: user.email,
+                admin: false,
+                deactivated: !user.deactivated,
+            }
+        }
+        
+
+        await fetch(`http://localhost:3001/api/admin/users/${toChange}`, {
+            method: "PUT",
+            headers: new Headers({ 
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem('token') 
+            }),
+            body: JSON.stringify(query),
+        })
+        .then((a) => {
+            console.log(a)
+            if(a.status !== 200){
+                throw new Error(a.statusText)
+            }
+            console.log("Finished PUT")
+        })
+        .then(() => {
+            loadData()
+        })
+        .catch(() => {
+            setState({
+                ...state,
+                buttonEnabled: true
+            })
+        })
+    }
+
+
 
     // Default page for non-admins
     if(!loginStatus.admin){
@@ -57,6 +110,8 @@ const Manage = ({loginStatus}) => {
             <label className="admin-label">Search by user</label>
             <input className="admin-input" type="text"/>
             <button className="admin-button">Search</button>
+            {!state.buttonEnabled && <p className='loading-msg'>Updating user...</p>}
+            
             {state.userResults.length > 0 && 
                 <div className="heading-row table-row table-header-2">
                     <li>
@@ -71,12 +126,11 @@ const Manage = ({loginStatus}) => {
             {state.userResults.map((user) => (
                 <div className="table-row table-row-2" key={user.fullName + user.email} >
                         <li>
-                            {console.log(user)}
                             <p className="username">{user.fullName}</p>
                             <p className="email">{user.email || UNKNOWN}</p>
                             <p className="verified-status">{user.verified ? YES : NO}</p>
-                            <p className="admin-status">{user.admin ? YES : NO}</p>
-                            <p className="deactivated-status">{user.deactivated ? YES : NO}</p>
+                            <button className="admin-status toggle-user" onClick={(e) => updateStatus(e, user, "admin")}>{user.admin ? YES : NO}</button>
+                            <button className="deactivated-status toggle-user" onClick={(e) => updateStatus(e, user, "deactivate")}>{user.deactivated ? YES : NO}</button>
                         </li>
                 </div>
             ))}
