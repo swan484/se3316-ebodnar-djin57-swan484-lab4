@@ -51,7 +51,9 @@ const Home = ({updateUserLoginStatus, loginStatus}) => {
                 <p onClick={() => toggleFeatureMode(1)} className="toggle"> Searching Tracks,</p>
                 <p onClick={() => toggleFeatureMode(2)} className="toggle"> Creating Playlists,</p>
                 <p onClick={() => toggleFeatureMode(3)} className="toggle"> Rating Playlists,</p>
-                {0 in state.featureMode && <div><br/><p className="about">Log into your account by email, create a new account, or change the password for your existing account.
+                <p onClick={() => toggleFeatureMode(4)} className="toggle"> Site Administration,</p>
+                <p onClick={() => toggleFeatureMode(5)} className="toggle"> Creating Security and Privacy Policies</p>
+                {0 in state.featureMode && <div><br/><p className="about"> Log into your account by email, create a new account, or change the password for your existing account.
                     Also supports functionalities of disabled accounts and adminstrative accounts. Logging in provides you with more site privileges.</p></div>}
                 {1 in state.featureMode && <div><br/><p className="about">Search tracks by artist, genre, and title. Search on multiple criteria by attaching all the 
                     criteria in a comma separated list in order to view tracks that match all criteria.</p></div>}
@@ -59,6 +61,10 @@ const Home = ({updateUserLoginStatus, loginStatus}) => {
                     logged in can favourite up to 10 public playlists.</p></div>}
                 {3 in state.featureMode && <div><br/><p className="about">Logged in users can review other playlists, leaving a rating and comment
                     for public playlists (including their own).</p></div>}
+                {4 in state.featureMode && <div><br/><p className="about">Admin users can manage other users, appoint or revoke admin privileges, activate
+                    and deactivate users, hide review, and make privacy policies</p></div>}
+                {5 in state.featureMode && <div><br/><p className="about">Admins can create privacy policies which are poblicly accessible to both authenticated
+                    and unathenticated users. Any user can also provide takedown requests.</p></div>}
             </div>
             <hr/>
             <Login updateParentLoginStatus={updateLoginStatus}/>

@@ -24,6 +24,12 @@ const Navbar = ({userLoggedInStatus}) => {
                 {userLoggedInStatus.admin === true && <li>
                     <NavLink to='/manage' className={({ isActive }) => "link" + (isActive ? " active" : "")}>Manage Users</NavLink>
                 </li>}
+                {userLoggedInStatus.admin === true && <li>
+                    <NavLink to='/policy' className={({ isActive }) => "link" + (isActive ? " active" : "")}>Create Policies</NavLink>
+                </li>}
+                <li>
+                    <NavLink to='/viewPolicy' className={({ isActive }) => "link" + (isActive ? " active" : "")}>View Policies</NavLink>
+                </li>
                 {userLoggedInStatus.admin === true && <li className="right-display">Admin Console</li>}
             </ul>
         </nav>
