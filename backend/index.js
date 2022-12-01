@@ -390,11 +390,16 @@ app.put('/api/authenticated/playlists', auth, async (req, res) => {
  app.put('/api/admin/review', auth, async (req, res) => {
     console.log("Called into PUT user update")
 
+    // const search = {
+    //     _id: req.body._id,
+    // }
+
     const search = {
-        _id: req.body._id,
+        comments: req.body.comments,
     }
     
-    const newHidden = req.body.hidden
+    const newHidden = (req.body.hidden)
+    console.log("new hidden: " + newHidden)
     
     const query = {
         $set: {
