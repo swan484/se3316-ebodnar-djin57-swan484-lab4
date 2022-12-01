@@ -1,3 +1,4 @@
+import e from "cors";
 import React, { startTransition, useEffect, useState } from "react";
 import SongList from "./songlist";
 import './styles/playlist.css'
@@ -6,6 +7,8 @@ const UNKNOWN = "Unknown"
 const NONE = "None"
 const NO_DESCRIPTION = "No Description"
 const PLAYLISTS_LIMIT = 10
+const HIDE = "Hide Review"
+const UNHIDE = "Unhide Review"
 
 const REVIEW_SUCCESS_MESSAGE = "Successfully created review"
 
@@ -267,10 +270,40 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
         })
     }
 
-    const hideReview = (e, r) => {
+    const hideReview = async (e, r) => {
         console.log("Clicked hide review")
         console.log(r)
         //Fetch with an API call to update this review to set "hidden = true"
+        const query = {
+            // _id: r._id,
+            comments: r.comments,
+            hidden: !(r.hidden),
+        }
+
+        await fetch(`http://localhost:3001/api/admin/review`, {
+            method: "PUT",
+            headers: new Headers({ 
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem('token') 
+            }),
+            body: JSON.stringify(query),
+        })
+        .then((a) => {
+            console.log(a)
+            if(a.status !== 200){
+                throw new Error(a.statusText)
+            }
+            console.log("Finished PUT")
+        })
+        .then(() => {
+            loadAllData()
+        })
+        .catch(() => {
+            setState({
+                ...state,
+                buttonEnabled: true
+            })
+        })
     }
 
     return (
@@ -319,7 +352,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
                                     <p className='review-heading'>{r.user_name}</p>
                                     <p className='review-sub'>Comment: "{r.comments}"</p>
                                     <p className="review-sub">Rating: {r.rating}/10</p>
-                                    <button className='admin-button' onClick={(e) => hideReview(e, r)}>Hide review</button>
+                                    <button className="admin-button" id="hide-button" onClick={(e) => hideReview(e, r)}>{r.hidden ? UNHIDE : HIDE}</button>
                                 </div>}
                                 {console.log(userLoggedInStatus)}
                             </div>)}

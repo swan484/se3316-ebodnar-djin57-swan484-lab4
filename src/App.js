@@ -10,6 +10,7 @@ import CreatePlaylist from './components/createPlaylist';
 import ReviewPlaylist from './components/reviewPlaylist';
 import VerifyAccount from './components/verifyAccount';
 import Manage from './components/manage';
+import React, { Component }  from 'react';
 import Policy from './components/policy';
 
 function App() {
