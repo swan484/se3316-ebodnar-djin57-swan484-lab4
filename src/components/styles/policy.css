@@ -1,8 +1,11 @@
-.text-input {
-    height: 40;
-    margin: 2;
-    border-width: 1;
-    padding: 10;
-    color: black;
-    border-color: rgb(63, 128, 128);
+.admin-input {
+    height: 100px;
+}
+
+.admin-form {
+    width: 50%;
+}
+
+.admin-label {
+    margin-top: 20px;
 }

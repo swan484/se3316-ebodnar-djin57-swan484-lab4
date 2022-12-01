@@ -1,4 +1,5 @@
 import React, {useEffect, useState, useCallback, useReducer} from "react";
+import './styles/manage.css'
 import './styles/policy.css'
 
 const UNKNOWN = "Unknown"
@@ -7,13 +8,7 @@ const NO = "No"
 
 const Policy = ({loginStatus}) => {
     const [state, setState] = useState({
-        policyResult: {},
-        fieldOne: '',
-        fieldTwo: '',
-        fieldThree: '',
-        fieldFour: '',
-        fieldFive: '',
-        errorMessage: '',
+        policyFields: [],
         buttonEnabled: false,
     })
 
@@ -89,18 +84,22 @@ const Policy = ({loginStatus}) => {
     // Admin view
     return (
         <div>
-            <div>
+            <div className="admin-form">
                 <h1>Create privacy policy</h1>
-                <label>What information is collected</label>
-                <input className="text-input"></input>
-                <label>Justification for collection</label>
-                <input className="text-input"></input>
-                <label>How information is used</label>
-                <input className="text-input"></input>
-                <label>Who has access to information</label>
-                <input className="text-input"></input>
-                <label>What happens in event of takeover of dissolution</label>
-                <input className="text-input"></input>
+                <label className="admin-label">What information is collected</label>
+                <textarea id="zero" className="admin-input"></textarea>
+                <label className="admin-label">Justification for collection</label>
+                <input id="one" className="admin-input"></input>
+                <label className="admin-label">How information is used</label>
+                <input id="two" className="admin-input"></input>
+                <label className="admin-label">Who has access to information</label>
+                <input id="three" className="admin-input"></input>
+                <label className="admin-label">What happens in event of takeover of dissolution</label>
+                <input id="four" className="admin-input"></input>
+            </div>
+            <div>
+                <button>Preview</button>
+                <button>Update</button>
             </div>
             <div className="preview">
                 <h1>Preview</h1>
