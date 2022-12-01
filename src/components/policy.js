@@ -72,6 +72,27 @@ const Policy = ({loginStatus}) => {
     }
     */
 
+    const previewPolicy =  async (e) => {
+        console.log("Loading preview ...")
+        const zero = document.getElementById("zero").value
+        const one = document.getElementById("one").value
+        const two = document.getElementById("two").value
+        const three = document.getElementById("three").value
+        const four = document.getElementById("four").value
+
+        setState({
+            ...state,
+            policyFields: [zero, one, two, three, four]
+        })
+        console.log(state.policyFields)
+        console.log("Preview loaded.")
+    }
+
+    // add new record into the policy database
+    const updatePolicy = async (e) => {
+
+    }
+
     // Default page for non-admins
     if(!loginStatus.admin){
         return (
@@ -89,31 +110,35 @@ const Policy = ({loginStatus}) => {
                 <label className="admin-label">What information is collected</label>
                 <textarea id="zero" className="admin-input"></textarea>
                 <label className="admin-label">Justification for collection</label>
-                <input id="one" className="admin-input"></input>
+                <textarea id="one" className="admin-input"></textarea>
                 <label className="admin-label">How information is used</label>
-                <input id="two" className="admin-input"></input>
+                <textarea id="two" className="admin-input"></textarea>
                 <label className="admin-label">Who has access to information</label>
-                <input id="three" className="admin-input"></input>
+                <textarea id="three" className="admin-input"></textarea>
                 <label className="admin-label">What happens in event of takeover of dissolution</label>
-                <input id="four" className="admin-input"></input>
+                <textarea id="four" className="admin-input"></textarea>
             </div>
             <div>
-                <button>Preview</button>
-                <button>Update</button>
+                <button className="admin-button" onClick={(e) => previewPolicy(e)}>Preview</button>
+                <button className="admin-button">Update</button>
             </div>
-            <div className="preview">
+            {state.policyFields &&
+                <div className="preview">
+                    {console.log("test: ", state.policyFields)}
                 <h1>Preview</h1>
                 <h2>What information is collected</h2>
-                <p></p>
+                <p>{state.policyFields[0]}</p>
                 <h2>Justification for collection</h2>
-                <p></p>
+                <p>{state.policyFields[1]}</p>
                 <h2>How information is used</h2>
-                <p></p>
+                <p>{state.policyFields[2]}</p>
                 <h2>Who has access to information</h2>
-                <p></p>
+                <p>{state.policyFields[3]}</p>
                 <h2>What happens in event of takeover of dissolution</h2>
-                <p></p>
+                <p>{state.policyFields[4]}</p>
             </div>
+            }
+            
             
         </div>
     )
