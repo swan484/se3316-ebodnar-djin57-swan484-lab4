@@ -46,6 +46,7 @@ const INVALID_TRACK_EXISTS = "Playlist contains an invalid track"
 const REVIEW_DOES_NOT_EXIST = "No review exists"
 const EMPTY_RATING = "Cannot have an empty rating"
 const USER_NOT_EXISTS = "User does not exist"
+const USER_INACTIVE = "User is deactivated. Please contact admin@uwo.ca for support."
 const NO_USERS_EXIST = "There are no users in the system"
 const COULD_NOT_DECRYPT = "Could not decrypt details, try again later"
 const COULD_NOT_UPDATE = "Could not update details, try again later"
@@ -121,6 +122,9 @@ app.post("/api/user/information", (req, res) => {
     .then((foundUser) => {
         if(!foundUser){
             throw new Error(USER_NOT_EXISTS)
+        }
+        if(foundUser.deactivated){
+            throw new Error(USER_INACTIVE)
         }
         if(password !== decodeString(foundUser.password)){
             throw new Error(INCORRECT_PASSWORD)
