@@ -67,7 +67,6 @@ const Manage = ({loginStatus}) => {
             }
         }
         
-
         await fetch(`http://localhost:3001/api/admin/users/${toChange}`, {
             method: "PUT",
             headers: new Headers({ 
@@ -93,8 +92,6 @@ const Manage = ({loginStatus}) => {
             })
         })
     }
-
-
 
     // Default page for non-admins
     if(!loginStatus.admin){
@@ -134,14 +131,6 @@ const Manage = ({loginStatus}) => {
                         </li>
                 </div>
             ))}
-                
- 
-
-
-
-            <h1>Do admin stuff...</h1>
-            <p>Grant other users admin privileges, make reviews hidden (in the view playlists area), manage which users are deactivated</p>
-            <p>Make sure greater authentication is used for these endpoints (need to check that calling user is an admin)</p>
         </div>
     )
 }

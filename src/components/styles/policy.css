@@ -1,0 +1,8 @@
+.text-input {
+    height: 40;
+    margin: 2;
+    border-width: 1;
+    padding: 10;
+    color: black;
+    border-color: rgb(63, 128, 128);
+}
