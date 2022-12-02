@@ -306,6 +306,10 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
         })
     }
 
+    const flagReview = async (e, r) => {
+        // Flag review
+    }
+
     return (
         <div>
             {state.globalError && <p className="error-msg">
@@ -347,12 +351,14 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
                                     <p className='review-heading'>{r.user_name}</p>
                                     <p className='review-sub'>Comment: "{r.comments}"</p>
                                     <p className="review-sub">Rating: {r.rating}/10</p>
+                                    <button id="flag-button" onClick={(e) => flagReview(e, r)}>Flag Review</button>
                                 </div>}
                                 {userLoggedInStatus && userLoggedInStatus.admin === true && <div className='view-review-box'>
                                     <p className='review-heading'>{r.user_name}</p>
                                     <p className='review-sub'>Comment: "{r.comments}"</p>
                                     <p className="review-sub">Rating: {r.rating}/10</p>
                                     <button className="admin-button" id="hide-button" onClick={(e) => hideReview(e, r)}>{r.hidden ? UNHIDE : HIDE}</button>
+                                    <button id="flag-button" onClick={(e) => flagReview(e, r)}>Flag Review</button>
                                 </div>}
                                 {console.log(userLoggedInStatus)}
                             </div>)}
