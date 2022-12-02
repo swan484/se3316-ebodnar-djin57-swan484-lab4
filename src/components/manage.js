@@ -115,7 +115,7 @@ const Manage = ({loginStatus}) => {
             {state.userResults.length > 0 && 
                 <div className="heading-row table-row table-header-2">
                     <li>
-                        <p className="username">USER</p>
+                        <p className="user-name">USER</p>
                         <p className="email">EMAIL</p>
                         <p className="verified-status">VERIFIED</p>
                         <p className="admin-status">ADMIN</p>
@@ -126,7 +126,7 @@ const Manage = ({loginStatus}) => {
             {state.userResults.map((user) => (
                 <div className="table-row table-row-2" key={user.fullName + user.email} >
                         <li>
-                            <p className="username">{user.fullName}</p>
+                            <p className="user-name">{user.fullName}</p>
                             <p className="email">{user.email || UNKNOWN}</p>
                             <p className="verified-status">{user.verified ? YES : NO}</p>
                             <button className="admin-status toggle-user" onClick={(e) => updateStatus(e, user, "admin")}>{user.admin ? YES : NO}</button>

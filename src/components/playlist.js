@@ -51,6 +51,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
             return a.json()
         })
         .then(async (a) => {
+            console.log(a)
             await setState({
                 ...state,
                 searchResults: a,
@@ -313,7 +314,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
             </p>}
             {(!overrideResults || overrideResults.length === 0) && <div>
                 <h1>Playlists</h1>
-                {!state.buttonEnabled && <p className='loading-msg'>Getting recent playlists...</p>}
+                {!state.buttonEnabled && <p className='playlist-loading-msg'>Getting recent playlists...</p>}
             </div>}
             <ul className="search-table narrow-width table-colour-2" >
                 {state.searchResults.length > 0 && 
@@ -329,7 +330,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
                     </div>
                 }
                 {state.searchResults.map(item => (
-                    <div className="table-row table-row-2" key={item.list_title + item.email} >
+                    <div className="table-row table-row-3" key={item.list_title + item.email} >
                         <li onClick={(e) => expandResults(e, item)}>
                             <p className="list-title">{item.list_title || NONE}</p>
                             <p className="username">{item.user_name || NONE}</p>

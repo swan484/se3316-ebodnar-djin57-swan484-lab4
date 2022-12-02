@@ -481,7 +481,7 @@ app.post('/api/tracks', async (req, res) => {
  */
 app.get('/api/playlists/:limit', async (req, res) => {
     const lim = parseInt(req.params.limit)
-    console.log(`Called into GET playlists`);
+    console.log(`Called into GET playlists with limit ${lim}`);
     const query = {
         visibility: 'public'
     }
