@@ -1,7 +1,7 @@
-import e from "cors";
-import React, { startTransition, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import SongList from "./songlist";
 import './styles/playlist.css'
+import {BASE_URL} from "./conf"
 
 const UNKNOWN = "Unknown"
 const NONE = "None"
@@ -46,11 +46,12 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
             ...state,
             buttonEnabled: false
         })
-        await fetch(`http://localhost:3001/api/playlists/${limit}`)
+        await fetch(`${BASE_URL}/api/playlists/${limit}`)
         .then((a) => {
             return a.json()
         })
         .then(async (a) => {
+            console.log(a)
             await setState({
                 ...state,
                 searchResults: a,
@@ -210,7 +211,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
             comments: state.reviews[item._id].comments
         }
         updateButtonDisabled(item, true)
-        await fetch(`http://localhost:3001/api/authenticated/review`, {
+        await fetch(`${BASE_URL}/api/authenticated/review`, {
             method: "PUT",
             headers: new Headers({ 
                 "Content-Type": "application/json",
@@ -242,7 +243,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
             ...state,
             buttonEnabled: false
         })
-        await fetch(`http://localhost:3001/api/authenticated/reviews`, {
+        await fetch(`${BASE_URL}/api/authenticated/reviews`, {
             headers: new Headers({ 
                 "Authorization": localStorage.getItem('token') 
             })
@@ -280,7 +281,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
             hidden: !(r.hidden),
         }
 
-        await fetch(`http://localhost:3001/api/admin/review`, {
+        await fetch(`${BASE_URL}/api/admin/review`, {
             method: "PUT",
             headers: new Headers({ 
                 "Content-Type": "application/json",
@@ -317,7 +318,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
             </p>}
             {(!overrideResults || overrideResults.length === 0) && <div>
                 <h1>Playlists</h1>
-                {!state.buttonEnabled && <p className='loading-msg'>Getting recent playlists...</p>}
+                {!state.buttonEnabled && <p className='playlist-loading-msg'>Getting recent playlists...</p>}
             </div>}
             <ul className="search-table narrow-width table-colour-2" >
                 {state.searchResults.length > 0 && 
@@ -333,7 +334,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
                     </div>
                 }
                 {state.searchResults.map(item => (
-                    <div className="table-row table-row-2" key={item.list_title + item.email} >
+                    <div className="table-row table-row-3" key={item.list_title + item.email} >
                         <li onClick={(e) => expandResults(e, item)}>
                             <p className="list-title">{item.list_title || NONE}</p>
                             <p className="username">{item.user_name || NONE}</p>

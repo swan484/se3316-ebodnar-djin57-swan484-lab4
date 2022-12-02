@@ -1,8 +1,7 @@
 import React, {useEffect, useState} from "react";
-import { useLoaderData } from "react-router-dom";
 import './styles/manage.css'
 import './styles/policy.css'
-
+import {BASE_URL} from "./conf"
 
 const ViewPolicy = () => {
     const [state, setState] = useState({
@@ -27,7 +26,7 @@ const ViewPolicy = () => {
         let aup = ""
 
         // Query privacy policies
-        await fetch(`http://localhost:3001/api/policy`, {
+        await fetch(`${BASE_URL}/api/policy`, {
             headers: new Headers({ 
                 "Authorization": localStorage.getItem('token') 
             }),
@@ -41,7 +40,7 @@ const ViewPolicy = () => {
         })
 
         // Query DMCA Policies
-        await fetch(`http://localhost:3001/api/dmca-policy`, {
+        await fetch(`${BASE_URL}/api/dmca-policy`, {
             headers: new Headers({ 
                 "Authorization": localStorage.getItem('token') 
             }),
@@ -55,7 +54,7 @@ const ViewPolicy = () => {
         })
 
         // Query AUP Policy
-        await fetch(`http://localhost:3001/api/aup-policy`, {
+        await fetch(`${BASE_URL}/api/aup-policy`, {
             headers: new Headers({ 
                 "Authorization": localStorage.getItem('token') 
             }),
