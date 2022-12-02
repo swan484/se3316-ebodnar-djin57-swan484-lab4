@@ -3,6 +3,7 @@ import Search from "./search";
 import './styles/createPlaylist.css'
 import MessageBar from "./login/MessageBar";
 import Playlist from "./playlist";
+import {BASE_URL} from "./conf"
 
 const ERROR_CLASS = "error"
 const SUCCESS_CLASS = "login-success"
@@ -112,7 +113,7 @@ const CreatePlaylist = ({userLoggedInStatus}) => {
     }
 
     const getExistingPlaylists = async () => {
-        await fetch(`http://localhost:3001/api/authenticated/playlists`, {
+        await fetch(`${BASE_URL}/api/authenticated/playlists`, {
             headers: new Headers({ 
                 "Authorization": localStorage.getItem('token') 
             })
@@ -222,7 +223,7 @@ const CreatePlaylist = ({userLoggedInStatus}) => {
             description: state.description,
             visibility: state.public ? "public" : "private"
         }
-        await fetch(`http://localhost:3001/api/authenticated/playlists`, {
+        await fetch(`${BASE_URL}/api/authenticated/playlists`, {
             method: "PUT",
             headers: new Headers({ 
                 "Content-Type": "application/json",
@@ -266,7 +267,7 @@ const CreatePlaylist = ({userLoggedInStatus}) => {
             visibility: state.public ? "public" : "private"
         }
         
-        fetch(`http://localhost:3001/api/authenticated/playlist`, {
+        fetch(`${BASE_URL}/api/authenticated/playlist`, {
             method: "PUT",
             headers: new Headers({ 
                 "Content-Type": "application/json",
@@ -309,7 +310,7 @@ const CreatePlaylist = ({userLoggedInStatus}) => {
             list_title: state.title
         }
         
-        fetch(`http://localhost:3001/api/authenticated/playlist`, {
+        fetch(`${BASE_URL}/api/authenticated/playlist`, {
             method: "DELETE",
             headers: new Headers({ 
                 "Content-Type": "application/json",

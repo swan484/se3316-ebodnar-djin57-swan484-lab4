@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./styles/verifyAccount.css"
+import {BASE_URL} from "./conf"
 
 const VerifyAccount = ({userDetails}) => {
     const navigate = useNavigate()
@@ -20,7 +21,7 @@ const VerifyAccount = ({userDetails}) => {
         const payload = {
             id: window.location.search.split('id=')[1]
         }
-        fetch(`http://localhost:3001/api/user/decrypt`, {
+        fetch(`${BASE_URL}/api/user/decrypt`, {
             method: "POST",
             headers: new Headers({ 
                 "Content-Type": "application/json",

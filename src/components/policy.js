@@ -1,6 +1,7 @@
 import React, {useState} from "react";
 import './styles/manage.css'
 import './styles/policy.css'
+import {BASE_URL} from "./conf"
 
 const Policy = ({loginStatus}) => {
     const [state, setState] = useState({
@@ -39,7 +40,7 @@ const Policy = ({loginStatus}) => {
         const message = {
             content: [zero, one, two, three, four]
         }
-        await fetch(`http://localhost:3001/api/admin/policy`, {
+        await fetch(`${BASE_URL}/api/admin/policy`, {
             method: "POST",
             headers: new Headers({ 
                 "Content-Type": "application/json",
@@ -78,7 +79,7 @@ const Policy = ({loginStatus}) => {
         const message = {
             content: DMCAPolicy
         }
-        await fetch(`http://localhost:3001/api/admin/dmca-policy`, {
+        await fetch(`${BASE_URL}/api/admin/dmca-policy`, {
             method: "POST",
             headers: new Headers({ 
                 "Content-Type": "application/json",
@@ -117,7 +118,7 @@ const Policy = ({loginStatus}) => {
         const message = {
             policy: AUPPolicy
         }
-        await fetch(`http://localhost:3001/api/admin/aup-policy`, {
+        await fetch(`${BASE_URL}/api/admin/aup-policy`, {
             method: "POST",
             headers: new Headers({ 
                 "Content-Type": "application/json",

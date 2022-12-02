@@ -5,6 +5,7 @@ import LoginForm from "./LoginForm";
 import CreateForm from "./CreateForm";
 import ForgotForm from "./ForgotForm";
 import MessageBar from "./MessageBar";
+import {BASE_URL} from "../conf.js"
 
 const INVALID_LOGIN = "Unverified Account"
 const ERROR_CLASS = "error"
@@ -134,7 +135,7 @@ const Login = ({updateParentLoginStatus}) => {
             password: state.password
         }
 
-        await fetch(`http://localhost:3001/api/user/information`, {
+        await fetch(`${BASE_URL}/api/user/information`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload)
@@ -198,7 +199,7 @@ const Login = ({updateParentLoginStatus}) => {
             password: state.existingPassword,
             newPassword: state.password
         }
-        await fetch(`http://localhost:3001/api/user`, {
+        await fetch(`${BASE_URL}/api/user`, {
             method: "PUT",
             headers: new Headers({ 
                 "Content-Type": "application/json"
@@ -239,7 +240,7 @@ const Login = ({updateParentLoginStatus}) => {
             password: state.password,
             fullName: state.fullName
         }
-        await fetch(`http://localhost:3001/api/user`, {
+        await fetch(`${BASE_URL}/api/user`, {
             method: "POST",
             headers: new Headers({ 
                 "Content-Type": "application/json"

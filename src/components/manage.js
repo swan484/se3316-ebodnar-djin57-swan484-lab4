@@ -1,6 +1,7 @@
 import React, {useEffect, useState, useCallback, useReducer} from "react";
 import './styles/manage.css'
 import './styles/songlist.css'
+import {BASE_URL} from "./conf"
 
 const UNKNOWN = "Unknown"
 const YES = "Yes"
@@ -21,7 +22,7 @@ const Manage = ({loginStatus}) => {
     const searchUsers = async () => {
         console.log("Querying users")
 
-        await fetch(`http://localhost:3001/api/admin/users`, {
+        await fetch(`${BASE_URL}/api/admin/users`, {
             headers: new Headers({ 
                 "Authorization": localStorage.getItem('token') 
             }),
@@ -68,7 +69,7 @@ const Manage = ({loginStatus}) => {
         }
         
 
-        await fetch(`http://localhost:3001/api/admin/users/${toChange}`, {
+        await fetch(`${BASE_URL}/api/admin/users/${toChange}`, {
             method: "PUT",
             headers: new Headers({ 
                 "Content-Type": "application/json",

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import SongList from "./songlist";
 import './styles/search.css'
+import {BASE_URL} from "./conf"
 
 const TABLE_STYLE = "narrow-width heavy-bottom-pad"
 const INVALID_SEARCH = "Invalid search query"
@@ -59,7 +60,7 @@ const Search = ({updateParentResults, updateParentSet, parentSet, disableExpandi
             buttonEnabled: false
         })
         console.log(state.query)
-        fetch(`http://localhost:3001/api/search/${state.query}`, {
+        fetch(`${BASE_URL}/api/search/${state.query}`, {
             headers: new Headers({ 
                 "Authorization": localStorage.getItem('token') 
             }),
@@ -141,7 +142,7 @@ const Search = ({updateParentResults, updateParentSet, parentSet, disableExpandi
         const payload = {
             ids: Object.keys(parentSet).map(key => {return parseInt(key)})
         }
-        fetch(`http://localhost:3001/api/tracks`, {
+        fetch(`${BASE_URL}/api/tracks`, {
             method: "POST",
             headers: new Headers({ 
                 "Content-Type": "application/json"

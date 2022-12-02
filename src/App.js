@@ -13,6 +13,7 @@ import Manage from './components/manage';
 import React, { Component }  from 'react';
 import Policy from './components/policy';
 import ViewPolicy from './components/viewPolicy';
+import {BASE_URL} from "./components/conf"
 
 function App() {
   const [state, setState] = useState({
@@ -22,7 +23,7 @@ function App() {
   const MINUTE_MS = 20000;
 
   const checkJWTExpiry = () => {
-    fetch('http://localhost:3001/api/checkAuthorization', {
+    fetch(`${BASE_URL}/api/checkAuthorization`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({token: localStorage.getItem('token')})
