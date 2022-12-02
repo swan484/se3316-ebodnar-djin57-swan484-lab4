@@ -24,6 +24,7 @@ const REVIEWS_COLLECTION = "reviews"
 const POLICIES_COLLECTION = "policies"
 const DMCA_POLICIES_COLLECTION = "dmca"
 const AUP_POLICIES_COLLECTION = "aup"
+const CLAIMS_COLLECTION = "claims"
 
 const MAX_NUM_PLAYLISTS = 20
 
@@ -1153,6 +1154,83 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
         console.log("Successfully got AUP policy")
         return res.status(200).send(data[0])
     }).catch((err) => {
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
+
+    return res.status(400).send();
+})
+
+/**
+ * Update playlist review to add/remove a flag
+ * Both authenticated and unauthenticated users can make this request
+ */
+ app.put('/api/review/infringement', async (req, res) => {
+    console.log("Called into PUT infringement flag on review")
+
+    // const search = {
+    //     _id: req.body._id,
+    // }
+
+    const search = {
+        comments: req.body.comments,
+    }
+    
+    const newFlag = (req.body.flag)
+    console.log("new flag: " + newFlag)
+    
+    const query = {
+        $set: {
+            flag: newFlag
+        } 
+    }
+
+    // Update review
+    await updateOneFrom(DB_NAME, REVIEWS_COLLECTION, search, query)
+    .then(() => getOneFrom(DB_NAME, REVIEWS_COLLECTION, search))
+    .then((review) => {  
+        console.log(review)
+        console.log("Successfully updated review flag")
+        return res.status(200).send(review);
+    })
+    .catch((err) => {
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
+
+    return res.status(400).send();
+})
+
+/** TODO
+ * POST into claim collection a log of the infringement claim
+ */
+ app.post('/api/claims', async (req, res) => {
+    console.log("Called into POST  claims")
+    //const review_id = req.body._id
+    const review_id = req.body.comments
+    const claimant_name = req.body.name
+    const claimant_email = req.body.email
+    const content = req.body.content
+    const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
+
+    const message = {
+        date_submitted: date,
+        review_id: review_id,
+        claimant_name: claimant_name,
+        claimant_email: claimant_email,
+        content: content,
+    }
+
+    await insertOne(DB_NAME, CLAIMS_COLLECTION, message)
+    .then((result) => {
+        if (!result) {
+            throw new Error(CANNOT_INSERT)
+        }
+
+        console.log("Successfully Inserted New Claim")
+        return res.status(200).send(message);
+    }).catch((err) => {
+        console.log(err)
         res.statusMessage = err.message
         return res.status(404).send()
     });
