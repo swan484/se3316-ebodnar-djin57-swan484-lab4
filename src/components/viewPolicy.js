@@ -8,6 +8,7 @@ const ViewPolicy = () => {
     const [state, setState] = useState({
         policyFields: ["", "", "", "", ""],
         dmcaPolicy: "",
+        aupPolicy: ""
     })
 
     useEffect(() => {
@@ -23,6 +24,7 @@ const ViewPolicy = () => {
 
         let privacy = []
         let dmca = ""
+        let aup = ""
 
         // Query privacy policies
         await fetch(`http://localhost:3001/api/policy`, {
@@ -52,10 +54,25 @@ const ViewPolicy = () => {
             console.log("Finished query")
         })
 
+        // Query AUP Policy
+        await fetch(`http://localhost:3001/api/aup-policy`, {
+            headers: new Headers({ 
+                "Authorization": localStorage.getItem('token') 
+            }),
+        })
+        .then((a) => {
+            return a.json()
+        })
+        .then(async (a) => {
+            aup = a.policy
+            console.log("Finished query")
+        })
+
         await setState({
             ...state,
             policyFields: privacy,
             dmcaPolicy: dmca,
+            aupPolicy: aup,
         })
     }
 
@@ -80,6 +97,9 @@ const ViewPolicy = () => {
 
                 <h1>DMCA Notice & Takedown Policy</h1>
                 <p>{state.dmcaPolicy}</p>
+
+                <h1>Acceptable Use Policy</h1>
+                <p>{state.aupPolicy}</p>
             </div>
             }
         </div>

@@ -79,12 +79,51 @@ const Policy = ({loginStatus}) => {
             ...state,
             buttonEnabled: false
         })
-        const DMCAPolicy = document.getElementById("dcma-policy").value
+        const DMCAPolicy = document.getElementById("dmca-policy").value
         console.log("Updating dmca policy")
         const message = {
             content: DMCAPolicy
         }
         await fetch(`http://localhost:3001/api/admin/dmca-policy`, {
+            method: "POST",
+            headers: new Headers({ 
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem('token') 
+            }),
+            body: JSON.stringify(message),
+        })
+        .then((a) => {
+            console.log(a)
+            if(a.status !== 200){
+                throw new Error(a.statusText)
+            }
+            setState({
+                ...state,
+                buttonEnabled: true
+            })
+            console.log("Finished POST")
+        })
+        .catch(() => {
+            setState({
+                ...state,
+                buttonEnabled: true
+            })
+        })
+    }
+
+    // Update AUP Policy
+    const updateAUPPolicy = async (e) => {
+        // Update AUP Policy
+        setState({
+            ...state,
+            buttonEnabled: false
+        })
+        const AUPPolicy = document.getElementById("aup-policy").value
+        console.log("Updating aup policy")
+        const message = {
+            policy: AUPPolicy
+        }
+        await fetch(`http://localhost:3001/api/admin/aup-policy`, {
             method: "POST",
             headers: new Headers({ 
                 "Content-Type": "application/json",
@@ -162,11 +201,21 @@ const Policy = ({loginStatus}) => {
             <div className="admin-form">
                 <h1>Create DMCA policy</h1>
                 <label className="admin-label">Update the DMCA Policy:</label>
-                <textarea id="DMCA-policy" className="admin-input"></textarea>
+                <textarea id="dmca-policy" className="admin-input"></textarea>
             </div>
             <div>
                 <button className="admin-button" onClick={(e) => updateDMCAPolicy(e)}>Update</button>
                 {!state.buttonEnabled && <p className='loading-msg'>Updating policies...</p>}
+            </div>
+
+            <div className="admin-form">
+                <h1>Create AUP policy</h1>
+                <label className="admin-label">Update the AUP Policy:</label>
+                <textarea id="aup-policy" className="admin-input"></textarea>
+            </div>
+            <div>
+                <button className="admin-button" onClick={(e) => updateAUPPolicy(e)}>Update</button>
+                {!state.buttonEnabled && <p className='loading-msg'>Updating AUP policies...</p>}
             </div>
             
         </div>

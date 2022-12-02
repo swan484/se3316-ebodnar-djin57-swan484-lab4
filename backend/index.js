@@ -23,6 +23,7 @@ const PLAYLISTS_COLLECTION = "playlists"
 const REVIEWS_COLLECTION = "reviews"
 const POLICIES_COLLECTION = "policies"
 const DMCA_POLICIES_COLLECTION = "dmca"
+const AUP_POLICIES_COLLECTION = "aup"
 
 const MAX_NUM_PLAYLISTS = 20
 
@@ -1033,7 +1034,7 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
 })
 
 /**
- * Update privacy policy, Admin only
+ * Update dcma policy, Admin only
  */
  app.post('/api/admin/dmca-policy', auth, async (req, res) => {
     console.log("Called into POST DMCA policy")
@@ -1074,7 +1075,7 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
 })
 
 /**
- * Get policies
+ * Get DCMA policies
  */
  app.get('/api/dmca-policy', async (req, res) => {
     console.log("Called into GET policies")
@@ -1085,6 +1086,68 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
         }
         data.sort((a,b) => (a.date > b.date) ? 1 : -1)
         console.log("Successfully got policy")
+        return res.status(200).send(data[0])
+    }).catch((err) => {
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
+
+    return res.status(400).send();
+})
+
+/**
+ * Update AUP policy, Admin only
+ */
+ app.post('/api/admin/aup-policy', auth, async (req, res) => {
+    console.log("Called into POST AUP policy")
+    const policy = req.body.policy
+
+    const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
+    const message = {
+        date_modified: date,
+        policy: policy
+    }
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.user.email})
+    .then((data) => {
+        if(!data){
+            throw new Error(USER_NOT_LOGGED_IN)
+        }
+        if(decodeString(data.password) !== req.user.password){
+            throw new Error(INCORRECT_PASSWORD)
+        }
+        if(req.user.admin === false){
+            throw new Error(NO_ACCESS_ERROR)
+        }
+    }).then(() => insertOne(DB_NAME, AUP_POLICIES_COLLECTION, message))
+    .then((result) => {
+        if (!result) {
+            throw new Error(CANNOT_INSERT)
+        }
+
+        console.log("Successfully Inserted AUP Policy")
+        return res.status(200).send(message);
+    }).catch((err) => {
+        console.log(err)
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
+
+    return res.status(400).send();
+})
+
+/**
+ * Get AUP policy, most recent
+ */
+ app.get('/api/aup-policy', async (req, res) => {
+    console.log("Called into GET AUP policies")
+
+    await getAllFrom(DB_NAME, AUP_POLICIES_COLLECTION).then((data) => {
+        if(!data){
+            throw new Error(NO_POLICIES_EXIST)
+        }
+        data.sort((a,b) => (a.date > b.date) ? 1 : -1)
+        console.log("Successfully got AUP policy")
         return res.status(200).send(data[0])
     }).catch((err) => {
         res.statusMessage = err.message
