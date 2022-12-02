@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import SongList from "./songlist";
 import './styles/playlist.css'
 
-const {BASE_URL} = require('../../middleware/config.js')
+const BASE_URL = "ec2-100-24-157-29.compute-1.amazonaws.com:3000"
 const UNKNOWN = "Unknown"
 const NONE = "None"
 const NO_DESCRIPTION = "No Description"
