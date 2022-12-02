@@ -320,6 +320,14 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
 
     }
 
+    const cancelFlagReview = async (e, r) => {
+        // Cancel flag review
+        await setState({
+            ...state,
+            claim: ""
+        })
+    }
+
     return (
         <div>
             {state.globalError && <p className="error-msg">
@@ -374,6 +382,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
                                     <h1>Please enter the justification</h1>
                                     <textarea></textarea>
                                     <button id="flag-button" onClick={(e) => flagReview(e, r)}>Flag Review</button>
+                                    <button id="flag-cancel" onClick={(e) => cancelFlagReview(e, r)}>Cancel</button>
                                 </div>}
                                 {userLoggedInStatus && userLoggedInStatus.admin === true && <div className='view-review-box'>
                                     <p className='review-heading'>{r.user_name}</p>
