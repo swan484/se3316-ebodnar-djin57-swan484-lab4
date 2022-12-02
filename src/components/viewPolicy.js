@@ -6,7 +6,8 @@ import './styles/policy.css'
 
 const ViewPolicy = () => {
     const [state, setState] = useState({
-        policyFields: ["", "", "", "", ""]
+        policyFields: ["", "", "", "", ""],
+        dmcaPolicy: "",
     })
 
     useEffect(() => {
@@ -20,6 +21,10 @@ const ViewPolicy = () => {
     const loadPolicies = async () => {
         console.log("Querying policies")
 
+        let privacy = []
+        let dmca = ""
+
+        // Query privacy policies
         await fetch(`http://localhost:3001/api/policy`, {
             headers: new Headers({ 
                 "Authorization": localStorage.getItem('token') 
@@ -29,11 +34,28 @@ const ViewPolicy = () => {
             return a.json()
         })
         .then(async (a) => {
-            setState({
-                ...state,
-                policyFields: a.content,
-            })
+            privacy = a.content
             console.log("Finished query")
+        })
+
+        // Query DMCA Policies
+        await fetch(`http://localhost:3001/api/dmca-policy`, {
+            headers: new Headers({ 
+                "Authorization": localStorage.getItem('token') 
+            }),
+        })
+        .then((a) => {
+            return a.json()
+        })
+        .then(async (a) => {
+            dmca = a.policy
+            console.log("Finished query")
+        })
+
+        await setState({
+            ...state,
+            policyFields: privacy,
+            dmcaPolicy: dmca,
         })
     }
 
@@ -55,10 +77,11 @@ const ViewPolicy = () => {
                 <p>{state.policyFields[3]}</p>
                 <h2>What happens in event of takeover of dissolution</h2>
                 <p>{state.policyFields[4]}</p>
+
+                <h1>DMCA Notice & Takedown Policy</h1>
+                <p>{state.dmcaPolicy}</p>
             </div>
             }
-            
-            
         </div>
     )
 }
