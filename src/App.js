@@ -12,6 +12,7 @@ import VerifyAccount from './components/verifyAccount';
 import Manage from './components/manage';
 import React, { Component }  from 'react';
 import Policy from './components/policy';
+import ViewPolicy from './components/viewPolicy';
 
 function App() {
   const [state, setState] = useState({
@@ -80,6 +81,7 @@ function App() {
             <Route path='verify' element={<VerifyAccount userDetails={state.loggedUser}/>}></Route>
             <Route path='manage' element={<Manage loginStatus={state.loggedUser}/>}></Route>
             <Route path='policy' element={<Policy loginStatus={state.loggedUser}/>}></Route>
+            <Route path='viewPolicy' element={<ViewPolicy loginStatus={state.loggedUser}/>}></Route>
           </Route>
         </Routes>
       </BrowserRouter>

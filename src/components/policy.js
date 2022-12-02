@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useCallback, useReducer} from "react";
+import React, {useState} from "react";
 import './styles/manage.css'
 import './styles/policy.css'
 
@@ -12,65 +12,7 @@ const Policy = ({loginStatus}) => {
         buttonEnabled: true,
     })
 
-    /*
-    useEffect(() => {
-        loadData()
-    }, [])
-    
 
-    const loadData = async () => {
-        console.log("Loading users")
-        await searchUsers()
-        console.log("Complete")
-    }
-
-    const updateStatus = async (e, user, toChange) => {
-        console.log("Updating (PUT) ",  toChange, " for ", user.email)
-        setState({
-            ...state,
-            buttonEnabled: false
-        })
-        let query = {}
-
-        if (toChange === "admin"){
-            query = {
-                email: user.email,
-                admin: !user.admin,
-                deactivated: user.deactivated,
-            }
-        } else if (toChange === "deactivate"){ // When deactivating/reactivating a user, also revoke admin status
-            query = {
-                email: user.email,
-                admin: false,
-                deactivated: !user.deactivated,
-            }
-        }
-        await fetch(`http://localhost:3001/api/admin/users/${toChange}`, {
-            method: "PUT",
-            headers: new Headers({ 
-                "Content-Type": "application/json",
-                "Authorization": localStorage.getItem('token') 
-            }),
-            body: JSON.stringify(query),
-        })
-        .then((a) => {
-            console.log(a)
-            if(a.status !== 200){
-                throw new Error(a.statusText)
-            }
-            console.log("Finished PUT")
-        })
-        .then(() => {
-            loadData()
-        })
-        .catch(() => {
-            setState({
-                ...state,
-                buttonEnabled: true
-            })
-        })
-    }
-    */
 
     const previewPolicy =  async (e) => {
         console.log("Loading preview ...")
@@ -94,9 +36,14 @@ const Policy = ({loginStatus}) => {
             ...state,
             buttonEnabled: false
         })
+        const zero = document.getElementById("zero").value
+        const one = document.getElementById("one").value
+        const two = document.getElementById("two").value
+        const three = document.getElementById("three").value
+        const four = document.getElementById("four").value
         console.log("Updating policy")
         const message = {
-            content: state.policyFields
+            content: [zero, one, two, three, four]
         }
         await fetch(`http://localhost:3001/api/admin/policy`, {
             method: "POST",

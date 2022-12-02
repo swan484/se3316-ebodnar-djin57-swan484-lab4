@@ -49,6 +49,7 @@ const EMPTY_RATING = "Cannot have an empty rating"
 const USER_NOT_EXISTS = "User does not exist"
 const USER_INACTIVE = "User is deactivated. Please contact admin@uwo.ca for support."
 const NO_USERS_EXIST = "There are no users in the system"
+const NO_POLICIES_EXIST = "There are no policies in the system. Please contact admin@uwo.ca for support."
 const COULD_NOT_DECRYPT = "Could not decrypt details, try again later"
 const COULD_NOT_UPDATE = "Could not update details, try again later"
 
@@ -1002,6 +1003,27 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
         return res.status(200).send(message);
     }).catch((err) => {
         console.log(err)
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
+
+    return res.status(400).send();
+})
+
+/**
+ * Get policies
+ */
+ app.get('/api/policy', async (req, res) => {
+    console.log("Called into GET policies")
+
+    await getAllFrom(DB_NAME, POLICIES_COLLECTION).then((data) => {
+        if(!data){
+            throw new Error(NO_POLICIES_EXIST)
+        }
+        data.sort((a,b) => (a.date > b.date) ? 1 : -1)
+        console.log("Successfully got policy")
+        return res.status(200).send(data[0])
+    }).catch((err) => {
         res.statusMessage = err.message
         return res.status(404).send()
     });
