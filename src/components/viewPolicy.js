@@ -44,7 +44,7 @@ const ViewPolicy = () => {
             {state.policyFields &&
                 <div className="preview">
                     {console.log("test: ", state.policyFields)}
-                <h1>Preview</h1>
+                <h1>Privacy Policy</h1>
                 <h2>What information is collected</h2>
                 <p>{state.policyFields[0]}</p>
                 <h2>Justification for collection</h2>
