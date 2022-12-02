@@ -320,6 +320,74 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
 
     }
 
+    const submitFlagReview = async (e, r) => {
+        // Cancel flag review
+        
+        
+        const message = {
+            comments: r.comments,
+            name: document.getElementById("claim-name").value,
+            email: document.getElementById("claim-email").value,
+            type: document.getElementById("claim-type").value,
+            content: document.getElementById("claim-justification").value,
+        }
+
+        await fetch(`${BASE_URL}/api/claims`, {
+            method: "POST",
+            headers: new Headers({ 
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem('token') 
+            }),
+            body: JSON.stringify(message),
+        })
+        .then((a) => {
+            console.log(a)
+            if(a.status !== 200){
+                throw new Error(a.statusText)
+            }
+            setState({
+                ...state,
+                claim: ""
+            })
+            console.log("Finished POST")
+        })
+        .catch(() => {
+            setState({
+                ...state,
+                claim: ""
+            })
+        })
+
+        const update_message = {
+            comments: r.comments,
+            flag: true,
+        }
+        await fetch(`${BASE_URL}/api/review/infringement`, {
+            method: "PUT",
+            headers: new Headers({ 
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem('token') 
+            }),
+            body: JSON.stringify(update_message),
+        })
+        .then((a) => {
+            console.log(a)
+            if(a.status !== 200){
+                throw new Error(a.statusText)
+            }
+            console.log("Finished PUT")
+        })
+        .then(() => {
+            loadAllData()
+        })
+        .catch(() => {
+            setState({
+                ...state,
+                buttonEnabled: true
+            })
+        })
+    }
+
     const cancelFlagReview = async (e, r) => {
         // Cancel flag review
         await setState({
@@ -374,14 +442,14 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
                                 {state.claim == r._id && !r.hidden && !r.flag &&
                                 <div className='view-review-box'>
                                     <h1>Please enter your full name</h1>
-                                    <input type="text"></input>
+                                    <input type="text" id="claim-name"></input>
                                     <h1>Please enter your contact email</h1>
-                                    <input type="email"></input>
+                                    <input type="email" id="claim-email"></input>
                                     <h1>Please choose type of claim</h1>
-                                    <input type="text"></input>
+                                    <input type="text" id="claim-type"></input>
                                     <h1>Please enter the justification</h1>
-                                    <textarea></textarea>
-                                    <button id="flag-button" onClick={(e) => flagReview(e, r)}>Flag Review</button>
+                                    <textarea type="text" id="claim-justification"></textarea>
+                                    <button id="flag-button" onClick={(e) => submitFlagReview(e, r)}>Flag Review</button>
                                     <button id="flag-cancel" onClick={(e) => cancelFlagReview(e, r)}>Cancel</button>
                                 </div>}
                                 {userLoggedInStatus && userLoggedInStatus.admin === true && <div className='view-review-box'>
