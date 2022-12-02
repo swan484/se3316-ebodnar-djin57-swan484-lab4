@@ -9,7 +9,7 @@ const NO = "No"
 const Policy = ({loginStatus}) => {
     const [state, setState] = useState({
         policyFields: [],
-        buttonEnabled: false,
+        buttonEnabled: true,
     })
 
     /*
@@ -90,7 +90,39 @@ const Policy = ({loginStatus}) => {
 
     // add new record into the policy database
     const updatePolicy = async (e) => {
-
+        setState({
+            ...state,
+            buttonEnabled: false
+        })
+        console.log("Updating policy")
+        const message = {
+            content: state.policyFields
+        }
+        await fetch(`http://localhost:3001/api/admin/policy`, {
+            method: "POST",
+            headers: new Headers({ 
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem('token') 
+            }),
+            body: JSON.stringify(message),
+        })
+        .then((a) => {
+            console.log(a)
+            if(a.status !== 200){
+                throw new Error(a.statusText)
+            }
+            setState({
+                ...state,
+                buttonEnabled: true
+            })
+            console.log("Finished POST")
+        })
+        .catch(() => {
+            setState({
+                ...state,
+                buttonEnabled: true
+            })
+        })
     }
 
     // Default page for non-admins
@@ -120,7 +152,8 @@ const Policy = ({loginStatus}) => {
             </div>
             <div>
                 <button className="admin-button" onClick={(e) => previewPolicy(e)}>Preview</button>
-                <button className="admin-button">Update</button>
+                <button className="admin-button" onClick={(e) => updatePolicy(e)}>Update</button>
+                {!state.buttonEnabled && <p className='loading-msg'>Updating policies...</p>}
             </div>
             {state.policyFields &&
                 <div className="preview">

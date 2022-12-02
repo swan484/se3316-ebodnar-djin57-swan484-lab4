@@ -21,6 +21,7 @@ const USERS_COLLECTION = "users"
 const TRACKS_COLLECTION = "tracks"
 const PLAYLISTS_COLLECTION = "playlists"
 const REVIEWS_COLLECTION = "reviews"
+const POLICIES_COLLECTION = "policies"
 
 const MAX_NUM_PLAYLISTS = 20
 
@@ -960,6 +961,47 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
         return res.status(200).send(user);
     })
     .catch((err) => {
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
+
+    return res.status(400).send();
+})
+
+/**
+ * Update privacy policy, Admin only
+ */
+ app.post('/api/admin/policy', auth, async (req, res) => {
+    console.log("Called into POST policy")
+    const content = req.body.content
+
+    const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
+    const message = {
+        date_modified: date,
+        content: content
+    }
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.user.email})
+    .then((data) => {
+        if(!data){
+            throw new Error(USER_NOT_LOGGED_IN)
+        }
+        if(decodeString(data.password) !== req.user.password){
+            throw new Error(INCORRECT_PASSWORD)
+        }
+        if(req.user.admin === false){
+            throw new Error(NO_ACCESS_ERROR)
+        }
+    }).then(() => insertOne(DB_NAME, POLICIES_COLLECTION, message))
+    .then((result) => {
+        if (!result) {
+            throw new Error(CANNOT_INSERT)
+        }
+
+        console.log("Successfully Inserted Privacy Policy")
+        return res.status(200).send(message);
+    }).catch((err) => {
+        console.log(err)
         res.statusMessage = err.message
         return res.status(404).send()
     });
