@@ -387,6 +387,59 @@ app.put('/api/authenticated/playlists', auth, async (req, res) => {
 })
 
 /**
+ * Update hide status of reviews
+ * 
+ * ** MUST BE ADMIN ** --> TODO: how would we checkfor this is the endpoint
+ */
+ app.put('/api/admin/review', auth, async (req, res) => {
+    console.log("Called into PUT user update")
+
+    // const search = {
+    //     _id: req.body._id,
+    // }
+
+    const search = {
+        comments: req.body.comments,
+    }
+    
+    const newHidden = (req.body.hidden)
+    console.log("new hidden: " + newHidden)
+    
+    const query = {
+        $set: {
+            hidden: newHidden
+        } 
+    }
+
+    // Update review
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.user.email})
+    .then((data) => {
+        if(!data){
+            throw new Error(USER_NOT_LOGGED_IN)
+        }
+        if(decodeString(data.password) !== req.user.password){
+            throw new Error(INCORRECT_PASSWORD)
+        }
+        if(req.user.admin === false){
+            throw new Error(NO_ACCESS_ERROR)
+        }
+    }).then(() => updateOneFrom(DB_NAME, REVIEWS_COLLECTION, search, query))
+    .then(() => getOneFrom(DB_NAME, REVIEWS_COLLECTION, search))
+    .then((review) => {  
+        console.log(review)
+        console.log("Successfully updated review")
+        return res.status(200).send(review);
+    })
+    .catch((err) => {
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
+
+    return res.status(400).send();
+})
+
+
+/**
  * Get all tracks with IDs in the user inputted list of IDs
  *  Formulate the user input into a MongoDB query, then return the list of tracks
  *  ** NO AUTH **
