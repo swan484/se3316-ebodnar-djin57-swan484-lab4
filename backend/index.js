@@ -1178,7 +1178,7 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
     
     const newFlag = (req.body.flag)
     console.log("new flag: " + newFlag)
-    
+
     const query = {
         $set: {
             flag: newFlag
@@ -1210,6 +1210,7 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
     const review_id = req.body.comments
     const claimant_name = req.body.name
     const claimant_email = req.body.email
+    const type = req.body.type
     const content = req.body.content
     const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
 
@@ -1218,6 +1219,7 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
         review_id: review_id,
         claimant_name: claimant_name,
         claimant_email: claimant_email,
+        type: type,
         content: content,
     }
 

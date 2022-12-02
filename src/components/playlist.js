@@ -9,6 +9,8 @@ const NO_DESCRIPTION = "No Description"
 const PLAYLISTS_LIMIT = 10
 const HIDE = "Hide Review"
 const UNHIDE = "Unhide Review"
+const FLAG = "Flag Review"
+const UNFLAG = "Flagged"
 
 const REVIEW_SUCCESS_MESSAGE = "Successfully created review"
 
@@ -17,7 +19,8 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
         searchResults: overrideResults && overrideResults.length > 0 ? overrideResults : [],
         buttonEnabled: true,
         reviews: {},
-        globalError: false
+        globalError: false,
+        claim: true,
     })
 
     const limit = displayLimit ? displayLimit : PLAYLISTS_LIMIT
@@ -308,7 +311,13 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
     }
 
     const flagReview = async (e, r) => {
-        // Flag review
+        // Flag review. Make new window with 3 input fields for name, email and justification
+        // Then call api
+        await setState({ 
+            ...state,
+            claim: r._id
+        })
+
     }
 
     return (
@@ -348,10 +357,22 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
                             <p>DESCRIPTION: {item.description || NO_DESCRIPTION}</p>
                             <SongList searchResults={item.tracks} expandResults={expandResults} cName={"sub-table"} disableExpanding={false}/>
                             {!reviewContent && item.reviews.map((r) => <div key={r.user_name}>
-                                {!r.hidden && !userLoggedInStatus.admin &&  <div className='view-review-box'>
+                                {(!r.flag && !r.hidden) && !userLoggedInStatus.admin &&  <div className='view-review-box'>
                                     <p className='review-heading'>{r.user_name}</p>
                                     <p className='review-sub'>Comment: "{r.comments}"</p>
                                     <p className="review-sub">Rating: {r.rating}/10</p>
+                                    <button id="flag-button" onClick={(e) => flagReview(e, r)}>Flag Review</button>
+                                </div>}
+                                {state.claim == r._id && !r.hidden && !r.flag &&
+                                <div className='view-review-box'>
+                                    <h1>Please enter your full name</h1>
+                                    <input type="text"></input>
+                                    <h1>Please enter your contact email</h1>
+                                    <input type="email"></input>
+                                    <h1>Please choose type of claim</h1>
+                                    <input type="text"></input>
+                                    <h1>Please enter the justification</h1>
+                                    <textarea></textarea>
                                     <button id="flag-button" onClick={(e) => flagReview(e, r)}>Flag Review</button>
                                 </div>}
                                 {userLoggedInStatus && userLoggedInStatus.admin === true && <div className='view-review-box'>
@@ -359,7 +380,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
                                     <p className='review-sub'>Comment: "{r.comments}"</p>
                                     <p className="review-sub">Rating: {r.rating}/10</p>
                                     <button className="admin-button" id="hide-button" onClick={(e) => hideReview(e, r)}>{r.hidden ? UNHIDE : HIDE}</button>
-                                    <button id="flag-button" onClick={(e) => flagReview(e, r)}>Flag Review</button>
+                                    <button id="flag-button" onClick={(e) => flagReview(e, r)}>{!r.flag ? FLAG : UNFLAG}</button>
                                 </div>}
                                 {console.log(userLoggedInStatus)}
                             </div>)}
