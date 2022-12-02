@@ -1,8 +1,8 @@
-import e from "cors";
-import React, { startTransition, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import SongList from "./songlist";
 import './styles/playlist.css'
 
+const {BASE_URL} = require('../../middleware/config.js')
 const UNKNOWN = "Unknown"
 const NONE = "None"
 const NO_DESCRIPTION = "No Description"
@@ -46,7 +46,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
             ...state,
             buttonEnabled: false
         })
-        await fetch(`http://localhost:3001/api/playlists/${limit}`)
+        await fetch(`${BASE_URL}/api/playlists/${limit}`)
         .then((a) => {
             return a.json()
         })
@@ -211,7 +211,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
             comments: state.reviews[item._id].comments
         }
         updateButtonDisabled(item, true)
-        await fetch(`http://localhost:3001/api/authenticated/review`, {
+        await fetch(`${BASE_URL}/api/authenticated/review`, {
             method: "PUT",
             headers: new Headers({ 
                 "Content-Type": "application/json",
@@ -243,7 +243,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
             ...state,
             buttonEnabled: false
         })
-        await fetch(`http://localhost:3001/api/authenticated/reviews`, {
+        await fetch(`${BASE_URL}/api/authenticated/reviews`, {
             headers: new Headers({ 
                 "Authorization": localStorage.getItem('token') 
             })
@@ -281,7 +281,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
             hidden: !(r.hidden),
         }
 
-        await fetch(`http://localhost:3001/api/admin/review`, {
+        await fetch(`${BASE_URL}/api/admin/review`, {
             method: "PUT",
             headers: new Headers({ 
                 "Content-Type": "application/json",

@@ -2,17 +2,11 @@ import React, {useState} from "react";
 import './styles/manage.css'
 import './styles/policy.css'
 
-const UNKNOWN = "Unknown"
-const YES = "Yes"
-const NO = "No"
-
 const Policy = ({loginStatus}) => {
     const [state, setState] = useState({
         policyFields: [],
         buttonEnabled: true,
     })
-
-
 
     const previewPolicy =  async (e) => {
         console.log("Loading preview ...")

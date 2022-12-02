@@ -1,4 +1,4 @@
-const {MongoClient, Db, ObjectId} = require('mongodb')
+const {MongoClient, ObjectId} = require('mongodb')
 const cors = require('cors');
 const express = require("express");
 const app = express();
@@ -7,9 +7,9 @@ const port = process.env.PORT || 3001;
 app.use("/", express.static("static"));
 app.use(cors());
 
-const uri = "mongodb+srv://root:root@cluster0.dklnv6c.mongodb.net/?retryWrites=true&w=majority"
-const client = new MongoClient(uri)
-const {SECRET_TOKEN} = require('../middleware/config')
+//NOTE: YOU MUST PUT THE SECRET TOKEN AND MONGO URI IN THE CONFIG FILE
+const {SECRET_TOKEN, URI} = require('../middleware/config')
+const client = new MongoClient(URI)
 const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth')
 const Joi = require('joi');
@@ -173,7 +173,10 @@ app.post("/api/user/information", (req, res) => {
  */
 app.put("/api/user", async (req, res) => {
     try {
-        validateEmailPwd(req.body)
+        validateEmailPwd({
+            email: req.body.email,
+            password: req.body.newPassword
+        })
     } catch (e) {
         res.statusMessage = e.message
         return res.status(404).send()

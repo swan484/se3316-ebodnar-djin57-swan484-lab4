@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from "react";
-import { useLoaderData } from "react-router-dom";
 import './styles/manage.css'
 import './styles/policy.css'
 
