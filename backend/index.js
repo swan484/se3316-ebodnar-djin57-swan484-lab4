@@ -1181,12 +1181,14 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
     }
     
     const newFlag = (req.body.flag)
+    const newDispute = req.body.disputed
     console.log("new flag: " + newFlag)
 
     const query = {
         $set: {
             flag: newFlag,
-            flag_date: flagDate
+            flag_date: flagDate,
+            disputed: newDispute
         } 
     }
 

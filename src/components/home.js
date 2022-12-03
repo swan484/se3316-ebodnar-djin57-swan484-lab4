@@ -41,7 +41,7 @@ const Home = ({updateUserLoginStatus, loginStatus}) => {
     return (
         <div className='home-block parent-div'>
             <h1>
-                Welcome to APP NAME
+                Welcome to SongSpot
             </h1>
             <div className="pad-bottom-container">            
                 <p>

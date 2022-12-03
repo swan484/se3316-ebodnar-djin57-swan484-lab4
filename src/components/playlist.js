@@ -397,6 +397,49 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
         })
     }
 
+    const unflagReview = async (e, r) => {
+        // Opens claim form
+        await setState({ 
+            ...state,
+            claim: r._id
+        })
+
+        const update_message = {
+            comments: r.comments,
+            flag: false,
+            disputed: false,
+        }
+        await fetch(`${BASE_URL}/api/review/infringement`, {
+            method: "PUT",
+            headers: new Headers({ 
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem('token') 
+            }),
+            body: JSON.stringify(update_message),
+        })
+        .then((a) => {
+            console.log(a)
+            if(a.status !== 200){
+                throw new Error(a.statusText)
+            }
+            console.log("Finished PUT")
+        })
+        .then(() => {
+            loadAllData()
+            setState({ 
+                ...state,
+                claim: ""
+            })
+        })
+        .catch(() => {
+            setState({
+                ...state,
+                buttonEnabled: true,
+                claim: ""
+            })
+        })
+    }
+
     const disputeClaim = async (e, id) => {
         // POST new dispute in the dispute collection
         console.log("POSTing into disputes")
@@ -518,11 +561,16 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
                                     <p className="review-sub">Rating: {r.rating}/10</p>
                                     <button className="admin-button" id="hide-button" onClick={(e) => hideReview(e, r)}>{r.hidden ? UNHIDE : HIDE}</button>
                                     <button id="flag-button" onClick={(e) => flagReview(e, r)}>{!r.flag ? FLAG : UNFLAG}</button>
+                                    
                                     {r.flag &&
-                                        <p>Date flagged: {r.flag_date}</p>
+                                        <div>
+                                            <button id="flag-button" onClick={(e) => unflagReview(e, r)}>Unflag</button>
+                                            <p>Date flagged: {r.flag_date}</p>
+                                        </div>
                                     }
                                     {r.disputed &&
-                                        <p>Date disputed: {r.dispute_date}</p>
+                                    
+                                        <p>Date disputed: {r.dispute_date} {console.log("shirley",r.disputed)}</p>
                                     }
                                 </div>}
                                 {console.log(userLoggedInStatus)}

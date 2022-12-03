@@ -181,7 +181,7 @@ const Search = ({updateParentResults, updateParentSet, parentSet, disableExpandi
             {state.errorMessage.length > 0 && <div className="error">{state.errorMessage}</div>}
             <div>
                 <button onClick={() => searchData()} disabled={!state.buttonEnabled} className="submit-button">Search</button>
-                {!heading && <button className='no-margin submit-button' disabled={!state.buttonEnabled} onClick={clearResults}>Clear Results</button>}
+                {!heading && <button className='no-margin submit-button' disabled={!state.buttonEnabled} onClick={clearResults}>Hide Results</button>}
                 {!heading && <button className='no-margin submit-button' disabled={!state.buttonEnabled} onClick={showSelected}>Show Selected</button>}
             </div>
             <SongList searchResults={state.searchResults} expandResults={expandResults} cName={TABLE_STYLE} disableExpanding={disableExpanding}/>

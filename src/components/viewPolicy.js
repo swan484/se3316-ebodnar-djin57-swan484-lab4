@@ -94,7 +94,7 @@ const ViewPolicy = () => {
                 <h2>What happens in event of takeover of dissolution</h2>
                 <p>{state.policyFields[4]}</p>
 
-                <h1>DMCA Notice & Takedown Policy</h1>
+                <h1>DMCA Notice and Takedown Policy</h1>
                 <p>{state.dmcaPolicy}</p>
 
                 <h1>Acceptable Use Policy</h1>

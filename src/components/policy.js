@@ -75,9 +75,9 @@ const Policy = ({loginStatus}) => {
             buttonEnabled: false
         })
         const DMCAPolicy = document.getElementById("dmca-policy").value
-        console.log("Updating dmca policy")
+        console.log("Updating dmca policy", DMCAPolicy)
         const message = {
-            content: DMCAPolicy
+            policy: DMCAPolicy
         }
         await fetch(`${BASE_URL}/api/admin/dmca-policy`, {
             method: "POST",
