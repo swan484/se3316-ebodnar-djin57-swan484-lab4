@@ -157,6 +157,15 @@ const Policy = ({loginStatus}) => {
     // Admin view
     return (
         <div>
+            <div>
+                <h1>Documentation</h1>
+                <p>The DMCA notice and takedown policy workflow is as follows:</p>
+                <p>1. A user (e.g. a copyright holder) files a DMCA notice for reviews using the flag button.</p>
+                <p>2. SongSpot forwards the DMCA notice to the content owner, and the review is hidden from the public.</p>
+                <p>3. The content owner can respond with a counter-notice on their ratings dashboard.</p>
+                <p>4. SongSpot then forwards the counter-notice to the user.</p>
+                <p>5. If the user does not respond within 14 days, admins can unflag the comment, and it will be visible again.</p>
+            </div>
             <div className="admin-form">
                 <h1>Create privacy policy</h1>
                 <label className="admin-label">What information is collected</label>
