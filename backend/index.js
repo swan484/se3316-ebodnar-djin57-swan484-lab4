@@ -332,9 +332,18 @@ app.post("/api/user", async (req, res) => {
 app.put('/api/authenticated/playlists', auth, async (req, res) => {
     console.log("Called into PUT authenticated playlists")
     const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
+    try{
+        validateInput(req.body.list_title)
+        validateInput(req.body.visibility)
+        validateInput(req.body.description)
+    } catch (e) {
+        res.statusMessage = e.message
+        return res.status(404).send()
+    }    
 
     const modifiedTracks = []
     req.body.tracks.forEach((t) => {
+        console.log("shirley:", t)
         modifiedTracks.push({
             ...t,
             _id: new ObjectId(t._id)
@@ -696,6 +705,12 @@ app.get('/api/authenticated/playlists', auth, async (req, res) => {
  */
 app.put('/api/authenticated/playlist', auth, async (req, res) => {
     console.log("Called into PUT playlist")
+    try{
+        validateInput(req.body.original_title)
+    } catch (e) {
+        res.statusMessage = e.message
+        return res.status(404).send()
+    }
 
     const key = {
         email: req.user.email,
@@ -790,7 +805,7 @@ app.delete("/api/authenticated/playlist", auth, async (req, res) => {
     return res.status(400).send();
 })
 
-//TODO: Is it correct to use PUT here?
+//
 /**
  * Create a review for a playlist
  *  Query based on (reviewer email, playlist title, creator email) tuple - must be unique (user can only post one review per playlist)
@@ -801,6 +816,12 @@ app.delete("/api/authenticated/playlist", auth, async (req, res) => {
  */
 app.put('/api/authenticated/review', auth, async (req, res) => {
     console.log("Called into PUT review")
+    try{
+        validateEmail(req.body.creator_email)
+    } catch (e) {
+        res.statusMessage = e.message
+        return res.status(404).send()
+    }    
 
     console.log(req.user)
     const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
@@ -924,11 +945,18 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
  */
  app.put('/api/admin/users/:setting', auth, async (req, res) => {
     console.log("Called into PUT user update")
+    try{
+        validateEmail(req.body.email)
+    } catch (e) {
+        res.statusMessage = e.message
+        return res.status(404).send()
+    }   
 
     const toChange = req.params.setting
     const search = {
         email: req.body.email,
     }
+
     const newAdmin = req.body.admin
     const newDeactivated = req.body.deactivated
 
@@ -982,8 +1010,14 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
  */
  app.post('/api/admin/policy', auth, async (req, res) => {
     console.log("Called into POST policy")
-    const content = req.body.content
+    try{
+        validateInput(req.body.content)
+    } catch (e) {
+        res.statusMessage = e.message
+        return res.status(404).send()
+    }    
 
+    const content = req.body.content
     const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
     const message = {
         date_modified: date,
@@ -1044,8 +1078,14 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
  */
  app.post('/api/admin/dmca-policy', auth, async (req, res) => {
     console.log("Called into POST DMCA policy")
-    const policy = req.body.policy
+    try{
+        validateInput(req.body.policy)
+    } catch (e) {
+        res.statusMessage = e.message
+        return res.status(404).send()
+    }    
 
+    const policy = req.body.policy
     const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
     const message = {
         date_modified: date,
@@ -1106,8 +1146,14 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
  */
  app.post('/api/admin/aup-policy', auth, async (req, res) => {
     console.log("Called into POST AUP policy")
-    const policy = req.body.policy
+    try{
+        validateInput(req.body.policy)
+    } catch (e) {
+        res.statusMessage = e.message
+        return res.status(404).send()
+    }    
 
+    const policy = req.body.policy
     const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
     const message = {
         date_modified: date,
@@ -1213,6 +1259,17 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
  */
  app.post('/api/claims', async (req, res) => {
     console.log("Called into POST  claims")
+    try{
+        validateInput(req.body.comments)
+        validateInput(req.body.name)
+        validateEmail(req.body.email)
+        validateInput(req.body.type)
+        validateInput(req.body.content)
+    } catch (e) {
+        res.statusMessage = e.message
+        return res.status(404).send()
+    }
+
     //const review_id = req.body._id
     const review_id = req.body.comments
     const claimant_name = req.body.name
@@ -1576,6 +1633,7 @@ function validateRegistration(body){
     }
 }
 
+// check for any html tags or {} characters
 function validateSearch(query){
     let queries = [];
     let split = query.split(",")
@@ -1585,8 +1643,6 @@ function validateSearch(query){
 
     var rgex1 = /^(?!.*<[^>]+>).*/;
     var rgex2 = /^[^{}]+$/;
-
-    console.log("This is the query:", queries)
 
     queries.forEach((q) => {
         if(q === "" || !rgex1.test(q) || !rgex2.test(q)){
@@ -1616,35 +1672,20 @@ function validateEmailPwd(body){
     }
 }
 
-/*
-Old version of search:
-app.get('/api/search/:query', async (req, res) => {
-    console.log(`Called into GET search (query) with ${req.params.query}`)
-    const queries = req.params.query.split(",")
-
-    var results = []
-    const queriesList = []
-    for(var q of queries){
-        q = q.trim().toLowerCase()
-        queriesList.push({
-            $or: [
-                {artist_name: {$regex: q, $options: "i"}},
-                {track_title: {$regex: q, $options: "i"}},
-                {track_genres: {$elemMatch: {genre_title: {$regex: q, $options: "i"}}}}
-            ]
-        })
+function validateEmail(email){
+    var rgx = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/
+    if(!rgx.test(email)){
+        throw new Error(INVALID_EMAIL)
     }
-    const compiledQuery = {$and: queriesList}
-    await getAllFrom(DB_NAME, TRACKS_COLLECTION, compiledQuery)
-    .then((data) => {
-        data.forEach(d => {
-            results.push(d)
-        })
-    })
-    .catch((err) => console.log(`Error: ${err}`))
-    console.log("Got results")
-    res.send(results)
-})
-*/
+}
+
+function validateInput(contents){
+    var rgex1 = /^(?!.*<[^>]+>).*/;
+    var rgex2 = /^[^{}]+$/;
+    
+    if(!rgex1.test(contents) || !rgex2.test(contents)){
+        throw new Error(INVALID_SEARCH)
+    }
+}
 
 app.listen(port, () => console.log(`Listening on port ${port}...`));
