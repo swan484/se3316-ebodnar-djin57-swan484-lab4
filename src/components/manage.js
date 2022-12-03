@@ -68,7 +68,6 @@ const Manage = ({loginStatus}) => {
             }
         }
         
-
         await fetch(`${BASE_URL}/api/admin/users/${toChange}`, {
             method: "PUT",
             headers: new Headers({ 
@@ -95,8 +94,6 @@ const Manage = ({loginStatus}) => {
         })
     }
 
-
-
     // Default page for non-admins
     if(!loginStatus.admin){
         return (
@@ -107,12 +104,7 @@ const Manage = ({loginStatus}) => {
         )
     }
     return (
-        <div className="admin-form">
-            <label className="admin-label">Search by user</label>
-            <input className="admin-input" type="text"/>
-            <button className="admin-button">Search</button>
-            {!state.buttonEnabled && <p className='loading-msg'>Updating user...</p>}
-            
+        <div className="admin-form">            
             {state.userResults.length > 0 && 
                 <div className="heading-row table-row table-header-2">
                     <li>
@@ -135,14 +127,6 @@ const Manage = ({loginStatus}) => {
                         </li>
                 </div>
             ))}
-                
- 
-
-
-
-            <h1>Do admin stuff...</h1>
-            <p>Grant other users admin privileges, make reviews hidden (in the view playlists area), manage which users are deactivated</p>
-            <p>Make sure greater authentication is used for these endpoints (need to check that calling user is an admin)</p>
         </div>
     )
 }
