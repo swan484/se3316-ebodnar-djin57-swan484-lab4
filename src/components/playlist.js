@@ -21,6 +21,8 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
         reviews: {},
         globalError: false,
         claim: "",
+        date_flagged: "",
+        date_disputed: "",
     })
 
     const limit = displayLimit ? displayLimit : PLAYLISTS_LIMIT
@@ -516,6 +518,12 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
                                     <p className="review-sub">Rating: {r.rating}/10</p>
                                     <button className="admin-button" id="hide-button" onClick={(e) => hideReview(e, r)}>{r.hidden ? UNHIDE : HIDE}</button>
                                     <button id="flag-button" onClick={(e) => flagReview(e, r)}>{!r.flag ? FLAG : UNFLAG}</button>
+                                    {r.flag &&
+                                        <p>Date flagged: {r.flag_date}</p>
+                                    }
+                                    {r.disputed &&
+                                        <p>Date disputed: {r.dispute_date}</p>
+                                    }
                                 </div>}
                                 {console.log(userLoggedInStatus)}
                             </div>)}
@@ -535,7 +543,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
                                 </div>}
                                 {state.reviews[item._id].disputed &&
                                 <div>
-                                    <p>You have disputed this claim</p>
+                                    <p>You have disputed this claim.</p>
                                 </div>}
                                 {state.reviews[item._id] && state.reviews[item._id].successMessage && <div>
                                     <p className="success-msg">{state.reviews[item._id].successMessage}</p>

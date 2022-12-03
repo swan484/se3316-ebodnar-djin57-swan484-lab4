@@ -1174,6 +1174,8 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
     //     _id: req.body._id,
     // }
 
+    const flagDate = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
+
     const search = {
         comments: req.body.comments,
     }
@@ -1183,7 +1185,8 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
 
     const query = {
         $set: {
-            flag: newFlag
+            flag: newFlag,
+            flag_date: flagDate
         } 
     }
 
@@ -1297,13 +1300,16 @@ app.put('/api/review/dispute', auth, async (req, res) => {
     const search = {
         comments: req.body.comments,
     }
+
+    const disputeDate = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
     
     const newDispute = (req.body.disputed)
     console.log("disputed?: " + newDispute)
 
     const query = {
         $set: {
-            disputed: newDispute
+            disputed: newDispute,
+            dispute_date: disputeDate
         } 
     }
 
@@ -1347,8 +1353,8 @@ app.put('/api/review/dispute', auth, async (req, res) => {
         if(decodeString(data.password) !== req.user.password){
             throw new Error(INCORRECT_PASSWORD)
         }
-    }).then(() => getAllFrom(
-        DB_NAME, DISPUTES_COLLECTION
+    }).then(() => getOneFrom(
+        DB_NAME, DISPUTES_COLLECTION, query
     )).then((results) => {
         if(!results){
             throw new Error(DISPUTE_DOES_NOT_EXIST)
