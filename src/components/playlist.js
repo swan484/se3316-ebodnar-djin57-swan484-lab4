@@ -20,7 +20,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
         buttonEnabled: true,
         reviews: {},
         globalError: false,
-        claim: true,
+        claim: "",
     })
 
     const limit = displayLimit ? displayLimit : PLAYLISTS_LIMIT
@@ -174,7 +174,9 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
             const obj = state.reviews
             obj[item.list_id] = {
                 comments: item.comments,
-                rating: item.rating
+                rating: item.rating,
+                flag: item.flag,
+                disputed: item.disputed,
             }
             setState({
                 ...state,
@@ -311,8 +313,7 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
     }
 
     const flagReview = async (e, r) => {
-        // Flag review. Make new window with 3 input fields for name, email and justification
-        // Then call api
+        // Opens claim form
         await setState({ 
             ...state,
             claim: r._id
@@ -322,8 +323,6 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
 
     const submitFlagReview = async (e, r) => {
         // Cancel flag review
-        
-        
         const message = {
             comments: r.comments,
             name: document.getElementById("claim-name").value,
@@ -394,6 +393,65 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
             ...state,
             claim: ""
         })
+    }
+
+    const disputeClaim = async (e, id) => {
+        // POST new dispute in the dispute collection
+        console.log("POSTing into disputes")
+        const message = {
+            comments: state.reviews[id].comments,
+        }
+
+        await fetch(`${BASE_URL}/api/dispute`, {
+            method: "POST",
+            headers: new Headers({ 
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem('token') 
+            }),
+            body: JSON.stringify(message),
+        })
+        .then((a) => {
+            console.log(a)
+            if(a.status !== 200){
+                throw new Error(a.statusText)
+            }
+            console.log("Finished POST")
+        })
+
+        // Flag original review as disputed
+        console.log("Updating review ...")
+
+        const update_message = {
+            comments: state.reviews[id].comments,
+            disputed: true,
+        }
+
+        await fetch(`${BASE_URL}/api/review/dispute`, {
+            method: "PUT",
+            headers: new Headers({ 
+                "Content-Type": "application/json",
+                "Authorization": localStorage.getItem('token') 
+            }),
+            body: JSON.stringify(update_message),
+        })
+        .then((a) => {
+            console.log(a)
+            if(a.status !== 200){
+                throw new Error(a.statusText)
+            }
+
+            console.log("Finished update")
+        })
+        .then(() => {
+            loadAllData()
+        })
+        .catch(() => {
+            setState({
+                ...state,
+                buttonEnabled: true
+            })
+        })
+
     }
 
     return (
@@ -467,7 +525,18 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
                                 <input autoCorrect="false" value={state.reviews[item._id] ? state.reviews[item._id].rating : ""} onChange={(e) => updateRating(e, item)}></input>
                                 <label>Comments</label>
                                 <textarea autoCorrect="false" value={state.reviews[item._id] ? state.reviews[item._id].comments : ""} onChange={(e) => updateComment(e, item)}></textarea>
-                                <button onClick={() => submitReview(item)} disabled={state.reviews[item._id] ? state.reviews[item._id].disabled : false}>Submit Review</button>
+                                {!state.reviews[item._id].disputed &&
+                                    <button onClick={() => submitReview(item)} disabled={state.reviews[item._id] ? state.reviews[item._id].disabled : false}>Submit Review</button>
+                                }
+                                <p>{state.reviews[item._id].flag ? "This comment has been flagged." : ""}</p>
+                                {state.reviews[item._id].flag && !state.reviews[item._id].disputed &&
+                                <div>
+                                    <button onClick={(e) => disputeClaim(e, item._id)}>Dispute</button>
+                                </div>}
+                                {state.reviews[item._id].disputed &&
+                                <div>
+                                    <p>You have disputed this claim</p>
+                                </div>}
                                 {state.reviews[item._id] && state.reviews[item._id].successMessage && <div>
                                     <p className="success-msg">{state.reviews[item._id].successMessage}</p>
                                 </div>}

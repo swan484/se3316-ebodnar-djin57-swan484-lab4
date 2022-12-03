@@ -25,6 +25,7 @@ const POLICIES_COLLECTION = "policies"
 const DMCA_POLICIES_COLLECTION = "dmca"
 const AUP_POLICIES_COLLECTION = "aup"
 const CLAIMS_COLLECTION = "claims"
+const DISPUTES_COLLECTION = "disputes"
 
 const MAX_NUM_PLAYLISTS = 20
 
@@ -48,6 +49,7 @@ const EMPTY_PLAYLIST_ERROR = "Playlist cannot be empty"
 const EMPTY_TITLE_ERROR = "Playlist must have a title"
 const INVALID_TRACK_EXISTS = "Playlist contains an invalid track"
 const REVIEW_DOES_NOT_EXIST = "No review exists"
+const DISPUTE_DOES_NOT_EXIST = "The dispute does not exist"
 const EMPTY_RATING = "Cannot have an empty rating"
 const USER_NOT_EXISTS = "User does not exist"
 const USER_INACTIVE = "User is deactivated. Please contact admin@uwo.ca for support."
@@ -1201,7 +1203,7 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
     return res.status(400).send();
 })
 
-/** TODO
+/** 
  * POST into claim collection a log of the infringement claim
  */
  app.post('/api/claims', async (req, res) => {
@@ -1233,6 +1235,128 @@ app.get('/api/authenticated/reviews', auth, async (req, res) => {
         return res.status(200).send(message);
     }).catch((err) => {
         console.log(err)
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
+
+    return res.status(400).send();
+})
+
+/** 
+ * POST into dispute collection a log of the disputes
+ */
+ app.post('/api/dispute', auth, async (req, res) => {
+    console.log("Called into POST disputes")
+    //const review_id = req.body._id
+    const review_id = req.body.comments
+    const email = req.user.email
+    const date = `${new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')} GMT`
+
+    const message = {
+        date_submitted: date,
+        review_id: review_id,
+        email: email,
+    }
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, {email: req.user.email})
+    .then((data) => {
+        if(!data){
+            throw new Error(USER_NOT_LOGGED_IN)
+        }
+        if(decodeString(data.password) !== req.user.password){
+            throw new Error(INCORRECT_PASSWORD)
+        }
+    })
+    .then(() => insertOne(DB_NAME, DISPUTES_COLLECTION, message))
+    .then((result) => {
+        if (!result) {
+            throw new Error(CANNOT_INSERT)
+        }
+
+        console.log("Successfully Inserted DISPUTE")
+        return res.status(200).send(message);
+    }).catch((err) => {
+        console.log(err)
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
+
+    return res.status(400).send();
+})
+
+/**
+ * Update review with a dispute flag
+ */
+app.put('/api/review/dispute', auth, async (req, res) => {
+    console.log("Called into PUT dispute review")
+
+    // const search = {
+    //     _id: req.body._id,
+    // }
+
+    const search = {
+        comments: req.body.comments,
+    }
+    
+    const newDispute = (req.body.disputed)
+    console.log("disputed?: " + newDispute)
+
+    const query = {
+        $set: {
+            disputed: newDispute
+        } 
+    }
+
+    // Update review
+    await updateOneFrom(DB_NAME, REVIEWS_COLLECTION, search, query)
+    .then(() => getOneFrom(DB_NAME, REVIEWS_COLLECTION, search))
+    .then((review) => {  
+        console.log(review)
+        console.log("Successfully updated review flag")
+        return res.status(200).send(review);
+    })
+    .catch((err) => {
+        res.statusMessage = err.message
+        return res.status(404).send()
+    });
+
+    return res.status(400).send();
+})
+
+/**
+ * Get dispute matching the id
+ */
+ app.get('/api/disputes/:id', auth, async (req, res) => {
+    console.log("Called into GET dispute")
+
+    const key = {
+        email: req.user.email,
+    }
+
+    const query = {
+        review_id: req.params.id
+    }
+
+    console.log(req.params.id)
+
+    await getOneFrom(DB_NAME, USERS_COLLECTION, key)
+    .then((data) => {
+        if(!data){
+            throw new Error(USER_NOT_LOGGED_IN)
+        }
+        if(decodeString(data.password) !== req.user.password){
+            throw new Error(INCORRECT_PASSWORD)
+        }
+    }).then(() => getAllFrom(
+        DB_NAME, DISPUTES_COLLECTION
+    )).then((results) => {
+        if(!results){
+            throw new Error(DISPUTE_DOES_NOT_EXIST)
+        }
+
+        console.log("Successfully got dispute")
+        return res.status(200).send(results)
+    }).catch((err) => {
         res.statusMessage = err.message
         return res.status(404).send()
     });
