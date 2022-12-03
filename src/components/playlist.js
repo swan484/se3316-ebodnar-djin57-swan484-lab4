@@ -549,7 +549,10 @@ const Playlist = ({overrideResults, reviewContent, displayLimit, userLoggedInSta
                                     <h1>Please enter your contact email</h1>
                                     <input type="email" id="claim-email"></input>
                                     <h1>Please choose type of claim</h1>
-                                    <input type="text" id="claim-type"></input>
+                                    <select id="claim-type">
+                                        <option value="takedown request">Takedown Request</option>
+                                        <option value="infringement notice">Infringement Notice</option>
+                                    </select>                                    
                                     <h1>Please enter the justification</h1>
                                     <textarea type="text" id="claim-justification"></textarea>
                                     <button id="flag-button" onClick={(e) => submitFlagReview(e, r)}>Flag Review</button>
